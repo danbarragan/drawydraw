@@ -54,21 +54,15 @@ function draw() {
   });
 }
 
-function mousePressed() {
-  strokes.push(new Stroke([new Point(mouseX, mouseY)]));
+function getStrokes() {
+    jQuery.getJSON("/api/strokes", function(data) {
+        strokes = data.strokes;
+    })
 }
 
-function mouseDragged() {
-  strokes[strokes.length - 1].addPoint(new Point(mouseX, mouseY));
-}
+getStrokes()
+setInterval(getStrokes(5000));
 
-function mouseReleased() {
-  jQuery.ajax("api/strokes", {
-    data: JSON.stringify({strokes: strokes}),
-    contentType: "application/json",
-    type: "POST",
-  })
-}
 
 </script>
 </body>
