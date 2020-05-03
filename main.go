@@ -54,13 +54,12 @@ func getStrokes(c *gin.Context) {
 	if found {
 		c.JSON(http.StatusOK, strokeSet)
 	} else {
-		c.JSON(http.StatusOK, gin.H{})
+		c.JSON(http.StatusOK, &StrokeSet{Strokes: []Strokes{}})
 	}
 }
 
 func processStrokes(c *gin.Context) {
 	var strokeSet StrokeSet
-	// var arf map[string]interface{}
 	error := c.BindJSON(&strokeSet)
 	if error == nil {
 		memCache.Set("strokeSet", strokeSet, cache.DefaultExpiration)
