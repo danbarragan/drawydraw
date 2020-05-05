@@ -1,4 +1,4 @@
-# Build the Go API
+# Build the Go service
 FROM golang:latest AS builder
 ADD . /app
 WORKDIR /app/server
@@ -11,8 +11,7 @@ COPY --from=builder /app/client ./
 RUN npm install
 RUN npm run build
 
-# Final stage build, this will be the container
-# that we will deploy to production
+# Build container that has both apps and runs the Go service
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 COPY --from=builder /main ./
