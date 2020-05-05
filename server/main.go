@@ -21,7 +21,8 @@ func main() {
 	router := gin.Default()
 
 	// Serve frontend static files
-	router.Use(static.Serve("/", static.LocalFile("../client/dist", true)))
+	router.Use(static.Serve("/", static.LocalFile("./web", true)))
+	router.GET("/api/hello", func(ctx *gin.Context) { ctx.JSON(http.StatusOK, gin.H{"hello": "there"}) })
 	router.POST("/api/echo", echoTest)
 	router.Run(":" + port)
 }
@@ -29,6 +30,6 @@ func main() {
 // Todo: Remove this once we start building real APIs
 func echoTest(ctx *gin.Context) {
 	requestBody := make(map[string]string)
-	ctx.ShouldBind(&requestBody)
+	ctx.BindJSON(&requestBody)
 	ctx.JSON(http.StatusOK, &requestBody)
 }
