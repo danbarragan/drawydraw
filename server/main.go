@@ -1,6 +1,7 @@
 package main
 
 import (
+	"drawydraw/utils/stagemanager"
 	"net/http"
 	"os"
 
@@ -32,4 +33,24 @@ func echoTest(ctx *gin.Context) {
 	requestBody := make(map[string]string)
 	ctx.BindJSON(&requestBody)
 	ctx.JSON(http.StatusOK, &requestBody)
+}
+
+// Todo: Probably move this to its own file
+type addPlayerRequest struct {
+	PlayerName string `json: playerName`
+	GroupName  string `json: playerName`
+}
+
+func addPlayer(ctx *gin.Context) {
+	addPlayerRequest := addPlayerRequest{}
+	ctx.BindJSON(&addPlayerRequest)
+	manager, err := stagemanager.CreateForGroup(addPlayerRequest.GroupName)
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+	}
+	err = manager.AddPlayer(addPlayerRequest.PlayerName)
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+	}
+	ctx.JSON(http.StatusOK, gin.H{"success": true})
 }
