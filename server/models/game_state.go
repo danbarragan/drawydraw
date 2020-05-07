@@ -6,52 +6,48 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
-const gameStatusKey = "GAME_STATUS"
-
 var (
 	// 20 min TTL, purges every 5 min
 	memCache = cache.New(20*time.Minute, 5*time.Minute)
 )
 
 // GameStage defines what are the individual stages that make up the game
-type GameStage uint64 // Probably want to change this to str someday to make the stored representation friendlier
+type GameStage string
 
 const (
 	// WaitingForPlayers - A group is created and the host is waiting for players
-	WaitingForPlayers GameStage = iota
+	WaitingForPlayers GameStage = "WaitingForPlayers"
 	// InitialPromptCreation - Players are entering their initial prompts
-	InitialPromptCreation
+	InitialPromptCreation GameStage = "InitialPromptCreation"
 )
 
 // Player contains all the information relevant to a game's participant
 type Player struct {
-	Name   string
-	Host   bool
-	Points uint64
-}
-
-// Prompt is to be implemented...
-type Prompt struct {
+	Name   string `json:"name"`
+	Host   bool   `json:"host"`
+	Points uint64 `json:"points"`
 }
 
 // GameState contains all data that represents the state of the game at any point
 type GameState struct {
-	GroupName    string
-	Players      []*Player
-	CurrentStage GameStage
+	GroupName    string    `json:"groupName"`
+	Players      []*Player `json:"players"`
+	CurrentStage GameStage `json:"currentStage"`
 }
 
-// GetGameState returns the current game state for a given room name
-func GetGameState(roomName string) *GameState {
-	state, found := memCache.Get(gameStatusKey)
+// Todo: Put these methods behind an interface to faciliate unit tests
+
+// LoadGameState returns the current game state for a given room name
+func LoadGameState(roomName string) *GameState {
+	state, found := memCache.Get(roomName)
 	if found {
 		return state.(*GameState)
 	}
 	return nil
 }
 
-// Save persists the game state
-func (state *GameState) Save() error {
-	memCache.Set(gameStatusKey, state, cache.DefaultExpiration)
+// SaveGameState persists the game state
+func SaveGameState(state *GameState) error {
+	memCache.Set(state.GroupName, state, cache.DefaultExpiration)
 	return nil
 }

@@ -10,6 +10,7 @@ Needs some description
 - Enter the server directory
 - Run `go run main.go`
 - Service should be available at `localhost:3000`
+- To run tests, run `go test` from the server root
 
 ## Production
 Code is hosted at https://drawydraw.herokuapp.com

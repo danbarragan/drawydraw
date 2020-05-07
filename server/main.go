@@ -2,6 +2,7 @@ package main
 
 import (
 	"drawydraw/utils/stagemanager"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -10,21 +11,30 @@ import (
 	_ "github.com/heroku/x/hmetrics/onload"
 )
 
-func main() {
-	port := os.Getenv("PORT")
-
-	// To do: Clean this default up for dev environments
-	if port == "" {
-		port = "3000"
-	}
-
+func setupRouter(port string) *gin.Engine {
 	// Use default gin router
 	router := gin.Default()
 
 	// Serve frontend static files
 	router.Use(static.Serve("/", static.LocalFile("./web", true)))
+
+	// API routes
 	router.GET("/api/hello", func(ctx *gin.Context) { ctx.JSON(http.StatusOK, gin.H{"hello": "there"}) })
+	router.GET("/api/get-game-status/:groupName", getGameStatus)
+	router.POST("/api/add-player", addPlayer)
+	router.POST("/api/create-game", createGroup)
 	router.POST("/api/echo", echoTest)
+
+	return router
+}
+
+func main() {
+	port := os.Getenv("PORT")
+	// Todo: Clean this default up for dev environments
+	if port == "" {
+		port = "3000"
+	}
+	router := setupRouter(port)
 	router.Run(":" + port)
 }
 
@@ -35,22 +45,52 @@ func echoTest(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, &requestBody)
 }
 
-// Todo: Probably move this to its own file
+// Todo: Probably move each handler / request schema to its own file
 type addPlayerRequest struct {
-	PlayerName string `json: playerName`
-	GroupName  string `json: playerName`
+	PlayerName string `json:"playerName"`
+	GroupName  string `json:"groupName"`
 }
 
 func addPlayer(ctx *gin.Context) {
 	addPlayerRequest := addPlayerRequest{}
-	ctx.BindJSON(&addPlayerRequest)
-	manager, err := stagemanager.CreateForGroup(addPlayerRequest.GroupName)
+	err := ctx.BindJSON(&addPlayerRequest)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Invalid request: %s", err.Error())))
 	}
-	err = manager.AddPlayer(addPlayerRequest.PlayerName)
+	gameState, err := stagemanager.AddPlayer(addPlayerRequest.PlayerName, addPlayerRequest.GroupName)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error adding player: %s", err.Error())))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"success": true})
+	ctx.JSON(http.StatusOK, &gameState)
+}
+
+func getGameStatus(ctx *gin.Context) {
+	groupName := ctx.Param("groupName")
+	gameState, err := stagemanager.GetGameState(groupName)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error getting game status: %s", err.Error())))
+	}
+	ctx.JSON(http.StatusOK, gameState)
+}
+
+type createGroupRequest struct {
+	PlayerName string `json:"playerName"`
+	GroupName  string `json:"groupName"`
+}
+
+func createGroup(ctx *gin.Context) {
+	addPlayerRequest := createGroupRequest{}
+	err := ctx.BindJSON(&addPlayerRequest)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Invalid request: %s", err.Error())))
+	}
+	gameState, err := stagemanager.CreateGroup(addPlayerRequest.PlayerName, addPlayerRequest.GroupName)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error creating group: %s", err.Error())))
+	}
+	ctx.JSON(http.StatusOK, &gameState)
+}
+
+func formatError(errorMessage string) gin.H {
+	return gin.H{"error": errorMessage}
 }
