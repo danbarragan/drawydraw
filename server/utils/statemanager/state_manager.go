@@ -5,10 +5,10 @@ import (
 	"errors"
 )
 
-// StateManager handles different actions throughout the game
+// StateManager handles the different states and actions throughout the game
 type StateManager struct {
-	currentStateHandler stateHandler
-	gameState           *models.Game
+	currentState state
+	game         *models.Game
 }
 
 // CreateGroup Handles creating a group other players can join
@@ -20,7 +20,7 @@ func CreateGroup(playerName string, groupName string) (*models.Game, error) {
 	}
 	// Games start in the waiting for players stage
 	gameState = &models.Game{GroupName: groupName, CurrentState: models.WaitingForPlayers}
-	currentStage, err := getCurrentStateHandler(gameState)
+	currentStage, err := getCurrentState(gameState)
 	if err != nil {
 		return nil, err
 	}
@@ -41,12 +41,12 @@ func AddPlayer(playerName string, groupName string) (*models.Game, error) {
 		return nil, err
 	}
 	player := models.Player{Name: playerName}
-	err = stateManager.currentStateHandler.addPlayer(&player)
+	err = stateManager.currentState.addPlayer(&player)
 	if err != nil {
 		return nil, err
 	}
-	models.SaveGame(stateManager.gameState)
-	return stateManager.gameState, nil
+	models.SaveGame(stateManager.game)
+	return stateManager.game, nil
 }
 
 // GetGameState gets the current state for a given game
@@ -55,7 +55,7 @@ func GetGameState(groupName string) (*models.Game, error) {
 	if err != nil {
 		return nil, err
 	}
-	return stateManager.gameState, nil
+	return stateManager.game, nil
 }
 
 func getManagerForGroup(groupName string) (*StateManager, error) {
@@ -63,15 +63,15 @@ func getManagerForGroup(groupName string) (*StateManager, error) {
 	if gameState == nil {
 		return nil, errors.New("Could not find a group with that name")
 	}
-	stateHandler, err := getCurrentStateHandler(gameState)
+	stateHandler, err := getCurrentState(gameState)
 	if err != nil {
 		return nil, err
 	}
-	stateManager := StateManager{currentStateHandler: stateHandler, gameState: gameState}
+	stateManager := StateManager{currentState: stateHandler, game: gameState}
 	return &stateManager, nil
 }
 
-func getCurrentStateHandler(game *models.Game) (stateHandler, error) {
+func getCurrentState(game *models.Game) (state, error) {
 	switch currentState := game.CurrentState; currentState {
 	case models.WaitingForPlayers:
 		return waitingForPlayersState{game: game}, nil
