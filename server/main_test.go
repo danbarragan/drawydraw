@@ -32,7 +32,7 @@ func TestCreateGameRoute(t *testing.T) {
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
 	// Todo: Saner expected state
-	expectedState := `{"groupName":"Kitten Party","players":[{"name":"Baby Cat","host":true,"points":0}],"currentStage":"WaitingForPlayers"}`
+	expectedState := `{"groupName":"Kitten Party","players":[{"name":"Baby Cat","host":true,"points":0}],"currentState":"WaitingForPlayers"}`
 	assert.Equal(t, expectedState, w.Body.String())
 }
 
@@ -60,7 +60,7 @@ func TestGetGameStateStatusRoute(t *testing.T) {
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
 	// Todo: Saner expected state
-	expectedState := `{"groupName":"somegame","players":[{"name":"Player","host":true,"points":0}],"currentStage":"WaitingForPlayers"}`
+	expectedState := `{"groupName":"somegame","players":[{"name":"Player","host":true,"points":0}],"currentState":"WaitingForPlayers"}`
 	assert.Equal(t, expectedState, w.Body.String())
 }
 
@@ -116,7 +116,7 @@ func TestAddPlayerRoute(t *testing.T) {
 	req.Header.Add("Content-Type", "application/json")
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-	expectedState := `{"groupName":"group","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}],"currentStage":"WaitingForPlayers"}`
+	expectedState := `{"groupName":"group","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}],"currentState":"WaitingForPlayers"}`
 	assert.Equal(t, expectedState, w.Body.String())
 }
 

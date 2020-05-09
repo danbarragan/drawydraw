@@ -11,14 +11,14 @@ var (
 	memCache = cache.New(20*time.Minute, 5*time.Minute)
 )
 
-// GameStage defines what are the individual stages that make up the game
-type GameStage string
+// GameState defines what are the individual states that make up the game
+type GameState string
 
 const (
 	// WaitingForPlayers - A group is created and the host is waiting for players
-	WaitingForPlayers GameStage = "WaitingForPlayers"
+	WaitingForPlayers GameState = "WaitingForPlayers"
 	// InitialPromptCreation - Players are entering their initial prompts
-	InitialPromptCreation GameStage = "InitialPromptCreation"
+	InitialPromptCreation GameState = "InitialPromptCreation"
 )
 
 // Player contains all the information relevant to a game's participant
@@ -28,26 +28,26 @@ type Player struct {
 	Points uint64 `json:"points"`
 }
 
-// GameState contains all data that represents the state of the game at any point
-type GameState struct {
+// Game contains all data that represents the game at any point
+type Game struct {
 	GroupName    string    `json:"groupName"`
 	Players      []*Player `json:"players"`
-	CurrentStage GameStage `json:"currentStage"`
+	CurrentState GameState `json:"currentState"`
 }
 
 // Todo: Put these methods behind an interface to faciliate unit tests
 
-// LoadGameState returns the current game state for a given room name
-func LoadGameState(roomName string) *GameState {
+// LoadGame returns the current game for a given room name
+func LoadGame(roomName string) *Game {
 	state, found := memCache.Get(roomName)
 	if found {
-		return state.(*GameState)
+		return state.(*Game)
 	}
 	return nil
 }
 
-// SaveGameState persists the game state
-func SaveGameState(state *GameState) error {
+// SaveGame persists the game
+func SaveGame(state *Game) error {
 	memCache.Set(state.GroupName, state, cache.DefaultExpiration)
 	return nil
 }
