@@ -8,8 +8,7 @@
         }
     },
     "rules": {
-        "semi": "error",
-        "jsx-a11y/label-has-associated-control": "off"
+        "semi": "error"
     },
     "env": {
         "es6": true,
