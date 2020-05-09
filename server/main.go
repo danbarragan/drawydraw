@@ -1,7 +1,7 @@
 package main
 
 import (
-	"drawydraw/utils/stagemanager"
+	"drawydraw/utils/statemanager"
 	"fmt"
 	"net/http"
 	"os"
@@ -57,7 +57,7 @@ func addPlayer(ctx *gin.Context) {
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Invalid request: %s", err.Error())))
 	}
-	gameState, err := stagemanager.AddPlayer(addPlayerRequest.PlayerName, addPlayerRequest.GroupName)
+	gameState, err := statemanager.AddPlayer(addPlayerRequest.PlayerName, addPlayerRequest.GroupName)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error adding player: %s", err.Error())))
 	}
@@ -66,7 +66,7 @@ func addPlayer(ctx *gin.Context) {
 
 func getGameStatus(ctx *gin.Context) {
 	groupName := ctx.Param("groupName")
-	gameState, err := stagemanager.GetGameState(groupName)
+	gameState, err := statemanager.GetGameState(groupName)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error getting game status: %s", err.Error())))
 	}
@@ -84,7 +84,7 @@ func createGroup(ctx *gin.Context) {
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Invalid request: %s", err.Error())))
 	}
-	gameState, err := stagemanager.CreateGroup(addPlayerRequest.PlayerName, addPlayerRequest.GroupName)
+	gameState, err := statemanager.CreateGroup(addPlayerRequest.PlayerName, addPlayerRequest.GroupName)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error creating group: %s", err.Error())))
 	}
