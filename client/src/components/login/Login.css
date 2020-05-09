@@ -1,0 +1,15 @@
+.login {
+    background-color: aqua;
+    text-align: left;
+    margin-left: 0.5rem;
+}
+
+.login * {
+    display: block;
+    margin-top: 0.25rem;
+}
+
+.login button {
+    display: inline-block;
+    margin-right: 0.5rem;
+}
