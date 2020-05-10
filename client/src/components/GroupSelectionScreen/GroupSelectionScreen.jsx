@@ -1,14 +1,14 @@
 import React from 'react';
 import axios from 'axios';
-import './GroupSelector.css';
+import './GroupSelectionScreen.css';
 import PropTypes from 'prop-types';
 import { formatServerError } from '../../utils/errorFormatting';
 
-class RoomSelector extends React.Component {
+class GroupSelectionScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      roomSelectionError: null,
+      error: null,
       playerName: '',
       groupName: '',
     };
@@ -19,32 +19,27 @@ class RoomSelector extends React.Component {
   }
 
   async onJoinGroupClick() {
-    const { onGroupSelected } = this.props;
+    const { onGameEntered } = this.props;
     const { playerName, groupName } = this.state;
     const data = { playerName, groupName };
-    let response = null;
     try {
       // Todo: Probably worth renaming this endpoint join-group
-      response = await axios.post('/api/add-player', data);
-      onGroupSelected(response.data);
-      if (data.kittens === response.data.kittens) {
-        this.setState({ roomSelectionError: 'happy' });
-      }
+      const response = await axios.post('/api/add-player', data);
+      onGameEntered(response.data);
     } catch (error) {
-      this.setState({ roomSelectionError: formatServerError(error) });
+      this.setState({ error: formatServerError(error) });
     }
   }
 
   async onCreateGroupClick() {
-    const { onGroupSelected } = this.props;
+    const { onGameEntered } = this.props;
     const { playerName, groupName } = this.state;
     const data = { playerName, groupName };
-    let response = null;
     try {
-      response = await axios.post('api/create-group', data);
-      onGroupSelected(response.data);
+      const response = await axios.post('api/create-game', data);
+      onGameEntered(response.data);
     } catch (error) {
-      this.setState({ roomSelectionError: formatServerError(error) });
+      this.setState({ error: formatServerError(error) });
     }
   }
 
@@ -57,10 +52,10 @@ class RoomSelector extends React.Component {
   }
 
   render() {
-    const { roomSelectionError, playerName, groupName } = this.state;
+    const { error, playerName, groupName } = this.state;
     return (
-      <div className="login">
-        <h1>Drawy draw</h1>
+      <div className="groupSelectionScreen">
+        <h3>Join or create a group</h3>
         <label htmlFor="playerName">
           Your name
           <input id="playerName" type="text" value={playerName} onChange={this.onPlayerNameChange} />
@@ -71,14 +66,14 @@ class RoomSelector extends React.Component {
         </label>
         <button type="button" onClick={this.onJoinGroupClick}>Join group</button>
         <button type="button" onClick={this.onCreateGroupClick}>Create group</button>
-        <h3 className="error">{roomSelectionError}</h3>
+        <h3 className="error">{error}</h3>
       </div>
     );
   }
 }
 
-RoomSelector.propTypes = {
-  onGroupSelected: PropTypes.func.isRequired,
+GroupSelectionScreen.propTypes = {
+  onGameEntered: PropTypes.func.isRequired,
 };
 
-export default RoomSelector;
+export default GroupSelectionScreen;

@@ -1,5 +1,6 @@
 const GameStates = Object.freeze({
-    GroupSelection: 1,
+  GroupSelection: 'GroupSelection',
+  WaitingForPlayers: 'WaitingForPlayers',
 });
 
 exports.GameStates = GameStates;

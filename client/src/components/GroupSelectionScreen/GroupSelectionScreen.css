@@ -1,14 +1,14 @@
-.login {
+.groupSelectionScreen {
     text-align: left;
     margin-left: 0.5rem;
 }
 
-.login * {
+.groupSelectionScreen * {
     display: block;
     margin-top: 0.25rem;
 }
 
-.login button {
+.groupSelectionScreen button {
     display: inline-block;
     margin-right: 0.5rem;
 }

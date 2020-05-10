@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/patrickmn/go-cache"
@@ -23,6 +24,7 @@ const (
 
 // Player contains all the information relevant to a game's participant
 type Player struct {
+	// Todo: Probably worth having a sort of device id in case two players register with the same name
 	Name   string `json:"name"`
 	Host   bool   `json:"host"`
 	Points uint64 `json:"points"`
@@ -33,9 +35,10 @@ type Game struct {
 	GroupName    string    `json:"groupName"`
 	Players      []*Player `json:"players"`
 	CurrentState GameState `json:"currentState"`
+	HostPlayer   string    `json:"hostPlayer"`
 }
 
-// Todo: Put these methods behind an interface to faciliate unit tests
+// Todo: Put SaveGame/LoadGame methods behind an interface to faciliate unit tests
 
 // LoadGame returns the current game for a given room name
 func LoadGame(roomName string) *Game {
@@ -44,6 +47,28 @@ func LoadGame(roomName string) *Game {
 		return state.(*Game)
 	}
 	return nil
+}
+
+// AddPlayer adds a player to the game (if that player isn't there already)
+func (game *Game) AddPlayer(player *Player) error {
+	// First check if the player is already in the game and no-op if that's the case
+	for _, currentPlayer := range game.Players {
+		if currentPlayer.Name == player.Name {
+			return nil
+		}
+	}
+	game.Players = append(game.Players, player)
+	return nil
+}
+
+// GetHostName Gets the name of the game's host
+func (game *Game) GetHostName() (string, error) {
+	for _, currentPlayer := range game.Players {
+		if currentPlayer.Host {
+			return currentPlayer.Name, nil
+		}
+	}
+	return "", errors.New("game has no host")
 }
 
 // SaveGame persists the game
