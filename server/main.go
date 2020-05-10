@@ -62,7 +62,7 @@ func addPlayer(ctx *gin.Context) {
 	gameState, err := statemanager.AddPlayer(addPlayerRequest.PlayerName, addPlayerRequest.GroupName)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error adding player: %s", err.Error())))
-		return // TODO ADD HOST NAME TO GAME STATE
+		return
 	}
 	ctx.JSON(http.StatusOK, &gameState)
 }
