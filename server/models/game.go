@@ -40,9 +40,9 @@ type Game struct {
 
 // Todo: Put SaveGame/LoadGame methods behind an interface to faciliate unit tests
 
-// LoadGame returns the current game for a given room name
-func LoadGame(roomName string) *Game {
-	state, found := memCache.Get(roomName)
+// LoadGame returns the current game for a given group name
+func LoadGame(groupName string) *Game {
+	state, found := memCache.Get(groupName)
 	if found {
 		return state.(*Game)
 	}
