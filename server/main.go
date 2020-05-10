@@ -84,9 +84,13 @@ func createGroup(ctx *gin.Context) {
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Invalid request: %s", err.Error())))
 	}
-	statemanager.CreateGroup(createGroupRequest.GroupName)
-	gameState, err := statemanager.AddPlayer(createGroupRequest.PlayerName, createGroupRequest.GroupName, true)
-	if err != nil {
+	_, createGroupError := statemanager.CreateGroup(createGroupRequest.GroupName)
+	if err != createGroupError {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error creating group: %s", err.Error())))
+	}
+
+	gameState, addPlayerError := statemanager.AddPlayer(createGroupRequest.PlayerName, createGroupRequest.GroupName, true)
+	if addPlayerError != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error creating group: %s", err.Error())))
 	}
 	ctx.JSON(http.StatusOK, &gameState)
