@@ -12,7 +12,7 @@ type StateManager struct {
 }
 
 // CreateGroup Handles creating a group other players can join
-func CreateGroup(playerName string, groupName string) (*models.Game, error) {
+func CreateGroup(groupName string) (*models.Game, error) {
 	// See if there's already a game for that group name and error out if ther eis
 	gameState := models.LoadGame(groupName)
 	if gameState != nil {
@@ -20,27 +20,23 @@ func CreateGroup(playerName string, groupName string) (*models.Game, error) {
 	}
 	// Games start in the waiting for players stage
 	gameState = &models.Game{GroupName: groupName, CurrentState: models.WaitingForPlayers}
-	currentStage, err := getCurrentState(gameState)
-	if err != nil {
-		return nil, err
-	}
-	// Add the group creator as the first player
-	player := models.Player{Name: playerName, Host: true}
-	err = currentStage.addPlayer(&player)
-	if err != nil {
-		return nil, err
-	}
 	models.SaveGame(gameState)
 	return gameState, nil
 }
 
 // AddPlayer Handles adding a player to a game
-func AddPlayer(playerName string, groupName string) (*models.Game, error) {
+func AddPlayer(playerName string, groupName string, isHost bool) (*models.Game, error) {
 	stateManager, err := getManagerForGroup(groupName)
 	if err != nil {
 		return nil, err
 	}
-	player := models.Player{Name: playerName}
+
+	if isPlayerInGroup(playerName, stateManager.game.Players) {
+			return nil, errors.New("A player with that name already exists in that group")
+	}
+
+	// Add the group creator as the first player
+	player := models.Player{Name: playerName, Host: isHost}
 	err = stateManager.currentState.addPlayer(&player)
 	if err != nil {
 		return nil, err
@@ -78,4 +74,13 @@ func getCurrentState(game *models.Game) (state, error) {
 	default:
 		return nil, errors.New("Game is at an unknown state")
 	}
+}
+
+func isPlayerInGroup(playerName string, playersInGroup []*models.Player) bool {
+    for _, playerInGroup := range playersInGroup {
+        if playerInGroup.Name == playerName {
+            return true
+        }
+    }
+    return false
 }
