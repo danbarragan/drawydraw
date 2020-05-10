@@ -13,7 +13,7 @@ type StateManager struct {
 
 // CreateGroup Handles creating a group other players can join
 func CreateGroup(groupName string) (*models.Game, error) {
-	if len(groupName) < 3 {
+	if len(groupName) < 1 {
 		return nil, errors.New("Group name too short.")
 	}
 
@@ -31,7 +31,7 @@ func CreateGroup(groupName string) (*models.Game, error) {
 // AddPlayer Handles adding a player to a game
 func AddPlayer(playerName string, groupName string, isHost bool) (*models.Game, error) {
 
-	if len(playerName) < 3 {
+	if len(playerName) < 1 {
 		return nil, errors.New("Player name too short.")
 	}
 
