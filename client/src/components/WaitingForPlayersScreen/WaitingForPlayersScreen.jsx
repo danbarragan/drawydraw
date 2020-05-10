@@ -56,7 +56,16 @@ class WaitingForPlayersScreen extends React.Component {
 }
 
 WaitingForPlayersScreen.propTypes = {
-  gameState: PropTypes.object.isRequired,
+  gameState: PropTypes.shape({
+    currentPlayer: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      isHost: PropTypes.bool.isRequired,
+    }).isRequired,
+    players: PropTypes.arrayOf(PropTypes.shape({
+      name: PropTypes.String.isRequired,
+    })),
+    groupName: PropTypes.string.isRequired,
+  }).isRequired,
   onGameStateChanged: PropTypes.func.isRequired,
 };
 

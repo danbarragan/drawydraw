@@ -6,6 +6,7 @@ Needs some description
 - Enter the client directory
 - Run `npm run dev`
 - Client should be available at `localhost:8080`
+- To lint and fix style issues run `npm run lint`
 ### Server
 - Enter the server directory
 - Run `go run main.go`
