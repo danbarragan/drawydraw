@@ -62,7 +62,7 @@ WaitingForPlayersScreen.propTypes = {
       isHost: PropTypes.bool.isRequired,
     }).isRequired,
     players: PropTypes.arrayOf(PropTypes.shape({
-      name: PropTypes.String.isRequired,
+      name: PropTypes.string.isRequired,
     })),
     groupName: PropTypes.string.isRequired,
   }).isRequired,

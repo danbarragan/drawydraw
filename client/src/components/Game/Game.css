@@ -1,0 +1,8 @@
+.game {
+    display: block;
+    text-align: center;
+}
+
+.game * {
+    font-family: Arial, Helvetica, sans-serif;
+}

@@ -1,6 +1,7 @@
 .groupSelectionScreen {
     text-align: left;
     margin-left: 0.5rem;
+    display: inline-block;
 }
 
 .groupSelectionScreen * {
@@ -10,5 +11,19 @@
 
 .groupSelectionScreen button {
     display: inline-block;
+    margin-top: 0.5rem;
     margin-right: 0.5rem;
+    border: none;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 12pt;
+}
+
+.joinGroup {
+    background-color:rgb(132, 196, 134);
+}
+
+.createGroup {
+    background-color: rgb(135, 202, 247);
 }

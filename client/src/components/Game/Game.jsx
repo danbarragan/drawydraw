@@ -44,8 +44,8 @@ class Game extends React.Component {
 
   render() {
     return (
-      <div className="Game">
-        <h1>Some game or something</h1>
+      <div className="game">
+        <div className="gameTitle"><h1>Some game or something</h1></div>
         {this.getCurrentComponent()}
       </div>
     );
