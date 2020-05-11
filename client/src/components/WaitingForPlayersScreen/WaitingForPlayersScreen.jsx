@@ -37,8 +37,10 @@ class WaitingForPlayersScreen extends React.Component {
     const { name: currentPlayerName, isHost } = currentPlayer;
     const playerList = players.map((player) => (
       <li key={player.name}>
+        {isHost ? '<' : null}
         {player.name}
         {player.name === currentPlayerName ? '*' : null}
+        {isHost ? '>' : null}
       </li>
     ));
     return (
