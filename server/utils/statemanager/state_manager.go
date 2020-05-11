@@ -11,12 +11,14 @@ type StateManager struct {
 	game         *models.Game
 }
 
+// GameStatusResponse describes a response informing clients of the game status
+type GameStatusResponse = map[string]interface{}
+
 // CreateGroup Handles creating a group other players can join
-func CreateGroup(groupName string) (*models.Game, error) {
+func CreateGroup(groupName string) (*GameStatusResponse, error) {
 	if len(groupName) < 1 {
 		return nil, errors.New("Group name too short.")
 	}
-
 	// See if there's already a game for that group name and error out if ther eis
 	gameState := models.LoadGame(groupName)
 	if gameState != nil {
@@ -25,16 +27,19 @@ func CreateGroup(groupName string) (*models.Game, error) {
 	// Games start in the waiting for players stage
 	gameState = &models.Game{GroupName: groupName, CurrentState: models.WaitingForPlayers}
 	models.SaveGame(gameState)
-	return gameState, nil
+	formattedState, err := formatGameStateForPlayer(gameState, playerName)
+	if err != nil {
+		return nil, err
+	}
+	return formattedState, nil
 }
 
 // AddPlayer Handles adding a player to a game
-func AddPlayer(playerName string, groupName string, isHost bool) (*models.Game, error) {
+func AddPlayer(playerName string, groupName string, isHost bool) (*GameStatusResponse, error) {
 
 	if len(playerName) < 1 {
 		return nil, errors.New("Player name too short.")
 	}
-
 	stateManager, err := getManagerForGroup(groupName)
 	if err != nil {
 		return nil, err
@@ -51,16 +56,42 @@ func AddPlayer(playerName string, groupName string, isHost bool) (*models.Game, 
 		return nil, err
 	}
 	models.SaveGame(stateManager.game)
-	return stateManager.game, nil
+	formattedState, err := formatGameStateForPlayer(stateManager.game, playerName)
+	if err != nil {
+		return nil, err
+	}
+	return formattedState, nil
 }
 
-// GetGameState gets the current state for a given game
-func GetGameState(groupName string) (*models.Game, error) {
+// GetGameState gets the current state for a given game and player
+func GetGameState(groupName string, playerName string) (*GameStatusResponse, error) {
 	stateManager, err := getManagerForGroup(groupName)
 	if err != nil {
 		return nil, err
 	}
-	return stateManager.game, nil
+	formattedState, err := formatGameStateForPlayer(stateManager.game, playerName)
+	if err != nil {
+		return nil, err
+	}
+	return formattedState, nil
+}
+
+// Todo: This should probably be moved to individual states since there will be different relevant data at each state
+func formatGameStateForPlayer(game *models.Game, playerName string) (*GameStatusResponse, error) {
+	gameHost, err := game.GetHostName()
+	if err != nil {
+		return nil, err
+	}
+	statusResponse := map[string]interface{}{
+		"groupName": game.GroupName,
+		"players":   game.Players,
+		"currentPlayer": map[string]interface{}{
+			"name":   playerName,
+			"isHost": gameHost == playerName,
+		},
+		"currentState": game.CurrentState,
+	}
+	return &statusResponse, nil
 }
 
 func getManagerForGroup(groupName string) (*StateManager, error) {

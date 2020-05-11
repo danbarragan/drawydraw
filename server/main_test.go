@@ -32,7 +32,7 @@ func TestCreateGameRoute(t *testing.T) {
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
 	// Todo: Saner expected state
-	expectedState := `{"groupName":"Kitten Party","players":[{"name":"Baby Cat","host":true,"points":0}],"currentState":"WaitingForPlayers"}`
+	expectedState := `{"currentPlayer":{"isHost":true,"name":"Baby Cat"},"currentState":"WaitingForPlayers","groupName":"Kitten Party","players":[{"name":"Baby Cat","host":true,"points":0}]}`
 	assert.Equal(t, expectedState, w.Body.String())
 }
 
@@ -53,14 +53,14 @@ func TestGetGameStateStatusRoute(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	// Get the game's status
-	req, err = http.NewRequest("GET", "/api/get-game-status/somegame", nil)
+	req, err = http.NewRequest("GET", "/api/get-game-status/somegame?playerName=Player", nil)
 	assert.Nil(t, err)
 	req.Header.Add("Content-Type", "application/json")
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
 	// Todo: Saner expected state
-	expectedState := `{"groupName":"somegame","players":[{"name":"Player","host":true,"points":0}],"currentState":"WaitingForPlayers"}`
+	expectedState := `{"currentPlayer":{"isHost":true,"name":"Player"},"currentState":"WaitingForPlayers","groupName":"somegame","players":[{"name":"Player","host":true,"points":0}]}`
 	assert.Equal(t, expectedState, w.Body.String())
 }
 
@@ -116,7 +116,7 @@ func TestAddPlayerRoute(t *testing.T) {
 	req.Header.Add("Content-Type", "application/json")
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-	expectedState := `{"groupName":"group","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}],"currentState":"WaitingForPlayers"}`
+	expectedState := `{"currentPlayer":{"isHost":false,"name":"player2"},"currentState":"WaitingForPlayers","groupName":"group","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}]}`
 	assert.Equal(t, expectedState, w.Body.String())
 }
 

@@ -21,6 +21,7 @@ func setupRouter(port string) *gin.Engine {
 	// API routes
 	router.GET("/api/hello", func(ctx *gin.Context) { ctx.JSON(http.StatusOK, gin.H{"hello": "there"}) })
 	router.GET("/api/get-game-status/:groupName", getGameStatus)
+	// Todo: Rename this to join-game
 	router.POST("/api/add-player", addPlayer)
 	router.POST("/api/create-game", createGroup)
 	router.POST("/api/echo", echoTest)
@@ -56,19 +57,28 @@ func addPlayer(ctx *gin.Context) {
 	err := ctx.BindJSON(&addPlayerRequest)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Invalid request: %s", err.Error())))
+		return
 	}
 	gameState, err := statemanager.AddPlayer(addPlayerRequest.PlayerName, addPlayerRequest.GroupName, false)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error adding player: %s", err.Error())))
+		return
 	}
 	ctx.JSON(http.StatusOK, &gameState)
 }
 
 func getGameStatus(ctx *gin.Context) {
 	groupName := ctx.Param("groupName")
-	gameState, err := statemanager.GetGameState(groupName)
+	queryParams := ctx.Request.URL.Query()
+	playerNames, found := queryParams["playerName"]
+	if !found {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Invalid request: Missing playerName")))
+	}
+	playerName := playerNames[0] // For some strange reason gin returns an array of values
+	gameState, err := statemanager.GetGameState(groupName, playerName)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error getting game status: %s", err.Error())))
+		return
 	}
 	ctx.JSON(http.StatusOK, gameState)
 }
@@ -83,6 +93,7 @@ func createGroup(ctx *gin.Context) {
 	err := ctx.BindJSON(&createGroupRequest)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Invalid request: %s", err.Error())))
+		return
 	}
 	_, createGroupError := statemanager.CreateGroup(createGroupRequest.GroupName)
 	if err != createGroupError {
@@ -95,6 +106,6 @@ func createGroup(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, &gameState)
 }
 
-func formatError(errorMessage string) gin.H {
+func formatError(errorMessage string) map[string]interface{} {
 	return gin.H{"error": errorMessage}
 }

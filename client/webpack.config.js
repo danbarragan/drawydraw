@@ -1,52 +1,52 @@
 const HtmlWebPackPlugin = require('html-webpack-plugin');
+
 const htmlWebpackPlugin = new HtmlWebPackPlugin({
   template: './src/index.html',
-  filename: './index.html'
+  filename: './index.html',
 });
 module.exports = {
   entry: [
     '@babel/polyfill',
-    './src/index.js',
+    './src/index.jsx',
   ],
   output: {
     filename: 'bundled.js',
-    path: __dirname + '/dist'
+    path: `${__dirname}/dist`,
   },
   devtool: 'source-map',
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.jsx?$/,
+        resolve: { extensions: ['.js', '.jsx'] },
         exclude: /node_modules/,
         use: {
-          loader: "babel-loader"
-        }
+          loader: 'babel-loader',
+        },
       },
       {
         test: /\.css$/,
         use: [
           {
-            loader: "style-loader"
+            loader: 'style-loader',
           },
           {
-            loader: "css-loader",
+            loader: 'css-loader',
             options: {
-              modules: true,
+              modules: false,
               importLoaders: 1,
-              localIdentName: "[name]_[local]_[hash:base64]",
               sourceMap: true,
-              minimize: true
-            }
-          }
-        ]
-      }
-    ]
+            },
+          },
+        ],
+      },
+    ],
   },
   devServer: {
     historyApiFallback: true,
-    proxy: {'/api': 'http://localhost:3000'}
+    proxy: { '/api': 'http://localhost:3000' },
   },
   plugins: [
     htmlWebpackPlugin,
-  ]
+  ],
 };
