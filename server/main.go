@@ -3,7 +3,6 @@ package main
 import (
 	"drawydraw/utils/statemanager"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
@@ -91,9 +90,6 @@ type createGroupRequest struct {
 
 func createGroup(ctx *gin.Context) {
 	createGroupRequest := createGroupRequest{}
-
-	l := log.New(os.Stderr, "", 1)
-	l.Println(createGroupRequest)
 
 	err := ctx.BindJSON(&createGroupRequest)
 	if err != nil {
