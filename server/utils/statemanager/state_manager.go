@@ -3,6 +3,7 @@ package statemanager
 import (
 	"drawydraw/models"
 	"errors"
+	"fmt"
 )
 
 // StateManager handles the different states and actions throughout the game
@@ -17,12 +18,12 @@ type GameStatusResponse = map[string]interface{}
 // CreateGroup Handles creating a group other players can join
 func CreateGroup(groupName string) error {
 	if len(groupName) < 1 {
-		return errors.New("Group name too short.")
+		return errors.New("No group name provided.")
 	}
 	// See if there's already a game for that group name and error out if ther eis
 	gameState := models.LoadGame(groupName)
 	if gameState != nil {
-		return errors.New("A group with that name already exists")
+		return errors.New(fmt.Sprintf("Group '%s' already exists.", groupName))
 	}
 	// Games start in the waiting for players stage
 	gameState = &models.Game{GroupName: groupName, CurrentState: models.WaitingForPlayers}
@@ -34,7 +35,7 @@ func CreateGroup(groupName string) error {
 func AddPlayer(playerName string, groupName string, isHost bool) (*GameStatusResponse, error) {
 
 	if len(playerName) < 1 {
-		return nil, errors.New("Player name too short.")
+		return nil, errors.New("No player name provided.")
 	}
 	stateManager, err := getManagerForGroup(groupName)
 	if err != nil {
@@ -42,7 +43,7 @@ func AddPlayer(playerName string, groupName string, isHost bool) (*GameStatusRes
 	}
 
 	if isPlayerInGroup(playerName, stateManager.game.Players) {
-			return nil, errors.New("A player with that name already exists in that group")
+		return nil, errors.New(fmt.Sprintf("Player '%s' already exists in group '%s'.", playerName, groupName))
 	}
 
 	// Add the group creator as the first player
