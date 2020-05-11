@@ -15,23 +15,19 @@ type StateManager struct {
 type GameStatusResponse = map[string]interface{}
 
 // CreateGroup Handles creating a group other players can join
-func CreateGroup(groupName string) (*GameStatusResponse, error) {
+func CreateGroup(groupName string) error {
 	if len(groupName) < 1 {
-		return nil, errors.New("Group name too short.")
+		return errors.New("Group name too short.")
 	}
 	// See if there's already a game for that group name and error out if ther eis
 	gameState := models.LoadGame(groupName)
 	if gameState != nil {
-		return nil, errors.New("A group with that name already exists")
+		return errors.New("A group with that name already exists")
 	}
 	// Games start in the waiting for players stage
 	gameState = &models.Game{GroupName: groupName, CurrentState: models.WaitingForPlayers}
 	models.SaveGame(gameState)
-	formattedState, err := formatGameStateForPlayer(gameState, playerName)
-	if err != nil {
-		return nil, err
-	}
-	return formattedState, nil
+	return nil
 }
 
 // AddPlayer Handles adding a player to a game

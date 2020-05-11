@@ -15,20 +15,19 @@ func randomGroupName() string {
 
 func TestCreateGroup_NewGroup_Succeeds(t *testing.T) {
   groupName := randomGroupName()
-  _, err := CreateGroup(groupName)
+  err := CreateGroup(groupName)
   assert.Nil(t, err)
 }
 
 func TestCreateGroup_GroupExists_Fails(t *testing.T) {
   groupName := randomGroupName()
   CreateGroup(groupName)
-  gameState, err := CreateGroup(groupName)
+  err := CreateGroup(groupName)
   assert.NotNil(t, err)
-  assert.Nil(t, gameState)
 }
 
 func TestCreateGroup_ShortGroupName_Fails(t *testing.T) {
-  _, err := CreateGroup("")
+  err := CreateGroup("")
   assert.NotNil(t, err)
 }
 
@@ -39,11 +38,19 @@ func TestAddPlayer_AddHost_Succeeds(t *testing.T) {
   assert.NotNil(t, gameState)
 }
 
-func TestAddPlayer_AddNonHost_Succeeds(t *testing.T) {
+func TestAddPlayer_AddToHostedGame_Fails(t *testing.T) {
+  groupName := randomGroupName()
+  CreateGroup(groupName)
+  AddPlayer("papa cat", groupName, true)
+  gameState, _ := AddPlayer("mama cat", groupName, false)
+  assert.NotNil(t, gameState)
+}
+
+func TestAddPlayer_AddToUnHostedGame_Fails(t *testing.T) {
   groupName := randomGroupName()
   CreateGroup(groupName)
   gameState, _ := AddPlayer("mama cat", groupName, false)
-  assert.NotNil(t, gameState)
+  assert.Nil(t, gameState)
 }
 
 func TestAddPlayer_NoGroupCreated_Fails(t *testing.T) {
