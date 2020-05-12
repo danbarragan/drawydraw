@@ -121,3 +121,30 @@ func isPlayerInGroup(playerName string, playersInGroup []*models.Player) bool {
 	}
 	return false
 }
+
+// DEBUG CODE - dont keep this forever.
+
+// SetGameState is a debug method for forcing the gamestate to make UI testing easier.
+func SetGameState(gameStateName string) (*GameStatusResponse, error) {
+	gameState := models.GameState(gameStateName)
+	switch currentState := gameState; currentState {
+	case models.WaitingForPlayers:
+		hostPlayer := "mama cat"
+		groupName := "kitty party"
+		gameState := &models.Game{
+			GroupName: groupName, CurrentState: models.WaitingForPlayers, HostPlayer: hostPlayer,
+		}
+		models.SaveGame(gameState)
+		AddPlayer(hostPlayer, groupName, true)
+		AddPlayer("baby cat", groupName, true)
+		AddPlayer("drunk cat", groupName, true)
+		formattedState, err := formatGameStateForPlayer(gameState, hostPlayer)
+		if err != nil {
+			return nil, err
+		}
+		return formattedState, nil
+	default:
+		return nil, errors.New("Game is at an unknown state")
+	}
+
+}

@@ -1,8 +1,10 @@
 import React from 'react';
+import axios from 'axios';
 import GroupSelectionScreen from '../GroupSelectionScreen/GroupSelectionScreen';
 import WaitingForPlayersScreen from '../WaitingForPlayersScreen/WaitingForPlayersScreen';
 import './Game.css';
 import { GameStates } from '../../utils/constants';
+import { formatServerError } from '../../utils/errorFormatting';
 
 class Game extends React.Component {
   constructor(props) {
@@ -17,6 +19,7 @@ class Game extends React.Component {
     this.onGameStateChanged = this.onGameStateChanged.bind(this);
     this.debugConsole = this.debugConsole.bind(this);
     this.toggleConsole = this.toggleConsole.bind(this);
+    this.debugSetGameState = this.debugSetGameState.bind(this);
     this.consoleEnabled = true;
   }
 
@@ -31,6 +34,7 @@ class Game extends React.Component {
   getCurrentComponent() {
     const { gameState } = this.state;
     const { currentState } = gameState;
+
     switch (currentState) {
       case GameStates.WaitingForPlayers:
         return (
@@ -44,7 +48,47 @@ class Game extends React.Component {
         return <GroupSelectionScreen onGameEntered={this.onGameEntered} />;
     }
   }
-  
+
+  toggleConsole() {
+    this.consoleEnabled = !this.consoleEnabled;
+    // Re-render when the debug button is pressed.
+    this.forceUpdate();
+  }
+
+  async debugSetGameState(gameStateName) {
+    try {
+      const response = await axios.post('/api/set-game-state', { gameStateName });
+      this.setState({ gameState: response.data });
+      this.forceUpdate();
+    } catch (error) {
+      this.setState({ error: formatServerError(error) });
+    }
+  }
+
+  debugConsole() {
+    const { error } = this.state;
+    const { gameState } = this.state;
+    return (
+      <div className="debug">
+        <button className="toggleConsole" type="button" onClick={this.toggleConsole}>debug</button>
+        <button className="setState" type="button" onClick={(() => this.debugSetGameState('WaitingForPlayers'))}>WaitingForPlayers</button>
+        {this.consoleEnabled ? (
+          <div className="console">
+            <p>
+              Errors:
+              {error || ':)'}
+            </p>
+            <pre>
+              {' '}
+              {JSON.stringify(gameState, null, 4)}
+              {' '}
+            </pre>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
   render() {
     return (
       <div className="game">
@@ -53,21 +97,6 @@ class Game extends React.Component {
         {this.debugConsole()}
       </div>
     );
-  }
-
-  toggleConsole() {
-    this.consoleEnabled = !this.consoleEnabled;
-    // Re-render when the debug button is pressed.
-    this.forceUpdate();
-  }
-
-  debugConsole() {
-    return (
-      <div className="debug">
-        <button className="toggleConsole" type="button" onClick={this.toggleConsole}>debug</button>
-        {this.consoleEnabled ? <div className="console"><pre> {JSON.stringify(this.state.gameState, null, 4)} </pre></div> : null}
-      </div>
-    );  
   }
 }
 

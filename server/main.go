@@ -24,6 +24,8 @@ func setupRouter(port string) *gin.Engine {
 	// Todo: Rename this to join-game
 	router.POST("/api/add-player", addPlayer)
 	router.POST("/api/create-game", createGroup)
+	// Debug endpoints - delete eventually
+	router.POST("/api/set-game-state", setGameState)
 	router.POST("/api/echo", echoTest)
 
 	return router
@@ -114,4 +116,26 @@ func createGroup(ctx *gin.Context) {
 
 func formatError(errorMessage string) map[string]interface{} {
 	return gin.H{"error": errorMessage}
+}
+
+type setStateRequest struct {
+	GameStateName string `json:"gameStateName"`
+}
+
+// Debug method used to test in the UI.
+func setGameState(ctx *gin.Context) {
+	setStateRequest := setStateRequest{}
+
+	err := ctx.BindJSON(&setStateRequest)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Invalid request: %s", err.Error())))
+		return
+	}
+
+	gameState, err := statemanager.SetGameState(setStateRequest.GameStateName)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error setting GameState: %s", err.Error())))
+		return
+	}
+	ctx.JSON(http.StatusOK, &gameState)
 }
