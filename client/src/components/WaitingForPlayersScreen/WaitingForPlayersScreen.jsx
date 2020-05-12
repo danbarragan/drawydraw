@@ -11,10 +11,24 @@ class WaitingForPlayersScreen extends React.Component {
       error: null,
     };
     this.updateGameState = this.updateGameState.bind(this);
+    this.onStartGameButtonClicked = this.onStartGameButtonClicked.bind(this);
   }
 
   componentDidMount() {
     setInterval(this.updateGameState, 3000);
+  }
+
+  async onStartGameButtonClicked() {
+    const { gameState, onGameStateChanged } = this.props;
+    const { groupName, currentPlayer } = gameState;
+    const { name } = currentPlayer;
+    const data = { playerName: name, groupName };
+    try {
+      const response = await axios.post('/api/start-game', data);
+      onGameStateChanged(response.data);
+    } catch (error) {
+      this.setState({ error: formatServerError(error) });
+    }
   }
 
   // Todo: Probably move to a helper since it's going to be used in other screens
@@ -48,7 +62,8 @@ class WaitingForPlayersScreen extends React.Component {
           {groupName}
         </h1>
         <ul>{playerList}</ul>
-        { isHost ? <button type="button">Start game</button> : <h3>Waiting for the host to start the game...</h3> }
+        { isHost ? <button type="button" onClick={this.onStartGameButtonClicked}>Start game</button>
+          : <h3>Waiting for the host to start the game...</h3>}
         <h3 className="error">{error}</h3>
       </div>
     );

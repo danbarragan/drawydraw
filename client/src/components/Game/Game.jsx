@@ -29,6 +29,8 @@ class Game extends React.Component {
     const { gameState } = this.state;
     const { currentState } = gameState;
     switch (currentState) {
+      case GameStates.GroupSelection:
+        return <GroupSelectionScreen onGameEntered={this.onGameEntered} />;
       case GameStates.WaitingForPlayers:
         return (
           <WaitingForPlayersScreen
@@ -36,9 +38,9 @@ class Game extends React.Component {
             onGameStateChanged={this.onGameStateChanged}
           />
         );
-      // For now the group selection screen will be used as the default one
+      // Unknown group! Badness
       default:
-        return <GroupSelectionScreen onGameEntered={this.onGameEntered} />;
+        return <div><h1>We are sorry this is not implemented yet :(</h1></div>;
     }
   }
 

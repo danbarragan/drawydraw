@@ -24,6 +24,7 @@ func setupRouter(port string) *gin.Engine {
 	// Todo: Rename this to join-game
 	router.POST("/api/add-player", addPlayer)
 	router.POST("/api/create-game", createGroup)
+	router.POST("/api/start-game", startGame)
 	router.POST("/api/echo", echoTest)
 
 	return router
@@ -97,7 +98,7 @@ func createGroup(ctx *gin.Context) {
 		return
 	}
 
-	createGroupError := statemanager.CreateGroup(createGroupRequest.GroupName)
+	createGroupError := statemanager.CreateGroup(createGroupRequest.PlayerName, createGroupRequest.GroupName)
 	if createGroupError != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error creating group: %s", createGroupError.Error())))
 		return
@@ -109,6 +110,26 @@ func createGroup(ctx *gin.Context) {
 		return
 	}
 
+	ctx.JSON(http.StatusOK, &gameState)
+}
+
+type startGameRequest struct {
+	PlayerName string `json:"playerName"`
+	GroupName  string `json:"groupName"`
+}
+
+func startGame(ctx *gin.Context) {
+	request := startGameRequest{}
+	err := ctx.BindJSON(&request) // Todo: Look into request validation
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("invalid request: %s", err.Error())))
+		return
+	}
+	gameState, startGameError := statemanager.StartGame(request.GroupName, request.PlayerName)
+	if startGameError != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error starting game: %s", startGameError.Error())))
+		return
+	}
 	ctx.JSON(http.StatusOK, &gameState)
 }
 
