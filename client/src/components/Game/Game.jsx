@@ -44,7 +44,7 @@ class Game extends React.Component {
         return <GroupSelectionScreen onGameEntered={this.onGameEntered} />;
     }
   }
-  /pre>
+  
   render() {
     return (
       <div className="game">
