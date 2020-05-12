@@ -8,8 +8,8 @@
 }
 
 .console {
-    border-color: red;
+    border-color: grey;
     border-style: dashed;
-    border-width: 1px;
+    border-width: 2px;
     text-align: left;
 }

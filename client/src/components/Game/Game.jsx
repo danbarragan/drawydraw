@@ -44,10 +44,20 @@ class Game extends React.Component {
         return <GroupSelectionScreen onGameEntered={this.onGameEntered} />;
     }
   }
+  /pre>
+  render() {
+    return (
+      <div className="game">
+        <div className="gameTitle"><h1>Drawydraw</h1></div>
+        {this.getCurrentComponent()}
+        {this.debugConsole()}
+      </div>
+    );
+  }
 
   toggleConsole() {
-    console.log(this.consoleEnabled)
     this.consoleEnabled = !this.consoleEnabled;
+    // Re-render when the debug button is pressed.
     this.forceUpdate();
   }
 
@@ -55,19 +65,9 @@ class Game extends React.Component {
     return (
       <div className="debug">
         <button className="toggleConsole" type="button" onClick={this.toggleConsole}>debug</button>
-        {this.consoleEnabled ? <div className="console"> {JSON.stringify(this.state)} </div> : null}
+        {this.consoleEnabled ? <div className="console"><pre> {JSON.stringify(this.state.gameState, null, 4)} </pre></div> : null}
       </div>
-    );
-  }
-
-  render() {
-    return (
-      <div className="game">
-        <div className="gameTitle"><h1>Some game or something</h1></div>
-        {this.getCurrentComponent()}
-        {this.debugConsole()}
-      </div>
-    );
+    );  
   }
 }
 
