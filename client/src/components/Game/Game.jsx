@@ -74,10 +74,7 @@ class Game extends React.Component {
         <button className="setState" type="button" onClick={(() => this.debugSetGameState('WaitingForPlayers'))}>WaitingForPlayers</button>
         {this.consoleEnabled ? (
           <div className="console">
-            <p>
-              Errors:
-              {error || ':)'}
-            </p>
+            {error ? `Error:${error}` : null}
             <pre>
               {' '}
               {JSON.stringify(gameState, null, 4)}
