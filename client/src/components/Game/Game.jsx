@@ -15,6 +15,9 @@ class Game extends React.Component {
     this.getCurrentComponent = this.getCurrentComponent.bind(this);
     this.onGameEntered = this.onGameEntered.bind(this);
     this.onGameStateChanged = this.onGameStateChanged.bind(this);
+    this.debugConsole = this.debugConsole.bind(this);
+    this.toggleConsole = this.toggleConsole.bind(this);
+    this.consoleEnabled = true;
   }
 
   onGameEntered(gameState) {
@@ -42,11 +45,27 @@ class Game extends React.Component {
     }
   }
 
+  toggleConsole() {
+    console.log(this.consoleEnabled)
+    this.consoleEnabled = !this.consoleEnabled;
+    this.forceUpdate();
+  }
+
+  debugConsole() {
+    return (
+      <div className="debug">
+        <button className="toggleConsole" type="button" onClick={this.toggleConsole}>debug</button>
+        {this.consoleEnabled ? <div className="console"> {JSON.stringify(this.state)} </div> : null}
+      </div>
+    );
+  }
+
   render() {
     return (
       <div className="game">
         <div className="gameTitle"><h1>Some game or something</h1></div>
         {this.getCurrentComponent()}
+        {this.debugConsole()}
       </div>
     );
   }
