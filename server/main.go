@@ -24,7 +24,7 @@ func setupRouter(port string) *gin.Engine {
 	// Todo: Rename this to join-game
 	router.POST("/api/add-player", addPlayer)
 	router.POST("/api/create-game", createGroup)
-  router.POST("/api/start-game", startGame)
+	router.POST("/api/start-game", startGame)
   
 	// Debug endpoints - delete eventually
 	router.POST("/api/set-game-state", setGameState)	
