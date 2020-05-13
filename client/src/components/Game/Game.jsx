@@ -61,9 +61,11 @@ class Game extends React.Component {
     try {
       const response = await axios.post('/api/set-game-state', { gameStateName });
       this.setState({ gameState: response.data });
+      this.setState({ error: "" });
       this.forceUpdate();
     } catch (error) {
       this.setState({ error: formatServerError(error) });
+      return;
     }
   }
 
@@ -74,6 +76,7 @@ class Game extends React.Component {
       <div className="debug">
         <button className="toggleConsole" type="button" onClick={this.toggleConsole}>debug</button>
         <button className="setState" type="button" onClick={(() => this.debugSetGameState('WaitingForPlayers'))}>WaitingForPlayers</button>
+        <button className="setState" type="button" onClick={(() => this.debugSetGameState('InitialPromptCreation'))}>PromptCreation</button>
         {this.consoleEnabled ? (
           <div className="console">
             {error ? `Error:${error}` : null}

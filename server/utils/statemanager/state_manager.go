@@ -132,6 +132,8 @@ func getCurrentState(game *models.Game) (state, error) {
 	switch currentState := game.CurrentState; currentState {
 	case models.WaitingForPlayers:
 		return waitingForPlayersState{game: game}, nil
+	case models.InitialPromptCreation:
+		return initialPromptCreation{game: game}, nil
 	default:
 		return nil, errors.New("Game is at an unknown state")
 	}
@@ -153,22 +155,35 @@ func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 	gameState := models.GameState(gameStateName)
 	switch currentState := gameState; currentState {
 	case models.WaitingForPlayers:
-		hostPlayer := "mama cat"
-		groupName := "kitty party"
-		gameState := &models.Game{
-			GroupName: groupName, CurrentState: models.WaitingForPlayers, HostPlayer: hostPlayer,
-		}
-		models.SaveGame(gameState)
-		AddPlayer(hostPlayer, groupName, true)
-		AddPlayer("baby cat", groupName, false)
-		AddPlayer("drunk cat", groupName, false)
-		formattedState, err := formatGameStateForPlayer(gameState, hostPlayer)
-		if err != nil {
-			return nil, err
-		}
-		return formattedState, nil
+		return createGameState("not cats", []string{"dog", "cat", "other dog"}, gameState)
+	case models.InitialPromptCreation:
+		return createGameState("fat cats", []string{"chubbs", "chonk", "beefcake"}, gameState)
 	default:
 		return nil, fmt.Errorf("failed to set game to state %s", gameState)
 	}
+}
 
+func createGameState(groupName string, players []string, gameState models.GameState) (*GameStatusResponse, error) {
+	hostName := players[0]
+
+	game := &models.Game{
+		GroupName: groupName, CurrentState: gameState, HostPlayer: hostName,
+	}
+	models.SaveGame(game)
+	for idx, playerName := range players {
+		isHost := false
+		if idx == 0 {
+			isHost = true
+		}
+		_, err := AddPlayer(playerName, groupName, isHost)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	formattedState, err := formatGameStateForPlayer(game, hostName)
+	if err != nil {
+		return nil, err
+	}
+	return formattedState, nil
 }
