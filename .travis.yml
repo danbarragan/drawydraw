@@ -8,6 +8,6 @@ notifications:
 before_script:
 script:
     # Lint client code
-    - "npm run lint"
+    - "cd client; npm run lint"
     # Run server unit tests
-    - "go test -v ./..."
+    - "cd server; go test -v ./..."
