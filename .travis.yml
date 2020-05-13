@@ -10,8 +10,10 @@ before_script:
     - "npm install"
 script:
     # Lint client code
-    - "cd client"
-    - "npm run lint"
-    # Run server unit tests
+    - "npm run lint || travis_terminate 1"
+    # Server checks:
     - "cd ../server"
+    # Lint server code
+    - "diff -u <(echo -n) <(gofmt -d -s .) || travis_terminate 1"
+    # Run server tests
     - "go test -v ./..."
