@@ -144,7 +144,7 @@ func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 		}
 		return formattedState, nil
 	default:
-		return nil, errors.New("Game is at an unknown state")
+		return nil, fmt.Errorf("failed to set game to state %s", gameState)
 	}
 
 }
