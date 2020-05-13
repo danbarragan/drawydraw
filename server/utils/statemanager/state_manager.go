@@ -165,7 +165,7 @@ func getCurrentState(game *models.Game) (state, error) {
 	case models.WaitingForPlayers:
 		return waitingForPlayersState{game: game}, nil
 	case models.InitialPromptCreation:
-		return initialPromptCreation{game: game}, nil
+		return promptCreatingState{game: game}, nil
 	default:
 		return nil, errors.New("Game is at an unknown state")
 	}

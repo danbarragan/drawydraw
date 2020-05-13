@@ -75,6 +75,13 @@ func (game *Game) AddPlayer(player *Player) error {
 	return nil
 }
 
+// AddPrompts adds a player's prompts to the game
+func (game *Game) AddPrompts(prompts *Prompts) error {
+
+	game.Prompts = append(game.Prompts, prompts)
+	return nil
+}
+
 // GetHostName Gets the name of the game's host
 func (game *Game) GetHostName() (string, error) {
 	for _, currentPlayer := range game.Players {
