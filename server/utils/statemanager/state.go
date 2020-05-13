@@ -7,4 +7,5 @@ import (
 // Interface implemented by each state's concrete handler
 type state interface {
 	addPlayer(player *models.Player) error
+	startGame(groupName string, playerName string) error
 }
