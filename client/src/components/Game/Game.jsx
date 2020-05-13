@@ -2,6 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import GroupSelectionScreen from '../GroupSelectionScreen/GroupSelectionScreen';
 import WaitingForPlayersScreen from '../WaitingForPlayersScreen/WaitingForPlayersScreen';
+import InitialPromptCreationScreen from '../InitialPromptCreationScreen/InitialPromptCreationScreen';
 import './Game.css';
 import { GameStates } from '../../utils/constants';
 import { formatServerError } from '../../utils/errorFormatting';
@@ -45,6 +46,13 @@ class Game extends React.Component {
             onGameStateChanged={this.onGameStateChanged}
           />
         );
+        case GameStates.InitialPromptCreation:
+          return (
+            <InitialPromptCreationScreen
+              gameState={gameState}
+              onGameStateChanged={this.onGameStateChanged}
+            />
+          );
       // Unknown group! Badness
       default:
         return <div><h1>We are sorry this is not implemented yet :(</h1></div>;
