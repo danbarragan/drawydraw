@@ -24,6 +24,10 @@ func setupRouter(port string) *gin.Engine {
 	// Todo: Rename this to join-game
 	router.POST("/api/add-player", addPlayer)
 	router.POST("/api/create-game", createGroup)
+	router.POST("/api/start-game", startGame)
+
+	// Debug endpoints - delete eventually
+	router.POST("/api/set-game-state", setGameState)
 	router.POST("/api/echo", echoTest)
 	router.POST("/api/add-prompts", addPrompts)
 
@@ -121,6 +125,7 @@ func createGroup(ctx *gin.Context) {
 		return
 	}
 
+	// Note: If CreateGroup succeeds but AddPlayer fails the group will be created and the host will be left out :(
 	createGroupError := statemanager.CreateGroup(createGroupRequest.GroupName)
 	if createGroupError != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error creating group: %s", createGroupError.Error())))
@@ -136,6 +141,48 @@ func createGroup(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, &gameState)
 }
 
+type startGameRequest struct {
+	PlayerName string `json:"playerName"`
+	GroupName  string `json:"groupName"`
+}
+
+func startGame(ctx *gin.Context) {
+	request := startGameRequest{}
+	err := ctx.BindJSON(&request) // Todo: Look into request validation
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("invalid request: %s", err.Error())))
+		return
+	}
+	gameState, startGameError := statemanager.StartGame(request.GroupName, request.PlayerName)
+	if startGameError != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error starting game: %s", startGameError.Error())))
+		return
+	}
+	ctx.JSON(http.StatusOK, &gameState)
+}
+
 func formatError(errorMessage string) map[string]interface{} {
 	return gin.H{"error": errorMessage}
+}
+
+type setStateRequest struct {
+	GameStateName string `json:"gameStateName"`
+}
+
+// Debug method used to test in the UI.
+func setGameState(ctx *gin.Context) {
+	setStateRequest := setStateRequest{}
+
+	err := ctx.BindJSON(&setStateRequest)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Invalid request: %s", err.Error())))
+		return
+	}
+
+	gameState, err := statemanager.SetGameState(setStateRequest.GameStateName)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error setting GameState: %s", err.Error())))
+		return
+	}
+	ctx.JSON(http.StatusOK, &gameState)
 }

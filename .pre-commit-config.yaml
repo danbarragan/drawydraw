@@ -1,0 +1,6 @@
+- repo: https://github.com/danbarragan/drawydraw
+  rev: master
+  hooks:
+    - id: go-fmt
+    - id: go-lint
+    - id: npx eslint --ext '.jsx,.js' . --fix

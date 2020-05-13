@@ -134,3 +134,37 @@ func TestAddPlayerRoute_GroupNotSetup(t *testing.T) {
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
+
+func TestStartGameRoute(t *testing.T) {
+	// Test set up
+	router := setupRouter("8080")
+	w := httptest.NewRecorder()
+	data := map[string]string{
+		"groupName":  "startGameRoute",
+		"playerName": "player1",
+	}
+	jsonData, err := json.Marshal(&data)
+
+	// Create the group
+	req, err := http.NewRequest("POST", "/api/create-game", bytes.NewBuffer(jsonData))
+	assert.Nil(t, err)
+	req.Header.Add("Content-Type", "application/json")
+	router.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	// Actual test
+	// Make a post to start game route
+	data = map[string]string{
+		"groupName":  "startGameRoute",
+		"playerName": "player1",
+	}
+	w = httptest.NewRecorder()
+	jsonData, err = json.Marshal(&data)
+	req, err = http.NewRequest("POST", "/api/start-game", bytes.NewBuffer(jsonData))
+	req.Header.Add("Content-Type", "application/json")
+	router.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+	expectedState := `{"currentPlayer":{"isHost":true,"name":"player1"},"currentState":"InitialPromptCreation","groupName":"startGameRoute","players":[{"name":"player1","host":true,"points":0}]}`
+	actualResponse := w.Body.String()
+	assert.Equal(t, expectedState, actualResponse)
+}

@@ -8,4 +8,5 @@ import (
 type state interface {
 	addPlayer(player *models.Player) error
 	addPrompts(prompts *models.Prompts) error
+	startGame(groupName string, playerName string) error
 }

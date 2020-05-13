@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "webpack-dev-server --mode development",
     "build": "webpack --mode production",
-    "lint": "npx eslint --fix --ext '.jsx,.js' ."
+    "lint": "npx eslint --ext '.jsx,.js' .",
+    "fixlint": "npx eslint --fix --ext '.jsx,.js' ."
   },
   "proxy": "http://localhost:5000/",
   "devDependencies": {
