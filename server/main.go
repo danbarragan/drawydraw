@@ -98,7 +98,8 @@ func createGroup(ctx *gin.Context) {
 		return
 	}
 
-	createGroupError := statemanager.CreateGroup(createGroupRequest.PlayerName, createGroupRequest.GroupName)
+	// Note: If CreateGroup succeeds but AddPlayer fails the group will be created and the host will be left out :(
+	createGroupError := statemanager.CreateGroup(createGroupRequest.GroupName)
 	if createGroupError != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error creating group: %s", createGroupError.Error())))
 		return

@@ -16,18 +16,18 @@ type StateManager struct {
 type GameStatusResponse = map[string]interface{}
 
 // CreateGroup Handles creating a group other players can join
-func CreateGroup(playerName string, groupName string) error {
+func CreateGroup(groupName string) error {
 	if len(groupName) < 1 {
-		return errors.New("No group name provided.")
+		return errors.New("no group name provided")
 	}
 	// See if there's already a game for that group name and error out if ther eis
 	gameState := models.LoadGame(groupName)
 	if gameState != nil {
-		return errors.New(fmt.Sprintf("Group '%s' already exists.", groupName))
+		return fmt.Errorf("group '%s' already exists", groupName)
 	}
 	// Games start in the waiting for players stage
 	gameState = &models.Game{
-		GroupName: groupName, CurrentState: models.WaitingForPlayers, HostPlayer: playerName,
+		GroupName: groupName, CurrentState: models.WaitingForPlayers,
 	}
 	models.SaveGame(gameState)
 	return nil
@@ -35,17 +35,12 @@ func CreateGroup(playerName string, groupName string) error {
 
 // AddPlayer Handles adding a player to a game
 func AddPlayer(playerName string, groupName string, isHost bool) (*GameStatusResponse, error) {
-
 	if len(playerName) < 1 {
-		return nil, errors.New("No player name provided.")
+		return nil, errors.New("no player name provided")
 	}
 	stateManager, err := getManagerForGroup(groupName)
 	if err != nil {
 		return nil, err
-	}
-
-	if isPlayerInGroup(playerName, stateManager.game.Players) {
-		return nil, errors.New(fmt.Sprintf("Player '%s' already exists in group '%s'.", playerName, groupName))
 	}
 
 	// Add the group creator as the first player
@@ -75,6 +70,7 @@ func GetGameState(groupName string, playerName string) (*GameStatusResponse, err
 	return formattedState, nil
 }
 
+// StartGame starts the game with the current players
 func StartGame(groupName string, playerName string) (*GameStatusResponse, error) {
 	stateManager, err := getManagerForGroup(groupName)
 	if err != nil {

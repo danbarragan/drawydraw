@@ -57,6 +57,10 @@ func (game *Game) AddPlayer(player *Player) error {
 			return nil
 		}
 	}
+	// Set the host name if the player joining the game is the host
+	if player.Host {
+		game.HostPlayer = player.Name
+	}
 	game.Players = append(game.Players, player)
 	return nil
 }
