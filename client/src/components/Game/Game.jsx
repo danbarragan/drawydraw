@@ -61,11 +61,10 @@ class Game extends React.Component {
     try {
       const response = await axios.post('/api/set-game-state', { gameStateName });
       this.setState({ gameState: response.data });
-      this.setState({ error: "" });
+      this.setState({ error: '' });
       this.forceUpdate();
     } catch (error) {
       this.setState({ error: formatServerError(error) });
-      return;
     }
   }
 
