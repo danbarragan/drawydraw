@@ -6,3 +6,10 @@
 .game * {
     font-family: Arial, Helvetica, sans-serif;
 }
+
+.console {
+    border-color: grey;
+    border-style: dashed;
+    border-width: 2px;
+    text-align: left;
+}
