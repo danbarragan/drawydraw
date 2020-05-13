@@ -6,9 +6,12 @@ env:
 notifications:
     email: false
 before_script:
-    - "cd client; npm install"
+    - "cd client"
+    - "npm install"
 script:
     # Lint client code
-    - "cd client; npm run lint"
+    - "cd client"
+    - "npm run lint"
     # Run server unit tests
-    - "cd server; go test -v ./..."
+    - "cd ../server"
+    - "go test -v ./..."
