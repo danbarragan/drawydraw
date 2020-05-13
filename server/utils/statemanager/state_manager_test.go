@@ -80,6 +80,7 @@ func TestAddPlayer_PlayerExistsInGroup_NoOps(t *testing.T) {
 	AddPlayer(playerName, groupName, true)
 	statusResponse, err := AddPlayer(playerName, groupName, true)
 	assert.Nil(t, err)
+	assert.NotNil(t, statusResponse)
 	expectedPlayers := []*models.Player{{Name: "baby cat", Host: true}}
 	assert.EqualValues(t, (*statusResponse)["players"], expectedPlayers)
 }
