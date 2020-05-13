@@ -1,0 +1,17 @@
+language: go
+go:
+    - 1.14.x
+env:
+    - GO111MODULE=on
+notifications:
+    email: false
+before_script:
+    - "cd client"
+    - "npm install"
+script:
+    # Lint client code
+    - "cd client"
+    - "npm run lint"
+    # Run server unit tests
+    - "cd ../server"
+    - "go test -v ./..."
