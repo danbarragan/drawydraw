@@ -11,6 +11,9 @@ before_script:
 script:
     # Lint client code
     - "npm run lint || travis_terminate 1"
-    # Run server unit tests
+    # Server checks:
     - "cd ../server"
+    # Lint server code
+    - "diff -u <(echo -n) <(gofmt -d -s .)"
+    # Run server tests
     - "go test -v ./..."
