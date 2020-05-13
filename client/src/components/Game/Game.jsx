@@ -46,13 +46,13 @@ class Game extends React.Component {
             onGameStateChanged={this.onGameStateChanged}
           />
         );
-        case GameStates.InitialPromptCreation:
-          return (
-            <InitialPromptCreationScreen
-              gameState={gameState}
-              onGameStateChanged={this.onGameStateChanged}
-            />
-          );
+      case GameStates.InitialPromptCreation:
+        return (
+          <InitialPromptCreationScreen
+            gameState={gameState}
+            onGameStateChanged={this.onGameStateChanged}
+          />
+        );
       // Unknown group! Badness
       default:
         return <div><h1>We are sorry this is not implemented yet :(</h1></div>;
