@@ -13,3 +13,14 @@
     border-width: 2px;
     text-align: left;
 }
+
+.screen {
+    text-align: left;
+    margin-left: 0.5rem;
+    display: inline-block;
+}
+
+.screen * {
+    display: block;
+    margin-top: 0.25rem;
+}

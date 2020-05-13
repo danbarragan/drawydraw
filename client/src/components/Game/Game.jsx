@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import DrawingScreen from '../DrawingScreen/DrawingScreen';
 import GroupSelectionScreen from '../GroupSelectionScreen/GroupSelectionScreen';
 import WaitingForPlayersScreen from '../WaitingForPlayersScreen/WaitingForPlayersScreen';
 import './Game.css';
@@ -34,7 +35,8 @@ class Game extends React.Component {
   getCurrentComponent() {
     const { gameState } = this.state;
     const { currentState } = gameState;
-
+    // Undooo
+    return <DrawingScreen />;
     switch (currentState) {
       case GameStates.GroupSelection:
         return <GroupSelectionScreen onGameEntered={this.onGameEntered} />;

@@ -54,7 +54,7 @@ class GroupSelectionScreen extends React.Component {
   render() {
     const { error, playerName, groupName } = this.state;
     return (
-      <div className="groupSelectionScreen">
+      <div className="screen groupSelectionScreen">
         <h3>Join or create a group</h3>
         <label htmlFor="playerName">
           Your name
