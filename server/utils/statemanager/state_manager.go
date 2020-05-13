@@ -44,9 +44,9 @@ func AddPlayer(playerName string, groupName string, isHost bool) (*GameStatusRes
 	}
 
 	if isHost {
-		for _, player := range stateManager.game.Players {
-			if player.Host {
-				return nil, fmt.Errorf("failed to add player %s as host - %s is already host", playerName, player.Name)
+		for _, existingPlayer := range stateManager.game.Players {
+			if existingPlayer.Host {
+				return nil, fmt.Errorf("failed to add player %s as host - %s is already host", playerName, existingPlayer.Name)
 			}
 		}
 	}
