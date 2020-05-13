@@ -1,0 +1,11 @@
+language: go
+go:
+    - 1.14.x
+notifications:
+    email: false
+before_script:
+script:
+    # Lint client code
+    - "npm run lint"
+    # Run server unit tests
+    - "go test -v ./..."
