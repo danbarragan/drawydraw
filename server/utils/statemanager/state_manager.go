@@ -43,12 +43,10 @@ func AddPlayer(playerName string, groupName string, isHost bool) (*GameStatusRes
 		return nil, err
 	}
 
-	if isHost {
-		for _, existingPlayer := range stateManager.game.Players {
-			if existingPlayer.Host {
-				return nil, fmt.Errorf("failed to add player %s as host - %s is already host", playerName, existingPlayer.Name)
-			}
-		}
+	if isHost &&
+		stateManager.game.HostPlayer != "" &&
+		playerName != stateManager.game.HostPlayer {
+		return nil, fmt.Errorf("failed to add player %s as host - %s is already host", playerName, stateManager.game.HostPlayer)
 	}
 
 	// Add the group creator as the first player
