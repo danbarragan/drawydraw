@@ -30,12 +30,22 @@ type Player struct {
 	Points uint64 `json:"points"`
 }
 
+type Prompts struct {
+	ID         string
+	Author     string
+	Group      string
+	Noun       string
+	Adjective1 string
+	Adjective2 string
+}
+
 // Game contains all data that represents the game at any point
 type Game struct {
-	GroupName    string    `json:"groupName"`
-	Players      []*Player `json:"players"`
-	CurrentState GameState `json:"currentState"`
-	HostPlayer   string    `json:"hostPlayer"`
+	GroupName    string     `json:"groupName"`
+	Players      []*Player  `json:"players"`
+	CurrentState GameState  `json:"currentState"`
+	HostPlayer   string     `json:"hostPlayer"`
+	Prompts      []*Prompts `json:"prompts"`
 }
 
 // Todo: Put SaveGame/LoadGame methods behind an interface to faciliate unit tests

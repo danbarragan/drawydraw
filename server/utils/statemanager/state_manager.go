@@ -4,6 +4,8 @@ import (
 	"drawydraw/models"
 	"errors"
 	"fmt"
+
+	"github.com/google/uuid"
 )
 
 // StateManager handles the different states and actions throughout the game
@@ -49,6 +51,38 @@ func AddPlayer(playerName string, groupName string, isHost bool) (*GameStatusRes
 	// Add the group creator as the first player
 	player := models.Player{Name: playerName, Host: isHost}
 	err = stateManager.currentState.addPlayer(&player)
+	if err != nil {
+		return nil, err
+	}
+	models.SaveGame(stateManager.game)
+	formattedState, err := formatGameStateForPlayer(stateManager.game, playerName)
+	if err != nil {
+		return nil, err
+	}
+	return formattedState, nil
+}
+
+// AddPrompts handles adding the prompts a player created to the game state
+func AddPrompts(playerName string, groupName string, noun string, adjective1 string, adjective2 string) (*GameStatusResponse, error) {
+	if len(noun) < 1 ||
+		len(adjective1) < 1 ||
+		len(adjective2) < 1 {
+		return nil, errors.New("One or more of the prompts was not provided")
+	}
+	stateManager, err := getManagerForGroup(groupName)
+	if err != nil {
+		return nil, err
+	}
+	new_prompt := models.Prompts{
+		ID:         uuid.New().String(),
+		Author:     playerName,
+		Group:      groupName,
+		Noun:       noun,
+		Adjective1: adjective1,
+		Adjective2: adjective2,
+	}
+
+	err = stateManager.currentState.addPrompts(&new_prompt)
 	if err != nil {
 		return nil, err
 	}

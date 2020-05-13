@@ -25,6 +25,7 @@ func setupRouter(port string) *gin.Engine {
 	router.POST("/api/add-player", addPlayer)
 	router.POST("/api/create-game", createGroup)
 	router.POST("/api/echo", echoTest)
+	router.POST("/api/add-prompts", addPrompts)
 
 	return router
 }
@@ -67,6 +68,29 @@ func addPlayer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, &gameState)
 }
 
+type addPromptsRequest struct {
+	PlayerName string `json:"playerName"`
+	GroupName  string `json:"groupName"`
+	Noun       string `json:"noun"`
+	Adjective1 string `json:"adjective1"`
+	Adjective2 string `json:"adjective2"`
+}
+
+func addPrompts(ctx *gin.Context) {
+	addPromptsRequest := addPromptsRequest{}
+	err := ctx.BindJSON(&addPromptsRequest)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Invalid request: %s", err.Error())))
+		return
+	}
+	gameState, err := statemanager.AddPrompts(addPromptRequest.PlayerName, addPromptRequest.GroupName, addPromptsRequest.Noun, addPromptsRequest.Adjective1, addPromptsRequest.Adjective2)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error adding prompts: %s", err.Error())))
+		return
+	}
+	ctx.JSON(http.StatusOK, &gameState)
+}
+
 func getGameStatus(ctx *gin.Context) {
 	groupName := ctx.Param("groupName")
 	queryParams := ctx.Request.URL.Query()
@@ -103,7 +127,7 @@ func createGroup(ctx *gin.Context) {
 		return
 	}
 
-	gameState, addPlayerError := statemanager.AddPlayer(createGroupRequest.PlayerName, createGroupRequest.GroupName, true)
+	gameState, addPlayerError := statemanager.Ad dPlayer(createGroupRequest.PlayerName, createGroupRequest.GroupName, true)
 	if addPlayerError != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error adding host: %s", addPlayerError.Error())))
 		return
