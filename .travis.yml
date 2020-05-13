@@ -1,0 +1,19 @@
+language: go
+go:
+    - 1.14.x
+env:
+    - GO111MODULE=on
+notifications:
+    email: false
+before_script:
+    - "cd client"
+    - "npm install"
+script:
+    # Lint client code
+    - "npm run lint || travis_terminate 1"
+    # Server checks:
+    - "cd ../server"
+    # Lint server code
+    - "diff -u <(echo -n) <(gofmt -d -s .) || travis_terminate 1"
+    # Run server tests
+    - "go test -v ./..."
