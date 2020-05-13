@@ -2,6 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import GroupSelectionScreen from '../GroupSelectionScreen/GroupSelectionScreen';
 import WaitingForPlayersScreen from '../WaitingForPlayersScreen/WaitingForPlayersScreen';
+import InitialPromptCreationScreen from '../InitialPromptCreationScreen/InitialPromptCreationScreen';
 import './Game.css';
 import { GameStates } from '../../utils/constants';
 import { formatServerError } from '../../utils/errorFormatting';
@@ -41,6 +42,13 @@ class Game extends React.Component {
       case GameStates.WaitingForPlayers:
         return (
           <WaitingForPlayersScreen
+            gameState={gameState}
+            onGameStateChanged={this.onGameStateChanged}
+          />
+        );
+      case GameStates.InitialPromptCreation:
+        return (
+          <InitialPromptCreationScreen
             gameState={gameState}
             onGameStateChanged={this.onGameStateChanged}
           />
