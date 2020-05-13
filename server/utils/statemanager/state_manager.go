@@ -152,8 +152,8 @@ func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 		}
 		models.SaveGame(gameState)
 		AddPlayer(hostPlayer, groupName, true)
-		AddPlayer("baby cat", groupName, true)
-		AddPlayer("drunk cat", groupName, true)
+		AddPlayer("baby cat", groupName, false)
+		AddPlayer("drunk cat", groupName, false)
 		formattedState, err := formatGameStateForPlayer(gameState, hostPlayer)
 		if err != nil {
 			return nil, err
