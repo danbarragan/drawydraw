@@ -9,13 +9,22 @@ class WaitingForPlayersScreen extends React.Component {
     super(props);
     this.state = {
       error: null,
+      timerId: null,
     };
     this.updateGameState = this.updateGameState.bind(this);
     this.onStartGameButtonClicked = this.onStartGameButtonClicked.bind(this);
   }
 
   componentDidMount() {
-    setInterval(this.updateGameState, 3000);
+    const timerId = setInterval(this.updateGameState, 3000);
+    this.setState({ timerId });
+  }
+
+  componentWillUnmount() {
+    const { timerId } = this.state;
+    if (timerId !== null) {
+      clearInterval(timerId);
+    }
   }
 
   async onStartGameButtonClicked() {
