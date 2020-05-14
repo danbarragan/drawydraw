@@ -164,7 +164,7 @@ func TestStartGameRoute(t *testing.T) {
 	req.Header.Add("Content-Type", "application/json")
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-	expectedState := `{"currentPlayer":{"isHost":true,"name":"player1"},"currentState":"InitialPromptCreation","groupName":"startGameRoute","players":[{"name":"player1","host":true,"points":0}],"prompts":null}`
+	expectedState := `{"currentPlayer":{"isHost":true,"name":"player1"},"currentState":"InitialPromptCreation","groupName":"startGameRoute","players":[{"name":"player1","host":true,"points":0}]}`
 	actualResponse := w.Body.String()
 	assert.Equal(t, expectedState, actualResponse)
 }
@@ -228,7 +228,7 @@ func TestAddPromptRoute(t *testing.T) {
 
 	actualResponse := w.Body.String()
 	//prompt_uuid := actualResponse  //TODO : will need to get the real uuid from the the response and put it in the expected state
-	expectedState := `{"currentPlayer":{"isHost":true,"name":"player1"},"currentState":"InitialPromptCreation","groupName":"addPromptRoute","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}],"prompts":[{"Author":"player1","Group":"addPromptRoute","Noun":"chicken","Adjective1":"snazzy","Adjective2":"portly"}]}`
+	expectedState := `{"currentPlayer":{"isHost":true,"name":"player1"},"currentState":"InitialPromptCreation","groupName":"addPromptRoute","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}]}`
 	assert.Equal(t, expectedState, actualResponse)
 
 	//Make a post to the add prompts route from player 2, confirm state has changed to "Drawing"
@@ -248,7 +248,7 @@ func TestAddPromptRoute(t *testing.T) {
 
 	actualResponse = w.Body.String()
 	//prompt_uuid := actualResponse  //TODO : will need to get the real uuid from the the response and put it in the expected state
-	expectedState = `{"currentPlayer":{"isHost":false,"name":"player2"},"currentState":"Drawing","groupName":"addPromptRoute","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}],"prompts":[{"Author":"player1","Group":"addPromptRoute","Noun":"chicken","Adjective1":"snazzy","Adjective2":"portly"},{"Author":"player2","Group":"addPromptRoute","Noun":"duck","Adjective1":"chilly","Adjective2":"sleepy"}]}`
+	expectedState = `{"currentPlayer":{"isHost":false,"name":"player2"},"currentState":"Drawing","groupName":"addPromptRoute","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}]}`
 	assert.Equal(t, expectedState, actualResponse)
 
 }

@@ -152,7 +152,6 @@ func formatGameStateForPlayer(game *models.Game, playerName string) (*GameStatus
 			"isHost": gameHost == playerName,
 		},
 		"currentState": game.CurrentState,
-		"prompts":      game.Prompts,
 	}
 	return &statusResponse, nil
 }

@@ -112,7 +112,7 @@ func TestStartGame_HostTriesandSucceeds(t *testing.T) {
 	assert.EqualValues(t, (*startResponse)["currentState"], expectedState2)
 }
 
-func TestStartGame_NonHostTriesandFails(t *testing.T) {
+func TestStartGame_NonHost_Fails(t *testing.T) {
 	groupName := randomGroupName()
 	CreateGroup(groupName)
 	AddPlayer("host cat", groupName, true)
@@ -137,12 +137,5 @@ func TestAddPrompts_Succeeds(t *testing.T) {
 	addPromptResponse, err := AddPrompts("friendly cat", groupName, "tuna", "stinky", "yummy")
 	assert.Nil(t, err)
 	assert.NotNil(t, addPromptResponse)
-	expectedPrompts := []*models.Prompts{{
-		Author:     "friendly cat",
-		Group:      groupName,
-		Noun:       "tuna",
-		Adjective1: "stinky",
-		Adjective2: "yummy"}}
-	assert.EqualValues(t, (*addPromptResponse)["prompts"], expectedPrompts)
 
 }
