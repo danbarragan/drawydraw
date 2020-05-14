@@ -13,10 +13,6 @@ class InitialPromptCreationScreen extends React.Component {
     this.updateGameState = this.updateGameState.bind(this);
   }
 
-  componentDidMount() {
-    setInterval(this.updateGameState, 3000);
-  }
-
   async onStartGameButtonClicked() {
     const { gameState, onGameStateChanged } = this.props;
     const { groupName, currentPlayer } = gameState;
