@@ -87,7 +87,7 @@ func addPrompts(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Invalid request: %s", err.Error())))
 		return
 	}
-	gameState, err := statemanager.AddPrompts(addPromptRequest.PlayerName, addPromptRequest.GroupName, addPromptsRequest.Noun, addPromptsRequest.Adjective1, addPromptsRequest.Adjective2)
+	gameState, err := statemanager.AddPrompts(addPromptsRequest.PlayerName, addPromptsRequest.GroupName, addPromptsRequest.Noun, addPromptsRequest.Adjective1, addPromptsRequest.Adjective2)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error adding prompts: %s", err.Error())))
 		return
@@ -132,7 +132,7 @@ func createGroup(ctx *gin.Context) {
 		return
 	}
 
-	gameState, addPlayerError := statemanager.Ad dPlayer(createGroupRequest.PlayerName, createGroupRequest.GroupName, true)
+	gameState, addPlayerError := statemanager.AddPlayer(createGroupRequest.PlayerName, createGroupRequest.GroupName, true)
 	if addPlayerError != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error adding host: %s", addPlayerError.Error())))
 		return

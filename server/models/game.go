@@ -20,6 +20,8 @@ const (
 	WaitingForPlayers GameState = "WaitingForPlayers"
 	// InitialPromptCreation - Players are entering their initial prompts
 	InitialPromptCreation GameState = "InitialPromptCreation"
+	// InitialPromptCreation - Players are entering their initial prompts
+	Drawing GameState = "Drawing"
 )
 
 // Player contains all the information relevant to a game's participant
@@ -31,7 +33,6 @@ type Player struct {
 }
 
 type Prompts struct {
-	ID         string
 	Author     string
 	Group      string
 	Noun       string
@@ -77,7 +78,6 @@ func (game *Game) AddPlayer(player *Player) error {
 
 // AddPrompts adds a player's prompts to the game
 func (game *Game) AddPrompts(prompts *Prompts) error {
-
 	game.Prompts = append(game.Prompts, prompts)
 	return nil
 }

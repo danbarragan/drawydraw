@@ -19,5 +19,11 @@ func (state promptCreatingState) startGame(groupName string, playerName string) 
 
 func (state promptCreatingState) addPrompts(prompts *models.Prompts) error {
 	state.game.AddPrompts(prompts)
+
+	//TODO better logic to change state when all players have added prompts
+	if len(state.game.Prompts) == len(state.game.Players) {
+		state.game.CurrentState = models.Drawing
+	}
+
 	return nil
 }

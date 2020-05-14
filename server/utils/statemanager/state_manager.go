@@ -4,8 +4,6 @@ import (
 	"drawydraw/models"
 	"errors"
 	"fmt"
-
-	"github.com/google/uuid"
 )
 
 // StateManager handles the different states and actions throughout the game
@@ -67,17 +65,26 @@ func AddPlayer(playerName string, groupName string, isHost bool) (*GameStatusRes
 
 // AddPrompts handles adding the prompts a player created to the game state
 func AddPrompts(playerName string, groupName string, noun string, adjective1 string, adjective2 string) (*GameStatusResponse, error) {
+	//check if any of the prompt fields were empty
 	if len(noun) < 1 ||
 		len(adjective1) < 1 ||
 		len(adjective2) < 1 {
 		return nil, errors.New("One or more of the prompts was not provided")
 	}
+
 	stateManager, err := getManagerForGroup(groupName)
 	if err != nil {
 		return nil, err
 	}
+
+	//check if the player had already entered a prompt (not sure if needed)
+	for _, prompt := range stateManager.game.Prompts {
+		if playerName == prompt.Author {
+			return nil, errors.New("The player has already entered their prompt")
+		}
+	}
+
 	new_prompt := models.Prompts{
-		ID:         uuid.New().String(),
 		Author:     playerName,
 		Group:      groupName,
 		Noun:       noun,
@@ -135,6 +142,8 @@ func formatGameStateForPlayer(game *models.Game, playerName string) (*GameStatus
 	if err != nil {
 		return nil, err
 	}
+
+	//TODO : Need to adjust this so we don't send all the prompts back to the client, someone can cheat by inspecting
 	statusResponse := map[string]interface{}{
 		"groupName": game.GroupName,
 		"players":   game.Players,
@@ -143,6 +152,7 @@ func formatGameStateForPlayer(game *models.Game, playerName string) (*GameStatus
 			"isHost": gameHost == playerName,
 		},
 		"currentState": game.CurrentState,
+		"prompts":      game.Prompts,
 	}
 	return &statusResponse, nil
 }
