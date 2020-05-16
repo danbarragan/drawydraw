@@ -17,3 +17,7 @@ func (state initialPromptCreation) addPlayer(player *models.Player) error {
 func (state initialPromptCreation) startGame(groupName string, playerName string) error {
 	return errors.New("startGame not supported for initial prompt creation state")
 }
+
+func (state initialPromptCreation) submitDrawing(groupName string, playerName string, encodedImage string) error {
+	return errors.New("Submitting drawings is not allowed in the initial prompt creation state")
+}

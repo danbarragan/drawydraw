@@ -8,4 +8,5 @@ import (
 type state interface {
 	addPlayer(player *models.Player) error
 	startGame(groupName string, playerName string) error
+	submitDrawing(groupName string, playerName string, encodedImage string) error
 }

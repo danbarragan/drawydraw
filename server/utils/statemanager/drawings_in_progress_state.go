@@ -17,3 +17,7 @@ func (state drawingsInProgress) addPlayer(player *models.Player) error {
 func (state drawingsInProgress) startGame(groupName string, playerName string) error {
 	return errors.New("startGame not supported for drawingsInProgress state")
 }
+
+func (state drawingsInProgress) submitDrawing(groupName string, playerName string, encodedImage string) error {
+	return errors.New("Submitting drawings is not allowed in the initial prompt creation state")
+}

@@ -21,3 +21,7 @@ func (state waitingForPlayersState) startGame(groupName string, playerName strin
 	state.game.CurrentState = models.InitialPromptCreation
 	return nil
 }
+
+func (state waitingForPlayersState) submitDrawing(groupName string, playerName string, encodedImage string) error {
+	return errors.New("Submitting drawings is not allowed in the wating for players state")
+}
