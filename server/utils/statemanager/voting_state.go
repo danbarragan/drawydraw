@@ -21,3 +21,7 @@ func (state voting) startGame(groupName string, playerName string) error {
 func (state voting) submitDrawing(groupName string, playerName string, encodedImage string) error {
 	return errors.New("Submitting drawings is not allowed in the voting state")
 }
+
+func (state voting) addPrompts(prompts *models.Prompts) error {
+	return errors.New("addprompts not supported for voting state")
+}

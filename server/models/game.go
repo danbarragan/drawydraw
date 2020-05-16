@@ -34,12 +34,21 @@ type Player struct {
 	Points uint64 `json:"points"`
 }
 
+type Prompts struct {
+	Author     string
+	Group      string
+	Noun       string
+	Adjective1 string
+	Adjective2 string
+}
+
 // Game contains all data that represents the game at any point
 type Game struct {
-	GroupName    string    `json:"groupName"`
-	Players      []*Player `json:"players"`
-	CurrentState GameState `json:"currentState"`
-	HostPlayer   string    `json:"hostPlayer"`
+	GroupName    string     `json:"groupName"`
+	Players      []*Player  `json:"players"`
+	CurrentState GameState  `json:"currentState"`
+	HostPlayer   string     `json:"hostPlayer"`
+	Prompts      []*Prompts `json:"prompts"`
 }
 
 // Todo: Put SaveGame/LoadGame methods behind an interface to faciliate unit tests
@@ -66,6 +75,12 @@ func (game *Game) AddPlayer(player *Player) error {
 		game.HostPlayer = player.Name
 	}
 	game.Players = append(game.Players, player)
+	return nil
+}
+
+// AddPrompts adds a player's prompts to the game
+func (game *Game) AddPrompts(prompts *Prompts) error {
+	game.Prompts = append(game.Prompts, prompts)
 	return nil
 }
 

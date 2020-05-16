@@ -46,6 +46,7 @@ func TestAddPlayer_AddHost_Succeeds(t *testing.T) {
 	assert.Equal(t, currentPlayer["name"], "mama cat")
 }
 
+//Should this be _Succeeds?
 func TestAddPlayer_AddToHostedGame_Fails(t *testing.T) {
 	groupName := randomGroupName()
 	CreateGroup(groupName)
@@ -91,4 +92,50 @@ func TestAddPlayer_AddSecondHost_Fails(t *testing.T) {
 	AddPlayer("old cat", groupName, true)
 	_, err := AddPlayer("dead cat", groupName, true)
 	assert.NotNil(t, err)
+}
+
+func TestStartGame_HostTriesandSucceeds(t *testing.T) {
+	groupName := randomGroupName()
+	CreateGroup(groupName)
+	AddPlayer("host cat", groupName, true)
+	AddPlayer("angry cat", groupName, false)
+	addPlayerResponse, err := AddPlayer("annoyed cat", groupName, false)
+
+	expectedState1 := models.WaitingForPlayers
+	assert.EqualValues(t, (*addPlayerResponse)["currentState"], expectedState1)
+
+	startResponse, err := StartGame(groupName, "host cat")
+	assert.Nil(t, err)
+	assert.NotNil(t, startResponse)
+
+	expectedState2 := models.InitialPromptCreation
+	assert.EqualValues(t, (*startResponse)["currentState"], expectedState2)
+}
+
+func TestStartGame_NonHost_Fails(t *testing.T) {
+	groupName := randomGroupName()
+	CreateGroup(groupName)
+	AddPlayer("host cat", groupName, true)
+	AddPlayer("angry cat", groupName, false)
+	AddPlayer("annoyed cat", groupName, false)
+	startResponse, err := StartGame(groupName, "angry cat")
+	assert.NotNil(t, err)
+	assert.Nil(t, startResponse)
+}
+
+func TestAddPrompts_Succeeds(t *testing.T) {
+	//set up a group, add players, and start the game
+	groupName := randomGroupName()
+	CreateGroup(groupName)
+	AddPlayer("host cat", groupName, true)
+	AddPlayer("angry cat", groupName, false)
+	AddPlayer("annoyed cat", groupName, false)
+	startResponse, err := StartGame(groupName, "host cat")
+	assert.NotNil(t, startResponse)
+
+	//add prompt and check its in game state
+	addPromptResponse, err := AddPrompts("friendly cat", groupName, "tuna", "stinky", "yummy")
+	assert.Nil(t, err)
+	assert.NotNil(t, addPromptResponse)
+
 }
