@@ -1,0 +1,12 @@
+.votedFor {
+    font-weight: bold;
+}
+
+.notVotedFor {
+    font-weight: normal;
+    opacity: 0.5;
+}
+
+input {
+    margin-bottom: 20px;
+  }

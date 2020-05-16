@@ -22,6 +22,8 @@ const (
 	InitialPromptCreation GameState = "InitialPromptCreation"
 	// DrawingsInProgress - Players currently drawing a prompt
 	DrawingsInProgress GameState = "DrawingsInProgress"
+	// Voting - Players currently drawing a prompt
+	Voting GameState = "Voting"
 )
 
 // Player contains all the information relevant to a game's participant
