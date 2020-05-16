@@ -160,5 +160,6 @@ func setGameState(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error setting GameState: %s", err.Error())))
 		return
 	}
+
 	ctx.JSON(http.StatusOK, &gameState)
 }

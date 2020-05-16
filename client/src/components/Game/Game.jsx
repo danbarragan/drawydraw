@@ -3,6 +3,7 @@ import axios from 'axios';
 import DrawingScreen from '../DrawingScreen/DrawingScreen';
 import GroupSelectionScreen from '../GroupSelectionScreen/GroupSelectionScreen';
 import WaitingForPlayersScreen from '../WaitingForPlayersScreen/WaitingForPlayersScreen';
+import InitialPromptCreationScreen from '../InitialPromptCreationScreen/InitialPromptCreationScreen';
 import './Game.css';
 import { GameStates } from '../../utils/constants';
 import { formatServerError } from '../../utils/errorFormatting';
@@ -47,6 +48,13 @@ class Game extends React.Component {
             onGameStateChanged={this.onGameStateChanged}
           />
         );
+      case GameStates.InitialPromptCreation:
+        return (
+          <InitialPromptCreationScreen
+            gameState={gameState}
+            onGameStateChanged={this.onGameStateChanged}
+          />
+        );
       // Unknown group! Badness
       default:
         return <div><h1>We are sorry this is not implemented yet :(</h1></div>;
@@ -63,6 +71,7 @@ class Game extends React.Component {
     try {
       const response = await axios.post('/api/set-game-state', { gameStateName });
       this.setState({ gameState: response.data });
+      this.setState({ error: '' });
       this.forceUpdate();
     } catch (error) {
       this.setState({ error: formatServerError(error) });
@@ -76,6 +85,7 @@ class Game extends React.Component {
       <div className="debug">
         <button className="toggleConsole" type="button" onClick={this.toggleConsole}>debug</button>
         <button className="setState" type="button" onClick={(() => this.debugSetGameState('WaitingForPlayers'))}>WaitingForPlayers</button>
+        <button className="setState" type="button" onClick={(() => this.debugSetGameState('InitialPromptCreation'))}>PromptCreation</button>
         {this.consoleEnabled ? (
           <div className="console">
             {error ? `Error:${error}` : null}

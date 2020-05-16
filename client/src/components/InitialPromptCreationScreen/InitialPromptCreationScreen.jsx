@@ -4,27 +4,13 @@ import PropTypes from 'prop-types';
 import { formatServerError } from '../../utils/errorFormatting';
 
 
-class WaitingForPlayersScreen extends React.Component {
+class InitialPromptCreationScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       error: null,
-      timerId: null,
     };
     this.updateGameState = this.updateGameState.bind(this);
-    this.onStartGameButtonClicked = this.onStartGameButtonClicked.bind(this);
-  }
-
-  componentDidMount() {
-    const timerId = setInterval(this.updateGameState, 3000);
-    this.setState({ timerId });
-  }
-
-  componentWillUnmount() {
-    const { timerId } = this.state;
-    if (timerId !== null) {
-      clearInterval(timerId);
-    }
   }
 
   async onStartGameButtonClicked() {
@@ -55,31 +41,16 @@ class WaitingForPlayersScreen extends React.Component {
 
   render() {
     const { error } = this.state;
-    const { gameState } = this.props;
-    const { players, groupName, currentPlayer } = gameState;
-    const { name: currentPlayerName, isHost } = currentPlayer;
-    const playerList = players.map((player) => (
-      <li key={player.name}>
-        {player.name}
-        {player.name === currentPlayerName ? '*' : null}
-      </li>
-    ));
     return (
-      <div className="screen waitingForPlayersScreen">
-        <h1>
-          Group name:
-          {groupName}
-        </h1>
-        <ul>{playerList}</ul>
-        { isHost ? <button type="button" onClick={this.onStartGameButtonClicked}>Start game</button>
-          : <h3>Waiting for the host to start the game...</h3>}
+      <div className="InitialPromptCreationScreen">
+        Adjective, adjective, noun.
         <h3 className="error">{error}</h3>
       </div>
     );
   }
 }
 
-WaitingForPlayersScreen.propTypes = {
+InitialPromptCreationScreen.propTypes = {
   gameState: PropTypes.shape({
     currentPlayer: PropTypes.shape({
       name: PropTypes.string.isRequired,
@@ -93,4 +64,4 @@ WaitingForPlayersScreen.propTypes = {
   onGameStateChanged: PropTypes.func.isRequired,
 };
 
-export default WaitingForPlayersScreen;
+export default InitialPromptCreationScreen;
