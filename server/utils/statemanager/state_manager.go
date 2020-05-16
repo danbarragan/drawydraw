@@ -132,6 +132,8 @@ func getCurrentState(game *models.Game) (state, error) {
 		return waitingForPlayersState{game: game}, nil
 	case models.InitialPromptCreation:
 		return initialPromptCreation{game: game}, nil
+	case models.DrawingsInProgress:
+		return drawingsInProgress{game: game}, nil
 	default:
 		return nil, errors.New("Game is at an unknown state")
 	}
@@ -156,6 +158,8 @@ func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 		return createGameState("not cats", []string{"dog", "cat", "other dog"}, gameState)
 	case models.InitialPromptCreation:
 		return createGameState("fat cats", []string{"chubbs", "chonk", "beefcake"}, gameState)
+	case models.DrawingsInProgress:
+		return createGameState("human cats", []string{"sharon", "grandpa", "j. ralphio"}, gameState)
 	default:
 		return nil, fmt.Errorf("failed to set game to state %s", gameState)
 	}
