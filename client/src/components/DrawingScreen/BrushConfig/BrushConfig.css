@@ -1,0 +1,37 @@
+.colorPicker {
+    display: inline-block;
+}
+
+.colorPicker h3{
+    margin: 0;
+}
+
+.brushColorContainer, .brushSizeContainer {
+    margin-left: 5;
+    display: inline-block;
+    border-style: solid;
+    border-color: white;
+}
+
+.brushColor {
+    width: 100px;
+    height: 100px;
+    border-color: black;
+    border-style: solid;
+}
+
+.brushSize {
+    width: 100px;
+    height: 100px;
+    vertical-align: middle;
+    text-align: center;
+    font-weight: bold;
+    font-size: 30pt;
+    border-color: black;
+    border-style: solid;
+}
+
+.highlightedBrushColor, .highlightedBrushSize {
+    border-style: solid;
+    border-color: blue;
+}

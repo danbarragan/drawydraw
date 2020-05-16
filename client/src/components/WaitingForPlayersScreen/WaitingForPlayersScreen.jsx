@@ -65,7 +65,7 @@ class WaitingForPlayersScreen extends React.Component {
       </li>
     ));
     return (
-      <div className="waitingForPlayersScreen">
+      <div className="screen waitingForPlayersScreen">
         <h1>
           Group name:
           {groupName}

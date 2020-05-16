@@ -20,8 +20,10 @@ const (
 	WaitingForPlayers GameState = "WaitingForPlayers"
 	// InitialPromptCreation - Players are entering their initial prompts
 	InitialPromptCreation GameState = "InitialPromptCreation"
-	// InitialPromptCreation - Players are entering their initial prompts
-	Drawing GameState = "Drawing"
+	// DrawingsInProgress - Players currently drawing a prompt
+	DrawingsInProgress GameState = "DrawingsInProgress"
+	// Voting - Players currently drawing a prompt
+	Voting GameState = "Voting"
 )
 
 // Player contains all the information relevant to a game's participant

@@ -1,0 +1,6 @@
+{
+    "rules": {
+        // Turn off since this folder is only used for tests
+        "import/no-extraneous-dependencies": "off"
+    }
+}
