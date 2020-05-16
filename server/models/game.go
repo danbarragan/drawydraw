@@ -18,7 +18,7 @@ type GameState string
 const (
 	// WaitingForPlayers - A group is created and the host is waiting for players
 	WaitingForPlayers GameState = "WaitingForPlayers"
-	// InitialPromptCreation - Players are entering their initial prompts
+	// InitialPromptCreation - Players are entering their initial prompt
 	InitialPromptCreation GameState = "InitialPromptCreation"
 	// DrawingsInProgress - Players currently drawing a prompt
 	DrawingsInProgress GameState = "DrawingsInProgress"
@@ -34,7 +34,7 @@ type Player struct {
 	Points uint64 `json:"points"`
 }
 
-type Prompts struct {
+type Prompt struct {
 	Author     string
 	Group      string
 	Noun       string
@@ -44,11 +44,11 @@ type Prompts struct {
 
 // Game contains all data that represents the game at any point
 type Game struct {
-	GroupName    string     `json:"groupName"`
-	Players      []*Player  `json:"players"`
-	CurrentState GameState  `json:"currentState"`
-	HostPlayer   string     `json:"hostPlayer"`
-	Prompts      []*Prompts `json:"prompts"`
+	GroupName    string    `json:"groupName"`
+	Players      []*Player `json:"players"`
+	CurrentState GameState `json:"currentState"`
+	HostPlayer   string    `json:"hostPlayer"`
+	Prompts      []*Prompt `json:"prompt"`
 }
 
 // Todo: Put SaveGame/LoadGame methods behind an interface to faciliate unit tests
@@ -78,9 +78,9 @@ func (game *Game) AddPlayer(player *Player) error {
 	return nil
 }
 
-// AddPrompts adds a player's prompts to the game
-func (game *Game) AddPrompts(prompts *Prompts) error {
-	game.Prompts = append(game.Prompts, prompts)
+// AddPrompt adds a player's prompt to the game
+func (game *Game) AddPrompt(prompt *Prompt) error {
+	game.Prompts = append(game.Prompts, prompt)
 	return nil
 }
 

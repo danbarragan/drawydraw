@@ -22,6 +22,6 @@ func (state waitingForPlayersState) startGame(groupName string, playerName strin
 	return nil
 }
 
-func (state waitingForPlayersState) addPrompts(prompts *models.Prompts) error {
-	return errors.New("addprompts not supported for waiting for players state")
+func (state waitingForPlayersState) addPrompt(prompt *models.Prompt) error {
+	return errors.New("addprompt not supported for waiting for players state")
 }
