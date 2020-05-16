@@ -75,7 +75,7 @@ class DrawingScreen extends React.Component {
   }
 
   setupCanvas(p5, canvasParentRef) {
-    const canvasContainer = p5.createCanvas(500, 500).parent(canvasParentRef);
+    const canvasContainer = p5.createCanvas(900, 900).parent(canvasParentRef);
     this.setState({ canvasContainer });
   }
 

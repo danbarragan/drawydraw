@@ -11,6 +11,10 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
+.gameTitle {
+    font-size: 30pt;
+}
+
 .console {
     border-color: grey;
     border-style: dashed;
@@ -28,6 +32,24 @@ body {
     margin-top: 0.25rem;
 }
 
+.screen h3 {
+    font-size:25pt;
+}
+
+.screen label {
+    font-size:18pt;
+}
+
+.screen input {
+    font-size:18pt;
+    border-color: black;
+    border-style: solid;
+}
+
+.screen ul li {
+    font-size:16pt;
+}
+
 .screen button {
     display: inline-block;
     margin-top: 0.5rem;
@@ -36,7 +58,7 @@ body {
     text-align: center;
     text-decoration: none;
     border-radius: 8px;
-    font-size: 12pt;
+    font-size: 20pt;
 }
 
 .buttonTypeA {
