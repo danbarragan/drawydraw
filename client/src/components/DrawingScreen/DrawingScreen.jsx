@@ -43,7 +43,7 @@ class DrawingScreen extends React.Component {
     const { onGameStateChanged, gameState } = this.props;
     const { groupName, currentPlayer } = gameState;
     const { name: playerName } = currentPlayer;
-    // Many lossy compression such wow. If images look horrible we can get closer to 1
+    // We might want to consider lossier compression if images are too chunky
     const imageData = this.renderStrokesAsDataURL();
     const data = { playerName, groupName, imageData };
     try {
