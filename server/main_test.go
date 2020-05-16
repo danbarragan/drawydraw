@@ -29,31 +29,6 @@ func TestMain(m *testing.M) {
   os.Exit(status)
 }
 
-// Helper function to process a request and test its response
-func testHTTPResponse(t *testing.T, r *gin.Engine, req *http.Request, statusCode int) string {
-
-  // Create a response recorder
-  w := httptest.NewRecorder()
-
-  // Create the service and process the above request.
-  r.ServeHTTP(w, req)
-
-  if w.Code != statusCode {
-    t.Fail()
-  }
-
-  return w.Body.String()
-}
-
-func createRequest(t *testing.T, method string, route string, data map[string]string) *http.Request {
-	jsonData, err := json.Marshal(&data)
-	assert.Nil(t, err)
-	req, err := http.NewRequest(method, route, bytes.NewBuffer(jsonData))
-	assert.Nil(t, err)
-	req.Header.Add("Content-Type", "application/json")
-	return req
-}
-
 func TestCreateGameRoute(t *testing.T) {
 	r := setupRouter("8080")
 	// Create the game
@@ -63,6 +38,7 @@ func TestCreateGameRoute(t *testing.T) {
 	}
 	req := createRequest(t, "POST", "/api/create-game", data)
 	resp := testHTTPResponse(t, r, req, http.StatusOK)
+
 	// Todo: Saner expected state
 	expectedState := `{"currentPlayer":{"isHost":true,"name":"Baby Cat"},"currentState":"WaitingForPlayers","groupName":"Kitten Party","players":[{"name":"Baby Cat","host":true,"points":0}]}`
 	assert.Equal(t, expectedState, resp)
@@ -81,6 +57,7 @@ func TestGetGameStateStatusRoute(t *testing.T) {
 	// Get the game's status
 	req = createRequest(t, "GET", "/api/get-game-status/somegame?playerName=Player", nil)
 	resp := testHTTPResponse(t, r, req, http.StatusOK)
+
 	// Todo: Saner expected state
 	expectedState := `{"currentPlayer":{"isHost":true,"name":"Player"},"currentState":"WaitingForPlayers","groupName":"somegame","players":[{"name":"Player","host":true,"points":0}]}`
 	assert.Equal(t, expectedState, resp)
@@ -116,7 +93,6 @@ func TestAddPlayerRoute(t *testing.T) {
 		"groupName":  "group",
 		"playerName": "player2",
 	}
-
 	req = createRequest(t, "POST", "/api/add-player", data)
 	resp := testHTTPResponse(t, r, req, http.StatusOK)
 
@@ -158,4 +134,29 @@ func TestStartGameRoute(t *testing.T) {
 
 	expectedState := `{"currentPlayer":{"isHost":true,"name":"player1"},"currentState":"InitialPromptCreation","groupName":"startGameRoute","players":[{"name":"player1","host":true,"points":0}]}`
 	assert.Equal(t, expectedState, resp)
+}
+
+// Helper function to process a request and test its response
+func testHTTPResponse(t *testing.T, r *gin.Engine, req *http.Request, statusCode int) string {
+
+  // Create a response recorder
+  w := httptest.NewRecorder()
+
+  // Create the service and process the above request.
+  r.ServeHTTP(w, req)
+
+  if w.Code != statusCode {
+    t.Fail()
+  }
+
+  return w.Body.String()
+}
+
+func createRequest(t *testing.T, method string, route string, data map[string]string) *http.Request {
+	jsonData, err := json.Marshal(&data)
+	assert.Nil(t, err)
+	req, err := http.NewRequest(method, route, bytes.NewBuffer(jsonData))
+	assert.Nil(t, err)
+	req.Header.Add("Content-Type", "application/json")
+	return req
 }
