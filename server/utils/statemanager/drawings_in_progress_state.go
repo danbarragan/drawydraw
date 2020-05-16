@@ -18,6 +18,6 @@ func (state drawingsInProgressState) startGame(groupName string, playerName stri
 	return errors.New("startGame not supported for drawingsInProgress state")
 }
 
-func (state drawingsInProgressState) addPrompts(prompts *models.Prompts) error {
-	return errors.New("addprompts not supported for drawing state")
+func (state drawingsInProgressState) addPrompt(prompt *models.Prompt) error {
+	return errors.New("addprompt not supported for drawing state")
 }
