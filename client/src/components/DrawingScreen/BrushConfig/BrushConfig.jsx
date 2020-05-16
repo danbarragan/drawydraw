@@ -13,15 +13,15 @@ const BrushColors = Object.freeze({
   Violet: '#6B5B95',
   Marsala: '#955251',
   Orchid: '#B565A7',
-  Turquoise: '#5B8AC',
+  Turquoise: '#45B8AC',
   Mimosa: '#EFC050',
 });
 
 const BrushSizes = Object.freeze({
   Small: { name: 'S', weight: 5 },
   Medium: { name: 'M', weight: 10 },
-  Large: { name: 'L', weight: 15 },
-  XL: { name: 'XL', weight: 20 },
+  Large: { name: 'L', weight: 20 },
+  XL: { name: 'XL', weight: 40 },
 });
 
 const BrushConfig = (props) => {
