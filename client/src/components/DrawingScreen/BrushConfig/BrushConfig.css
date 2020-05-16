@@ -14,15 +14,15 @@
 }
 
 .brushColor {
-    width: 20px;
-    height: 20px;
+    width: 50px;
+    height: 50px;
     border-color: black;
     border-style: solid;
 }
 
 .brushSize {
-    width: 20px;
-    height: 20px;
+    width: 50px;
+    height: 50px;
     text-align: center;
     font-weight: bold;
     border-color: black;
