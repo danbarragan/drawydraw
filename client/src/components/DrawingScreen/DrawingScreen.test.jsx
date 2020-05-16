@@ -13,7 +13,7 @@ describe('DrawingScreen', () => {
     const screen = mount(
       <DrawingScreen onGameStateChanged={mockOnGameStateChanged} gameState={mockGameState} />,
     );
-    const strokes = [new Stroke([new Point(1, 5), new Point(1, 5.5), new Point(1, 6)])];
+    const strokes = [new Stroke([new Point(1, 5), new Point(1, 5.5), new Point(1, 6)], 'black', 3)];
     screen.setState({ strokes });
     const imageData = screen.instance().renderStrokesAsDataURL();
     expect(imageData).toBe(expectedDataURL);

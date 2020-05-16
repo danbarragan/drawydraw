@@ -1,0 +1,39 @@
+.colorPicker {
+    display: inline-block;
+}
+
+.colorPicker h3{
+    margin: 0;
+}
+
+.colorContainer, .widthContainer {
+    margin-left: 5;
+    display: inline-block;
+    border-style: solid;
+    border-color: white;
+}
+
+.color {
+    width: 20px;
+    height: 20px;
+    border-color: black;
+    border-style: solid;
+}
+
+.highlightedColor {
+    border-style: solid;
+    border-color: blue;
+}
+
+.width {
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    font-weight: bold;
+    border-color: black;
+    border-style: solid;
+}
+
+.highlightedWidth {
+    border-color: blue;
+}
