@@ -40,7 +40,7 @@ class Game extends React.Component {
     switch (currentState) {
       case GameStates.Voting:
         return <VotingScreen onGameStateChanged={this.onGameStateChanged} gameState={gameState} />;
-      case GameStates.Votinug:
+      case GameStates.DrawingsInProgress:
         return <DrawingScreen onGameStateChanged={this.onGameStateChanged} gameState={gameState} />;
       case GameStates.GroupSelection:
         return <GroupSelectionScreen onGameEntered={this.onGameEntered} />;
