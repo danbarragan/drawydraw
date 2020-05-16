@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"testing"
 	"os"
+	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 /*
@@ -21,12 +21,12 @@ import (
 
 // This function is used for setup before executing the test functions
 func TestMain(m *testing.M) {
-  //Set Gin to Test Mode
-  gin.SetMode(gin.TestMode)
-  // Setup here
-  status := m.Run()
-  // Cleanup here
-  os.Exit(status)
+	//Set Gin to Test Mode
+	gin.SetMode(gin.TestMode)
+	// Setup here
+	status := m.Run()
+	// Cleanup here
+	os.Exit(status)
 }
 
 func TestCreateGameRoute(t *testing.T) {
@@ -131,18 +131,18 @@ func TestStartGameRoute(t *testing.T) {
 // Helper function to process a request and test its response
 func testHTTPResponse(t *testing.T, req *http.Request, statusCode int) string {
 
-  // Create a response recorder// Test set up
-  w := httptest.NewRecorder()
+	// Create a response recorder// Test set up
+	w := httptest.NewRecorder()
 
-  // Create the service and process the above request.
-  r := setupRouter("8080")
-  r.ServeHTTP(w, req)
+	// Create the service and process the above request.
+	r := setupRouter("8080")
+	r.ServeHTTP(w, req)
 
-  if w.Code != statusCode {
-    t.Fail()
-  }
+	if w.Code != statusCode {
+		t.Fail()
+	}
 
-  return w.Body.String()
+	return w.Body.String()
 }
 
 func createRequest(t *testing.T, method string, route string, data map[string]string) *http.Request {
