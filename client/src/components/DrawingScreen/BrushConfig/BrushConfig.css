@@ -14,17 +14,19 @@
 }
 
 .brushColor {
-    width: 20px;
-    height: 20px;
+    width: 100px;
+    height: 100px;
     border-color: black;
     border-style: solid;
 }
 
 .brushSize {
-    width: 20px;
-    height: 20px;
+    width: 100px;
+    height: 100px;
+    vertical-align: middle;
     text-align: center;
     font-weight: bold;
+    font-size: 30pt;
     border-color: black;
     border-style: solid;
 }
