@@ -76,6 +76,9 @@ class DrawingScreen extends React.Component {
 
   setupCanvas(p5, canvasParentRef) {
     const canvasContainer = p5.createCanvas(500, 500).parent(canvasParentRef);
+    // Perf hack for mobile
+    canvasContainer.style.width = '100%';
+    canvasContainer.style.height = '100%';
     this.setState({ canvasContainer });
   }
 

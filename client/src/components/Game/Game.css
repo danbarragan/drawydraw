@@ -1,3 +1,7 @@
+body {
+    overscroll-behavior: contain;
+}
+
 .game {
     display: block;
     text-align: center;
