@@ -18,6 +18,7 @@ var currentPlayerKey = "currentPlayer"
 var currentStateKey = "currentState"
 var waitingForPlayers = "WaitingForPlayers"
 var initialPromptCreation = "InitialPromptCreation"
+var drawingsInProgress = "DrawingsInProgress"
 var nameKey = "name"
 var isHostKey = "isHost"
 
@@ -136,6 +137,56 @@ func TestStartGameRoute(t *testing.T) {
 	assert.Equal(t, resp[currentStateKey], initialPromptCreation)
 }
 
+func TestAddPromptRoute(t *testing.T) {
+	// Test set up
+	data := map[string]string{
+		"groupName":  "addPromptRoute",
+		"playerName": "player1",
+	}
+	req := createRequest(t, "POST", "/api/create-game", data)
+	testHTTPResponse(t, req, http.StatusOK)
+
+	// Add another player
+	data = map[string]string{
+		"groupName":  "addPromptRoute",
+		"playerName": "player2",
+	}
+	req = createRequest(t, "POST", "/api/add-player", data)
+	testHTTPResponse(t, req, http.StatusOK)
+
+	// Start the game
+	data = map[string]string{
+		"groupName":  "addPromptRoute",
+		"playerName": "player1",
+	}
+	req = createRequest(t, "POST", "/api/start-game", data)
+	testHTTPResponse(t, req, http.StatusOK)
+
+	//Make a post to the add prompts route from player 1, confirm state stays at "Initial Prompt Creation"
+	data = map[string]string{
+		"groupName":  "addPromptRoute",
+		"playerName": "player1",
+		"noun":       "chicken",
+		"adjective1": "snazzy",
+		"adjective2": "portly",
+	}
+	req = createRequest(t, "POST", "/api/add-prompts", data)
+	resp := testHTTPResponse(t, req, http.StatusOK)
+	assert.Equal(t, resp[currentStateKey], initialPromptCreation)
+
+	//Make a post to the add prompts route from player 2, confirm state has changed to "Drawing"
+	data = map[string]string{
+		"groupName":  "addPromptRoute",
+		"playerName": "player2",
+		"noun":       "duck",
+		"adjective1": "chilly",
+		"adjective2": "sleepy",
+	}
+	req = createRequest(t, "POST", "/api/add-prompts", data)
+	resp = testHTTPResponse(t, req, http.StatusOK)
+	assert.Equal(t, resp[currentStateKey], drawingsInProgress)
+}
+
 // Helper function to process a request and test its response
 func testHTTPResponse(t *testing.T, req *http.Request, statusCode int) Response {
 
@@ -162,85 +213,4 @@ func createRequest(t *testing.T, method string, route string, data map[string]st
 	assert.Nil(t, err)
 	req.Header.Add("Content-Type", "application/json")
 	return req
-}
-
-func TestAddPromptRoute(t *testing.T) {
-	// Test set up
-	router := setupRouter("8080")
-	w := httptest.NewRecorder()
-	data := map[string]string{
-		"groupName":  "addPromptRoute",
-		"playerName": "player1",
-	}
-	jsonData, err := json.Marshal(&data)
-
-	// Create the group
-	req, err := http.NewRequest("POST", "/api/create-game", bytes.NewBuffer(jsonData))
-	assert.Nil(t, err)
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	// Add another player
-	w = httptest.NewRecorder()
-	data = map[string]string{
-		"groupName":  "addPromptRoute",
-		"playerName": "player2",
-	}
-	jsonData, err = json.Marshal(&data)
-	assert.Nil(t, err)
-	req, err = http.NewRequest("POST", "/api/add-player", bytes.NewBuffer(jsonData))
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	// Start the game
-	data = map[string]string{
-		"groupName":  "addPromptRoute",
-		"playerName": "player1",
-	}
-	w = httptest.NewRecorder()
-	jsonData, err = json.Marshal(&data)
-	req, err = http.NewRequest("POST", "/api/start-game", bytes.NewBuffer(jsonData))
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	//Make a post to the add prompts route from player 1, confirm state stays at "Initial Prompt Creation"
-	data = map[string]string{
-		"groupName":  "addPromptRoute",
-		"playerName": "player1",
-		"noun":       "chicken",
-		"adjective1": "snazzy",
-		"adjective2": "portly",
-	}
-	w = httptest.NewRecorder()
-	jsonData, err = json.Marshal(&data)
-	req, err = http.NewRequest("POST", "/api/add-prompts", bytes.NewBuffer(jsonData))
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	actualResponse := w.Body.String()
-	expectedState := `{"currentPlayer":{"isHost":true,"name":"player1"},"currentState":"InitialPromptCreation","groupName":"addPromptRoute","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}]}`
-	assert.Equal(t, expectedState, actualResponse)
-
-	//Make a post to the add prompts route from player 2, confirm state has changed to "Drawing"
-	data = map[string]string{
-		"groupName":  "addPromptRoute",
-		"playerName": "player2",
-		"noun":       "duck",
-		"adjective1": "chilly",
-		"adjective2": "sleepy",
-	}
-	w = httptest.NewRecorder()
-	jsonData, err = json.Marshal(&data)
-	req, err = http.NewRequest("POST", "/api/add-prompts", bytes.NewBuffer(jsonData))
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	actualResponse = w.Body.String()
-	expectedState = `{"currentPlayer":{"isHost":false,"name":"player2"},"currentState":"DrawingsInProgress","groupName":"addPromptRoute","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}]}`
-	assert.Equal(t, expectedState, actualResponse)
 }
