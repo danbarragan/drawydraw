@@ -64,8 +64,8 @@ class GroupSelectionScreen extends React.Component {
           Group name
           <input id="groupName" type="text" value={groupName} onChange={this.onGroupNameChange} />
         </label>
-        <button className="joinGroup" type="button" onClick={this.onJoinGroupClick}>Join group</button>
-        <button className="createGroup" type="button" onClick={this.onCreateGroupClick}>Create group</button>
+        <button className="button buttonTypeA" type="button" onClick={this.onJoinGroupClick}>Join group</button>
+        <button className="button buttonTypeB" type="button" onClick={this.onCreateGroupClick}>Create group</button>
         <h3 className="error">{error}</h3>
       </div>
     );

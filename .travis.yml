@@ -11,6 +11,8 @@ before_script:
 script:
     # Lint client code
     - "npm run lint || travis_terminate 1"
+    # Run server tests
+    - "npm run test || travis_terminate 1"
     # Server checks:
     - "cd ../server"
     # Lint server code

@@ -35,9 +35,9 @@ class Game extends React.Component {
   getCurrentComponent() {
     const { gameState } = this.state;
     const { currentState } = gameState;
-    // Undooo
-    return <DrawingScreen />;
     switch (currentState) {
+      case GameStates.DrawingsInProgress:
+        return <DrawingScreen onGameStateChanged={this.onGameStateChanged} gameState={gameState} />;
       case GameStates.GroupSelection:
         return <GroupSelectionScreen onGameEntered={this.onGameEntered} />;
       case GameStates.WaitingForPlayers:
