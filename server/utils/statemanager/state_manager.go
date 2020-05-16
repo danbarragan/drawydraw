@@ -63,6 +63,47 @@ func AddPlayer(playerName string, groupName string, isHost bool) (*GameStatusRes
 	return formattedState, nil
 }
 
+// AddPrompts handles adding the prompts a player created to the game state
+func AddPrompts(playerName string, groupName string, noun string, adjective1 string, adjective2 string) (*GameStatusResponse, error) {
+	//check if any of the prompt fields were empty
+	if len(noun) < 1 ||
+		len(adjective1) < 1 ||
+		len(adjective2) < 1 {
+		return nil, errors.New("One or more of the prompts was not provided")
+	}
+
+	stateManager, err := getManagerForGroup(groupName)
+	if err != nil {
+		return nil, err
+	}
+
+	//check if the player had already entered a prompt (not sure if needed)
+	for _, prompt := range stateManager.game.Prompts {
+		if playerName == prompt.Author {
+			return nil, errors.New("The player has already entered their prompt")
+		}
+	}
+
+	new_prompt := models.Prompts{
+		Author:     playerName,
+		Group:      groupName,
+		Noun:       noun,
+		Adjective1: adjective1,
+		Adjective2: adjective2,
+	}
+
+	err = stateManager.currentState.addPrompts(&new_prompt)
+	if err != nil {
+		return nil, err
+	}
+	models.SaveGame(stateManager.game)
+	formattedState, err := formatGameStateForPlayer(stateManager.game, playerName)
+	if err != nil {
+		return nil, err
+	}
+	return formattedState, nil
+}
+
 // GetGameState gets the current state for a given game and player
 func GetGameState(groupName string, playerName string) (*GameStatusResponse, error) {
 	stateManager, err := getManagerForGroup(groupName)
@@ -101,6 +142,8 @@ func formatGameStateForPlayer(game *models.Game, playerName string) (*GameStatus
 	if err != nil {
 		return nil, err
 	}
+
+	//TODO : Need to adjust this so we don't send all the prompts back to the client, someone can cheat by inspecting
 	statusResponse := map[string]interface{}{
 		"groupName": game.GroupName,
 		"players":   game.Players,
@@ -128,10 +171,14 @@ func getManagerForGroup(groupName string) (*StateManager, error) {
 
 func getCurrentState(game *models.Game) (state, error) {
 	switch currentState := game.CurrentState; currentState {
+	case models.Voting:
+		return voting{game: game}, nil
 	case models.WaitingForPlayers:
 		return waitingForPlayersState{game: game}, nil
 	case models.InitialPromptCreation:
-		return initialPromptCreation{game: game}, nil
+		return promptCreatingState{game: game}, nil
+	case models.DrawingsInProgress:
+		return drawingsInProgressState{game: game}, nil
 	default:
 		return nil, errors.New("Game is at an unknown state")
 	}
@@ -152,10 +199,14 @@ func isPlayerInGroup(playerName string, playersInGroup []*models.Player) bool {
 func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 	gameState := models.GameState(gameStateName)
 	switch currentState := gameState; currentState {
+	case models.Voting:
+		return createGameState("chats", []string{"graisseux", "frere jacques", "pepe le pew"}, gameState)
 	case models.WaitingForPlayers:
 		return createGameState("not cats", []string{"dog", "cat", "other dog"}, gameState)
 	case models.InitialPromptCreation:
 		return createGameState("fat cats", []string{"chubbs", "chonk", "beefcake"}, gameState)
+	case models.DrawingsInProgress:
+		return createGameState("human cats", []string{"sharon", "grandpa", "j. ralphio"}, gameState)
 	default:
 		return nil, fmt.Errorf("failed to set game to state %s", gameState)
 	}

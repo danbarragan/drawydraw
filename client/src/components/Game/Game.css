@@ -1,3 +1,7 @@
+body {
+    overscroll-behavior: contain;
+}
+
 .game {
     display: block;
     text-align: center;
@@ -5,6 +9,10 @@
 
 .game * {
     font-family: Arial, Helvetica, sans-serif;
+}
+
+.gameTitle {
+    font-size: 30pt;
 }
 
 .console {
@@ -21,8 +29,25 @@
 }
 
 .screen * {
-    display: block;
     margin-top: 0.25rem;
+}
+
+.screen h3 {
+    font-size:25pt;
+}
+
+.screen label {
+    font-size:18pt;
+}
+
+.screen input {
+    font-size:18pt;
+    border-color: black;
+    border-style: solid;
+}
+
+.screen ul li {
+    font-size:16pt;
 }
 
 .screen button {
@@ -33,7 +58,7 @@
     text-align: center;
     text-decoration: none;
     border-radius: 8px;
-    font-size: 12pt;
+    font-size: 20pt;
 }
 
 .buttonTypeA {
