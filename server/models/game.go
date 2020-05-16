@@ -20,8 +20,10 @@ const (
 	WaitingForPlayers GameState = "WaitingForPlayers"
 	// InitialPromptCreation - Players are entering their initial prompts
 	InitialPromptCreation GameState = "InitialPromptCreation"
-	// InitialPromptCreation - Players are entering their initial prompts
-	Drawing GameState = "Drawing"
+	// DrawingsInProgress - Players currently drawing a prompt
+	DrawingsInProgress GameState = "DrawingsInProgress"
+	// Voting - Players currently drawing a prompt
+	Voting GameState = "Voting"
 )
 
 // Player contains all the information relevant to a game's participant
@@ -32,21 +34,20 @@ type Player struct {
 	Points uint64 `json:"points"`
 }
 
-type Prompts struct {
+type Prompt struct {
 	Author     string
 	Group      string
 	Noun       string
-	Adjective1 string
-	Adjective2 string
+	Adjectives [2]string
 }
 
 // Game contains all data that represents the game at any point
 type Game struct {
-	GroupName    string     `json:"groupName"`
-	Players      []*Player  `json:"players"`
-	CurrentState GameState  `json:"currentState"`
-	HostPlayer   string     `json:"hostPlayer"`
-	Prompts      []*Prompts `json:"prompts"`
+	GroupName    string    `json:"groupName"`
+	Players      []*Player `json:"players"`
+	CurrentState GameState `json:"currentState"`
+	HostPlayer   string    `json:"hostPlayer"`
+	Prompts      []*Prompt `json:"prompts"`
 }
 
 // Todo: Put SaveGame/LoadGame methods behind an interface to faciliate unit tests
@@ -76,9 +77,9 @@ func (game *Game) AddPlayer(player *Player) error {
 	return nil
 }
 
-// AddPrompts adds a player's prompts to the game
-func (game *Game) AddPrompts(prompts *Prompts) error {
-	game.Prompts = append(game.Prompts, prompts)
+// AddPrompt adds a player's prompts to the game
+func (game *Game) AddPrompt(prompt *Prompt) error {
+	game.Prompts = append(game.Prompts, prompt)
 	return nil
 }
 

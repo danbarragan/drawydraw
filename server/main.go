@@ -29,7 +29,7 @@ func setupRouter(port string) *gin.Engine {
 	// Debug endpoints - delete eventually
 	router.POST("/api/set-game-state", setGameState)
 	router.POST("/api/echo", echoTest)
-	router.POST("/api/add-prompts", addPrompts)
+	router.POST("/api/add-prompt", addPrompt)
 
 	return router
 }
@@ -72,7 +72,7 @@ func addPlayer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, &gameState)
 }
 
-type addPromptsRequest struct {
+type addPromptRequest struct {
 	PlayerName string `json:"playerName"`
 	GroupName  string `json:"groupName"`
 	Noun       string `json:"noun"`
@@ -80,16 +80,16 @@ type addPromptsRequest struct {
 	Adjective2 string `json:"adjective2"`
 }
 
-func addPrompts(ctx *gin.Context) {
-	addPromptsRequest := addPromptsRequest{}
-	err := ctx.BindJSON(&addPromptsRequest)
+func addPrompt(ctx *gin.Context) {
+	addPromptRequest := addPromptRequest{}
+	err := ctx.BindJSON(&addPromptRequest)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Invalid request: %s", err.Error())))
 		return
 	}
-	gameState, err := statemanager.AddPrompts(addPromptsRequest.PlayerName, addPromptsRequest.GroupName, addPromptsRequest.Noun, addPromptsRequest.Adjective1, addPromptsRequest.Adjective2)
+	gameState, err := statemanager.AddPrompt(addPromptRequest.PlayerName, addPromptRequest.GroupName, addPromptRequest.Noun, addPromptRequest.Adjective1, addPromptRequest.Adjective2)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error adding prompts: %s", err.Error())))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error adding prompt: %s", err.Error())))
 		return
 	}
 	ctx.JSON(http.StatusOK, &gameState)
@@ -184,5 +184,6 @@ func setGameState(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error setting GameState: %s", err.Error())))
 		return
 	}
+
 	ctx.JSON(http.StatusOK, &gameState)
 }

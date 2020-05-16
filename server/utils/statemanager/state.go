@@ -7,6 +7,6 @@ import (
 // Interface implemented by each state's concrete handler
 type state interface {
 	addPlayer(player *models.Player) error
-	addPrompts(prompts *models.Prompts) error
+	addPrompt(prompt *models.Prompt) error
 	startGame(groupName string, playerName string) error
 }

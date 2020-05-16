@@ -17,12 +17,12 @@ func (state promptCreatingState) startGame(groupName string, playerName string) 
 	return errors.New("startGame not supported for initial prompt creation state")
 }
 
-func (state promptCreatingState) addPrompts(prompts *models.Prompts) error {
-	state.game.AddPrompts(prompts)
+func (state promptCreatingState) addPrompts(prompt *models.Prompt) error {
+	state.game.AddPrompt(prompt)
 
 	//TODO better logic to change state when all players have added prompts
 	if len(state.game.Prompts) == len(state.game.Players) {
-		state.game.CurrentState = models.Drawing
+		state.game.CurrentState = models.DrawingsInProgress
 	}
 
 	return nil

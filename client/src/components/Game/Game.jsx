@@ -1,8 +1,10 @@
 import React from 'react';
 import axios from 'axios';
+import DrawingScreen from '../DrawingScreen/DrawingScreen';
 import GroupSelectionScreen from '../GroupSelectionScreen/GroupSelectionScreen';
 import WaitingForPlayersScreen from '../WaitingForPlayersScreen/WaitingForPlayersScreen';
 import InitialPromptCreationScreen from '../InitialPromptCreationScreen/InitialPromptCreationScreen';
+import VotingScreen from '../VotingScreen/VotingScreen';
 import './Game.css';
 import { GameStates } from '../../utils/constants';
 import { formatServerError } from '../../utils/errorFormatting';
@@ -35,8 +37,11 @@ class Game extends React.Component {
   getCurrentComponent() {
     const { gameState } = this.state;
     const { currentState } = gameState;
-
     switch (currentState) {
+      case GameStates.Voting:
+        return <VotingScreen onGameStateChanged={this.onGameStateChanged} gameState={gameState} />;
+      case GameStates.DrawingsInProgress:
+        return <DrawingScreen onGameStateChanged={this.onGameStateChanged} gameState={gameState} />;
       case GameStates.GroupSelection:
         return <GroupSelectionScreen onGameEntered={this.onGameEntered} />;
       case GameStates.WaitingForPlayers:
@@ -84,6 +89,8 @@ class Game extends React.Component {
         <button className="toggleConsole" type="button" onClick={this.toggleConsole}>debug</button>
         <button className="setState" type="button" onClick={(() => this.debugSetGameState('WaitingForPlayers'))}>WaitingForPlayers</button>
         <button className="setState" type="button" onClick={(() => this.debugSetGameState('InitialPromptCreation'))}>PromptCreation</button>
+        <button className="setState" type="button" onClick={(() => this.debugSetGameState('DrawingsInProgress'))}>Drawing</button>
+        <button className="setState" type="button" onClick={(() => this.debugSetGameState('Voting'))}>Voting</button>
         {this.consoleEnabled ? (
           <div className="console">
             {error ? `Error:${error}` : null}
