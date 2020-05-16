@@ -1,4 +1,3 @@
-// Link.react.test.js
 import React from 'react';
 import { mount, shallow } from 'enzyme';
 import axios from 'axios';
