@@ -65,8 +65,6 @@ class VotingScreen extends React.Component {
       let className = '';
       if (voted) {
         className = isSelected ? 'votedFor' : 'notVotedFor';
-      } else {
-        className = 'notVotedYet';
       }
       options.push(
         <div className={className} key={optionName}>
@@ -89,9 +87,9 @@ class VotingScreen extends React.Component {
         <form>
           {options}
         </form>
-        <button disabled={voted} className="voteButton" type="button" onClick={this.castVote}>Vote</button>
+        <button disabled={voted} className="voteButton" type="button" onClick={this.castVote}>Vote</button>        
+        {voted ? <h2>X/Y Votes cast.</h2> : null }
         <h3 className="error">{error}</h3>
-        <h2>X/Y Votes cast.</h2>
       </div>
     );
   }
