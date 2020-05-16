@@ -5,12 +5,20 @@ env:
     - GO111MODULE=on
 notifications:
     email: false
+# Use the latest stable version of Node
+install:
+    - . $HOME/.nvm/nvm.sh
+    - nvm install stable
+    - nvm use stable
+    - npm install
 before_script:
     - "cd client"
     - "npm install"
 script:
     # Lint client code
     - "npm run lint || travis_terminate 1"
+    # Run server tests
+    - "npm run test || travis_terminate 1"
     # Server checks:
     - "cd ../server"
     # Lint server code
