@@ -3,6 +3,7 @@ const GameStates = Object.freeze({
   WaitingForPlayers: 'WaitingForPlayers',
   InitialPromptCreation: 'InitialPromptCreation',
   DrawingsInProgress: 'DrawingsInProgress',
+  Voting: 'Voting',
 });
 
 exports.GameStates = GameStates;

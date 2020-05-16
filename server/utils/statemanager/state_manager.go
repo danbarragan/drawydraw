@@ -128,6 +128,8 @@ func getManagerForGroup(groupName string) (*StateManager, error) {
 
 func getCurrentState(game *models.Game) (state, error) {
 	switch currentState := game.CurrentState; currentState {
+	case models.Voting:
+		return voting{game: game}, nil
 	case models.WaitingForPlayers:
 		return waitingForPlayersState{game: game}, nil
 	case models.InitialPromptCreation:
@@ -154,6 +156,8 @@ func isPlayerInGroup(playerName string, playersInGroup []*models.Player) bool {
 func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 	gameState := models.GameState(gameStateName)
 	switch currentState := gameState; currentState {
+	case models.Voting:
+		return createGameState("chats", []string{"graisseux", "frere jacques", "pepe le pew"}, gameState)
 	case models.WaitingForPlayers:
 		return createGameState("not cats", []string{"dog", "cat", "other dog"}, gameState)
 	case models.InitialPromptCreation:
