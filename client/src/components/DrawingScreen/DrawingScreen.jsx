@@ -76,9 +76,6 @@ class DrawingScreen extends React.Component {
 
   setupCanvas(p5, canvasParentRef) {
     const canvasContainer = p5.createCanvas(500, 500).parent(canvasParentRef);
-    // Perf hack for mobile
-    canvasContainer.style.width = '100%';
-    canvasContainer.style.height = '100%';
     this.setState({ canvasContainer });
   }
 
@@ -145,7 +142,13 @@ class DrawingScreen extends React.Component {
           onWidthChange={this.onBrushSizeChange}
           currentSize={currentBrushSize}
         />
-        <Sketch className="drawingCanvas" setup={this.setupCanvas} draw={this.renderCanvas} mouseDragged={this.mouseDragged} mousePressed={this.mousePressed} />
+        <Sketch
+          className="drawingCanvas"
+          setup={this.setupCanvas}
+          draw={this.renderCanvas}
+          touchMoved={this.mouseDragged}
+          touchStarted={this.mousePressed}
+        />
         <button type="button" className="button buttonTypeA" onClick={this.onSubmitClick}>Submit</button>
         <button type="button" className="button buttonTypeB" onClick={this.onClearClick}>Clear</button>
         <h3 className="error">{error}</h3>
