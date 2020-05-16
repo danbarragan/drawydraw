@@ -30,14 +30,13 @@ func TestMain(m *testing.M) {
 }
 
 func TestCreateGameRoute(t *testing.T) {
-	r := setupRouter("8080")
 	// Create the game
 	data := map[string]string{
 		"groupName":  "Kitten Party",
 		"playerName": "Baby Cat",
 	}
 	req := createRequest(t, "POST", "/api/create-game", data)
-	resp := testHTTPResponse(t, r, req, http.StatusOK)
+	resp := testHTTPResponse(t, req, http.StatusOK)
 
 	// Todo: Saner expected state
 	expectedState := `{"currentPlayer":{"isHost":true,"name":"Baby Cat"},"currentState":"WaitingForPlayers","groupName":"Kitten Party","players":[{"name":"Baby Cat","host":true,"points":0}]}`
@@ -46,17 +45,16 @@ func TestCreateGameRoute(t *testing.T) {
 
 func TestGetGameStateStatusRoute(t *testing.T) {
 	// Create a game
-	r := setupRouter("8080")
 	data := map[string]string{
 		"groupName":  "somegame",
 		"playerName": "Player",
 	}
 	req := createRequest(t, "POST", "/api/create-game", data)
-	testHTTPResponse(t, r, req, http.StatusOK)
+	testHTTPResponse(t, req, http.StatusOK)
 
 	// Get the game's status
 	req = createRequest(t, "GET", "/api/get-game-status/somegame?playerName=Player", nil)
-	resp := testHTTPResponse(t, r, req, http.StatusOK)
+	resp := testHTTPResponse(t, req, http.StatusOK)
 
 	// Todo: Saner expected state
 	expectedState := `{"currentPlayer":{"isHost":true,"name":"Player"},"currentState":"WaitingForPlayers","groupName":"somegame","players":[{"name":"Player","host":true,"points":0}]}`
@@ -64,29 +62,27 @@ func TestGetGameStateStatusRoute(t *testing.T) {
 }
 
 func TestCreateGameRoute__GameAlreadyExists(t *testing.T) {
-	r := setupRouter("8080")
 	// Create the game
 	data := map[string]string{
 		"groupName":  "magic group",
 		"playerName": "some player",
 	}
 	req := createRequest(t, "POST", "/api/create-game", data)
-	testHTTPResponse(t, r, req, http.StatusOK)
+	testHTTPResponse(t, req, http.StatusOK)
 
 	// Try to create the game again
 	req = createRequest(t, "POST", "/api/create-game", data)
-	testHTTPResponse(t, r, req, http.StatusBadRequest)
+	testHTTPResponse(t, req, http.StatusBadRequest)
 }
 
 func TestAddPlayerRoute(t *testing.T) {
-	r := setupRouter("8080")
 	// Create the game
 	data := map[string]string{
 		"groupName":  "group",
 		"playerName": "player1",
 	}
 	req := createRequest(t, "POST", "/api/create-game", data)
-	testHTTPResponse(t, r, req, http.StatusOK)
+	testHTTPResponse(t, req, http.StatusOK)
 
 	// Add the player
 	data = map[string]string{
@@ -94,34 +90,30 @@ func TestAddPlayerRoute(t *testing.T) {
 		"playerName": "player2",
 	}
 	req = createRequest(t, "POST", "/api/add-player", data)
-	resp := testHTTPResponse(t, r, req, http.StatusOK)
+	resp := testHTTPResponse(t, req, http.StatusOK)
 
 	expectedState := `{"currentPlayer":{"isHost":false,"name":"player2"},"currentState":"WaitingForPlayers","groupName":"group","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}]}`
 	assert.Equal(t, expectedState, resp)
 }
 
 func TestAddPlayerRoute_GroupNotSetup(t *testing.T) {
-	r := setupRouter("8080")
 	data := map[string]string{
 		"groupName":  "superGroup",
 		"playerName": "player",
 	}
 
 	req := createRequest(t, "POST", "/api/add-player", data)
-	testHTTPResponse(t, r, req, http.StatusBadRequest)
+	testHTTPResponse(t, req, http.StatusBadRequest)
 }
 
 func TestStartGameRoute(t *testing.T) {
-	// Test set up
-	r := setupRouter("8080")
-
 	// Create the game
 	data := map[string]string{
 		"groupName":  "startGameRoute",
 		"playerName": "player1",
 	}
 	req := createRequest(t, "POST", "/api/create-game", data)
-	testHTTPResponse(t, r, req, http.StatusOK)
+	testHTTPResponse(t, req, http.StatusOK)
 
 	// Actual test
 	// Make a post to start game route
@@ -130,19 +122,20 @@ func TestStartGameRoute(t *testing.T) {
 		"playerName": "player1",
 	}
 	req = createRequest(t, "POST", "/api/start-game", data)
-	resp := testHTTPResponse(t, r, req, http.StatusOK)
+	resp := testHTTPResponse(t, req, http.StatusOK)
 
 	expectedState := `{"currentPlayer":{"isHost":true,"name":"player1"},"currentState":"InitialPromptCreation","groupName":"startGameRoute","players":[{"name":"player1","host":true,"points":0}]}`
 	assert.Equal(t, expectedState, resp)
 }
 
 // Helper function to process a request and test its response
-func testHTTPResponse(t *testing.T, r *gin.Engine, req *http.Request, statusCode int) string {
+func testHTTPResponse(t *testing.T, req *http.Request, statusCode int) string {
 
-  // Create a response recorder
+  // Create a response recorder// Test set up
   w := httptest.NewRecorder()
 
   // Create the service and process the above request.
+  r := setupRouter("8080")
   r.ServeHTTP(w, req)
 
   if w.Code != statusCode {
