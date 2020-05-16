@@ -86,6 +86,7 @@ class Game extends React.Component {
         <button className="toggleConsole" type="button" onClick={this.toggleConsole}>debug</button>
         <button className="setState" type="button" onClick={(() => this.debugSetGameState('WaitingForPlayers'))}>WaitingForPlayers</button>
         <button className="setState" type="button" onClick={(() => this.debugSetGameState('InitialPromptCreation'))}>PromptCreation</button>
+        <button className="setState" type="button" onClick={(() => this.debugSetGameState('DrawingsInProgress'))}>Drawing</button>
         {this.consoleEnabled ? (
           <div className="console">
             {error ? `Error:${error}` : null}
