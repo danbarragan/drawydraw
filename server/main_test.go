@@ -227,7 +227,6 @@ func TestAddPromptRoute(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	actualResponse := w.Body.String()
-	//prompt_uuid := actualResponse  //TODO : will need to get the real uuid from the the response and put it in the expected state
 	expectedState := `{"currentPlayer":{"isHost":true,"name":"player1"},"currentState":"InitialPromptCreation","groupName":"addPromptRoute","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}]}`
 	assert.Equal(t, expectedState, actualResponse)
 
@@ -247,8 +246,6 @@ func TestAddPromptRoute(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	actualResponse = w.Body.String()
-	//prompt_uuid := actualResponse  //TODO : will need to get the real uuid from the the response and put it in the expected state
-	expectedState = `{"currentPlayer":{"isHost":false,"name":"player2"},"currentState":"Drawing","groupName":"addPromptRoute","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}]}`
+	expectedState = `{"currentPlayer":{"isHost":false,"name":"player2"},"currentState":"DrawingsInProgress","groupName":"addPromptRoute","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}]}`
 	assert.Equal(t, expectedState, actualResponse)
-
 }

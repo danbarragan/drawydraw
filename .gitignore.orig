@@ -1,0 +1,12 @@
+.vscode
+.env
+
+client/node_modules
+client/dist
+client/npm-debug.log
+
+server/drawydraw
+<<<<<<< HEAD
+.vscode
+=======
+>>>>>>> master
