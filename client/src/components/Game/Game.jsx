@@ -34,10 +34,8 @@ class Game extends React.Component {
   }
 
   getCurrentComponent() {
-    // const { gameState } = this.state;
-    // const { currentState } = gameState;
-    const gameState = { groupName: 'kitties4Life', currentPlayer: { name: 'baby cat' } };
-    const currentState = GameStates.DrawingsInProgress;
+    const { gameState } = this.state;
+    const { currentState } = gameState;
     switch (currentState) {
       case GameStates.DrawingsInProgress:
         return <DrawingScreen onGameStateChanged={this.onGameStateChanged} gameState={gameState} />;
