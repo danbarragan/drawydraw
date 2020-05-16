@@ -6,26 +6,21 @@
     margin: 0;
 }
 
-.colorContainer, .widthContainer {
+.brushColorContainer, .brushSizeContainer {
     margin-left: 5;
     display: inline-block;
     border-style: solid;
     border-color: white;
 }
 
-.color {
+.brushColor {
     width: 20px;
     height: 20px;
     border-color: black;
     border-style: solid;
 }
 
-.highlightedColor {
-    border-style: solid;
-    border-color: blue;
-}
-
-.width {
+.brushSize {
     width: 20px;
     height: 20px;
     text-align: center;
@@ -34,6 +29,7 @@
     border-style: solid;
 }
 
-.highlightedWidth {
+.highlightedBrushColor, .highlightedBrushSize {
+    border-style: solid;
     border-color: blue;
 }

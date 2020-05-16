@@ -4,7 +4,7 @@ import React from 'react';
 import './BrushConfig.css';
 import PropTypes from 'prop-types';
 
-const Colors = Object.freeze({
+const BrushColors = Object.freeze({
   // Map enum members to HTML colors
   Black: 'black',
   White: 'white',
@@ -17,7 +17,7 @@ const Colors = Object.freeze({
   Mimosa: '#EFC050',
 });
 
-const Widths = Object.freeze({
+const BrushSizes = Object.freeze({
   Small: { name: 'S', weight: 5 },
   Medium: { name: 'M', weight: 10 },
   Large: { name: 'L', weight: 15 },
@@ -26,19 +26,19 @@ const Widths = Object.freeze({
 
 const BrushConfig = (props) => {
   const {
-    currentColor, onColorChange, currentWidth, onWidthChange,
+    currentColor, onColorChange, currentSize, onWidthChange,
   } = props;
   return (
     <div className="colorPicker">
-      <h3>Color</h3>
+      <h3>Brush color</h3>
       {
-          Object.values(Colors).map((color) => {
-            const highlightClass = color === currentColor ? 'highlightedColor' : '';
+          Object.values(BrushColors).map((color) => {
+            const highlightClass = color === currentColor ? 'highlightedBrushColor' : '';
             return (
-              <div key={`${color}Container`} className="colorContainer">
+              <div key={`${color}Container`} className="brushColorContainer">
                 <div
                   key={color}
-                  className={`color ${highlightClass}`}
+                  className={`brushColor ${highlightClass}`}
                   style={{ backgroundColor: color }}
                   onClick={() => onColorChange(color)}
                 />
@@ -46,18 +46,18 @@ const BrushConfig = (props) => {
             );
           })
       }
-      <h3>Width</h3>
+      <h3>Brush size</h3>
       {
-      Object.values(Widths).map((width) => {
-        const highlightClass = width === currentWidth ? 'highlightedWidth' : '';
+      Object.values(BrushSizes).map((size) => {
+        const highlightClass = size === currentSize ? 'highlightedBrushSize' : '';
         return (
-          <div key={`${width.name}Container`} className="widthContainer">
+          <div key={`${size.name}Container`} className="brushSizeContainer">
             <div
-              key={width.name}
-              className={`width ${highlightClass}`}
-              onClick={() => onWidthChange(width)}
+              key={size.name}
+              className={`brushSize ${highlightClass}`}
+              onClick={() => onWidthChange(size)}
             >
-              <p>{width.name}</p>
+              <p>{size.name}</p>
             </div>
           </div>
         );
@@ -70,11 +70,11 @@ const BrushConfig = (props) => {
 BrushConfig.propTypes = {
   currentColor: PropTypes.string.isRequired,
   onColorChange: PropTypes.func.isRequired,
-  currentWidth: PropTypes.shape({
+  currentSize: PropTypes.shape({
     name: PropTypes.string.isRequired,
     weight: PropTypes.number.isRequired,
   }).isRequired,
   onWidthChange: PropTypes.func.isRequired,
 };
 
-export { BrushConfig, Colors, Widths };
+export { BrushConfig, BrushColors, BrushSizes };

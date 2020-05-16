@@ -4,7 +4,7 @@ import './DrawingScreen.css';
 import axios from 'axios';
 import PropTypes from 'prop-types';
 import { formatServerError } from '../../utils/errorFormatting';
-import { Colors, BrushConfig, Widths } from './BrushConfig/BrushConfig';
+import { BrushColors, BrushConfig, BrushSizes } from './BrushConfig/BrushConfig';
 
 // Tiny classes to make managing points easier
 function Point(x, y) {
@@ -33,17 +33,18 @@ class DrawingScreen extends React.Component {
     super(props);
     this.state = {
       strokes: [],
-      currentColor: Colors.Black,
-      currentWidth: Widths.Small,
+      currentBrushColor: BrushColors.Black,
+      currentBrushSize: BrushSizes.Small,
     };
     this.mousePressed = this.mousePressed.bind(this);
     this.mouseDragged = this.mouseDragged.bind(this);
     this.renderCanvas = this.renderCanvas.bind(this);
     this.onSubmitClick = this.onSubmitClick.bind(this);
+    this.onClearClick = this.onClearClick.bind(this);
     this.setupCanvas = this.setupCanvas.bind(this);
     this.renderStrokesAsDataURL = this.renderStrokesAsDataURL.bind(this);
-    this.onColorChange = this.onColorChange.bind(this);
-    this.onWidthChange = this.onWidthChange.bind(this);
+    this.onBrushColorChange = this.onBrushColorChange.bind(this);
+    this.onBrushSizeChange = this.onBrushSizeChange.bind(this);
   }
 
   async onSubmitClick() {
@@ -61,12 +62,16 @@ class DrawingScreen extends React.Component {
     }
   }
 
-  onColorChange(currentColor) {
-    this.setState({ currentColor });
+  onClearClick() {
+    this.setState({ strokes: [] });
   }
 
-  onWidthChange(currentWidth) {
-    this.setState({ currentWidth });
+  onBrushColorChange(currentBrushColor) {
+    this.setState({ currentBrushColor });
+  }
+
+  onBrushSizeChange(currentBrushSize) {
+    this.setState({ currentBrushSize });
   }
 
   setupCanvas(p5, canvasParentRef) {
@@ -76,13 +81,13 @@ class DrawingScreen extends React.Component {
 
   mousePressed(event) {
     const { mouseX, mouseY, canvas } = event;
-    const { currentColor, currentWidth } = this.state;
+    const { currentBrushColor, currentBrushSize } = this.state;
     if (DrawingScreen.isPointInCanvas(mouseX, mouseY, canvas)) {
       // Add a new stroke to the set of strokes starting at the current mouse location
       let { strokes } = this.state;
       strokes = [
         ...strokes,
-        new Stroke([new Point(mouseX, mouseY)], currentColor, currentWidth.weight),
+        new Stroke([new Point(mouseX, mouseY)], currentBrushColor, currentBrushSize.weight),
       ];
       this.setState({ strokes });
     }
@@ -125,20 +130,21 @@ class DrawingScreen extends React.Component {
   }
 
   render() {
-    const { error, currentColor, currentWidth } = this.state;
+    const { error, currentBrushColor, currentBrushSize } = this.state;
     return (
       <div className="screen">
         <h1>
           Draw some prompt
         </h1>
         <BrushConfig
-          onColorChange={this.onColorChange}
-          currentColor={currentColor}
-          onWidthChange={this.onWidthChange}
-          currentWidth={currentWidth}
+          onColorChange={this.onBrushColorChange}
+          currentColor={currentBrushColor}
+          onWidthChange={this.onBrushSizeChange}
+          currentSize={currentBrushSize}
         />
         <Sketch className="drawingCanvas" setup={this.setupCanvas} draw={this.renderCanvas} mouseDragged={this.mouseDragged} mousePressed={this.mousePressed} />
         <button type="button" className="button buttonTypeA" onClick={this.onSubmitClick}>Submit</button>
+        <button type="button" className="button buttonTypeB" onClick={this.onClearClick}>Clear</button>
         <h3 className="error">{error}</h3>
       </div>
     );
