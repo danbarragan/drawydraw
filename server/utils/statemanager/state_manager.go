@@ -84,7 +84,7 @@ func AddPrompts(playerName string, groupName string, noun string, adjective1 str
 		}
 	}
 
-	new_prompt := models.Prompts{
+	newPrompt := models.Prompts{
 		Author:     playerName,
 		Group:      groupName,
 		Noun:       noun,
@@ -92,7 +92,7 @@ func AddPrompts(playerName string, groupName string, noun string, adjective1 str
 		Adjective2: adjective2,
 	}
 
-	err = stateManager.currentState.addPrompts(&new_prompt)
+	err = stateManager.currentState.addPrompts(&newPrompt)
 	if err != nil {
 		return nil, err
 	}
