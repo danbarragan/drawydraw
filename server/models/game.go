@@ -29,17 +29,23 @@ const (
 // Player contains all the information relevant to a game's participant
 type Player struct {
 	// Todo: Probably worth having a sort of device id in case two players register with the same name
-	Name   string `json:"name"`
-	Host   bool   `json:"host"`
-	Points uint64 `json:"points"`
+	Name           string  `json:"name"`
+	Host           bool    `json:"host"`
+	Points         uint64  `json:"points"`
+	AssignedPrompt *Prompt `json:"assignedPrompt`
 }
 
-type Prompts struct {
+type Prompt struct {
 	Author     string
 	Group      string
 	Noun       string
 	Adjective1 string
 	Adjective2 string
+}
+
+type Drawing struct {
+	ImageData string `json:"imageData"`
+	Author    string `json:"author"`
 }
 
 // Game contains all data that represents the game at any point
@@ -48,7 +54,8 @@ type Game struct {
 	Players      []*Player  `json:"players"`
 	CurrentState GameState  `json:"currentState"`
 	HostPlayer   string     `json:"hostPlayer"`
-	Prompts      []*Prompts `json:"prompts"`
+	Prompts      []*Prompt  `json:"prompts"`
+	Drawings     []*Drawing `json:"drawings"`
 }
 
 // Todo: Put SaveGame/LoadGame methods behind an interface to faciliate unit tests
@@ -79,7 +86,7 @@ func (game *Game) AddPlayer(player *Player) error {
 }
 
 // AddPrompts adds a player's prompts to the game
-func (game *Game) AddPrompts(prompts *Prompts) error {
+func (game *Game) AddPrompts(prompts *Prompt) error {
 	game.Prompts = append(game.Prompts, prompts)
 	return nil
 }

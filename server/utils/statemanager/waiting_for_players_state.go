@@ -22,10 +22,10 @@ func (state waitingForPlayersState) startGame(groupName string, playerName strin
 	return nil
 }
 
-func (state waitingForPlayersState) submitDrawing(groupName string, playerName string, encodedImage string) error {
+func (state waitingForPlayersState) submitDrawing(playerName string, encodedImage string) error {
 	return errors.New("Submitting drawings is not allowed in the wating for players state")
 }
 
-func (state waitingForPlayersState) addPrompts(prompts *models.Prompts) error {
+func (state waitingForPlayersState) addPrompts(prompts *models.Prompt) error {
 	return errors.New("addprompts not supported for waiting for players state")
 }

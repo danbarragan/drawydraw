@@ -84,7 +84,7 @@ func AddPrompts(playerName string, groupName string, noun string, adjective1 str
 		}
 	}
 
-	new_prompt := models.Prompts{
+	new_prompt := models.Prompt{
 		Author:     playerName,
 		Group:      groupName,
 		Noun:       noun,
