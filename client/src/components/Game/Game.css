@@ -13,3 +13,34 @@
     border-width: 2px;
     text-align: left;
 }
+
+.screen {
+    text-align: left;
+    margin-left: 0.5rem;
+    display: inline-block;
+}
+
+.screen * {
+    display: block;
+    margin-top: 0.25rem;
+}
+
+.screen button {
+    display: inline-block;
+    margin-top: 0.5rem;
+    margin-right: 0.5rem;
+    border: none;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 12pt;
+}
+
+.buttonTypeA {
+    background-color:rgb(132, 196, 134);
+}
+
+.buttonTypeB {
+    background-color: rgb(135, 202, 247);
+}
+
