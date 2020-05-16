@@ -12,12 +12,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-/*
-	Several problems with these tests:
-	- They're really more like integration tests, we should improve abtractions sometime and have real unit tests
-	- Asserting on a JSON string is error prone, we should probably have mock game states and deserialize JSON responses to compare against them
-	- There's a lot of code repetition here and some shortcuts could be taken like setting the game state directly instead of going through different endpoints
-*/
+var groupNameKey = "groupName"
+var playersKey = "players"
+var currentPlayerKey = "currentPlayer"
+var currentStateKey = "currentState"
+var waitingForPlayers = "WaitingForPlayers"
+var initialPromptCreation = "InitialPromptCreation"
+var nameKey = "name"
+var isHostKey = "isHost"
+
+type Response = map[string]interface{}
 
 // This function is used for setup before executing the test functions
 func TestMain(m *testing.M) {
@@ -31,23 +35,27 @@ func TestMain(m *testing.M) {
 
 func TestCreateGameRoute(t *testing.T) {
 	// Create the game
+	hostName := "Baby Cat"
+	groupName := "Kitten Party"
 	data := map[string]string{
-		"groupName":  "Kitten Party",
-		"playerName": "Baby Cat",
+		"groupName":  groupName,
+		"playerName": hostName,
 	}
 	req := createRequest(t, "POST", "/api/create-game", data)
 	resp := testHTTPResponse(t, req, http.StatusOK)
 
-	// Todo: Saner expected state
-	expectedState := `{"currentPlayer":{"isHost":true,"name":"Baby Cat"},"currentState":"WaitingForPlayers","groupName":"Kitten Party","players":[{"name":"Baby Cat","host":true,"points":0}]}`
-	assert.Equal(t, expectedState, resp)
+	assert.Equal(t, resp[groupNameKey], groupName)
+	assert.Equal(t, resp[currentStateKey], waitingForPlayers)
+	assert.Equal(t, resp[currentPlayerKey], Response{nameKey: hostName, isHostKey: true})
 }
 
 func TestGetGameStateStatusRoute(t *testing.T) {
 	// Create a game
+	hostName := "Player"
+	groupName := "somegame"
 	data := map[string]string{
-		"groupName":  "somegame",
-		"playerName": "Player",
+		"groupName":  groupName,
+		"playerName": hostName,
 	}
 	req := createRequest(t, "POST", "/api/create-game", data)
 	testHTTPResponse(t, req, http.StatusOK)
@@ -57,8 +65,9 @@ func TestGetGameStateStatusRoute(t *testing.T) {
 	resp := testHTTPResponse(t, req, http.StatusOK)
 
 	// Todo: Saner expected state
-	expectedState := `{"currentPlayer":{"isHost":true,"name":"Player"},"currentState":"WaitingForPlayers","groupName":"somegame","players":[{"name":"Player","host":true,"points":0}]}`
-	assert.Equal(t, expectedState, resp)
+	assert.Equal(t, resp[groupNameKey], groupName)
+	assert.Equal(t, resp[currentStateKey], waitingForPlayers)
+	assert.Equal(t, resp[currentPlayerKey], Response{nameKey: hostName, isHostKey: true})
 }
 
 func TestCreateGameRoute__GameAlreadyExists(t *testing.T) {
@@ -85,15 +94,15 @@ func TestAddPlayerRoute(t *testing.T) {
 	testHTTPResponse(t, req, http.StatusOK)
 
 	// Add the player
+	playerName := "player2"
 	data = map[string]string{
 		"groupName":  "group",
-		"playerName": "player2",
+		"playerName": playerName,
 	}
 	req = createRequest(t, "POST", "/api/add-player", data)
 	resp := testHTTPResponse(t, req, http.StatusOK)
 
-	expectedState := `{"currentPlayer":{"isHost":false,"name":"player2"},"currentState":"WaitingForPlayers","groupName":"group","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}]}`
-	assert.Equal(t, expectedState, resp)
+	assert.Equal(t, resp[currentPlayerKey], Response{nameKey: playerName, isHostKey: false})
 }
 
 func TestAddPlayerRoute_GroupNotSetup(t *testing.T) {
@@ -124,12 +133,11 @@ func TestStartGameRoute(t *testing.T) {
 	req = createRequest(t, "POST", "/api/start-game", data)
 	resp := testHTTPResponse(t, req, http.StatusOK)
 
-	expectedState := `{"currentPlayer":{"isHost":true,"name":"player1"},"currentState":"InitialPromptCreation","groupName":"startGameRoute","players":[{"name":"player1","host":true,"points":0}]}`
-	assert.Equal(t, expectedState, resp)
+	assert.Equal(t, resp[currentStateKey], initialPromptCreation)
 }
 
 // Helper function to process a request and test its response
-func testHTTPResponse(t *testing.T, req *http.Request, statusCode int) string {
+func testHTTPResponse(t *testing.T, req *http.Request, statusCode int) Response {
 
 	// Create a response recorder// Test set up
 	w := httptest.NewRecorder()
@@ -142,7 +150,9 @@ func testHTTPResponse(t *testing.T, req *http.Request, statusCode int) string {
 		t.Fail()
 	}
 
-	return w.Body.String()
+	resp := Response{}
+	json.Unmarshal([]byte(w.Body.String()), &resp)
+	return resp
 }
 
 func createRequest(t *testing.T, method string, route string, data map[string]string) *http.Request {
