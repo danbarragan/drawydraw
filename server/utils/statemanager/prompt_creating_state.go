@@ -23,7 +23,7 @@ func (state promptCreatingState) addPrompt(prompt *models.Prompt) error {
 		return addPromptErr
 	}
 
-	//TODO better logic to change state when all players have added prompts
+	//TODO better logic to change state when all players have added prompt
 	if len(state.game.Prompts) == len(state.game.Players) {
 		state.game.CurrentState = models.DrawingsInProgress
 	}

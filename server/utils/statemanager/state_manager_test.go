@@ -122,7 +122,7 @@ func TestStartGame_NonHost_Fails(t *testing.T) {
 	assert.Nil(t, startResponse)
 }
 
-func TestAddPrompts_Succeeds(t *testing.T) {
+func TestAddPrompt_Succeeds(t *testing.T) {
 	//set up a group, add players, and start the game
 	groupName := randomGroupName()
 	CreateGroup(groupName)

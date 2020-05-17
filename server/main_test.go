@@ -168,7 +168,8 @@ func TestAddPromptRoute(t *testing.T) {
 		"playerName": "player1",
 		"noun":       "chicken",
 		"adjective1": "snazzy",
-		"adjective2": "portly"}
+		"adjective2": "portly",
+	}
 	req = createRequest(t, "POST", "/api/add-prompt", data)
 	resp := testHTTPResponse(t, req, http.StatusOK)
 	assert.Equal(t, initialPromptCreation, resp[currentStateKey])
@@ -179,7 +180,8 @@ func TestAddPromptRoute(t *testing.T) {
 		"playerName": "player2",
 		"noun":       "duck",
 		"adjective1": "chilly",
-		"adjective2": "sleepy"}
+		"adjective2": "sleepy",
+	}
 	req = createRequest(t, "POST", "/api/add-prompt", data)
 	resp = testHTTPResponse(t, req, http.StatusOK)
 	assert.Equal(t, drawingsInProgress, resp[currentStateKey])

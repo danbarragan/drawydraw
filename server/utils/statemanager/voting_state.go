@@ -19,5 +19,5 @@ func (state voting) startGame(groupName string, playerName string) error {
 }
 
 func (state voting) addPrompt(prompt *models.Prompt) error {
-	return errors.New("addprompts not supported for voting state")
+	return errors.New("addprompt not supported for voting state")
 }

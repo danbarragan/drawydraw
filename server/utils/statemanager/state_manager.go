@@ -63,13 +63,13 @@ func AddPlayer(playerName string, groupName string, isHost bool) (*GameStatusRes
 	return formattedState, nil
 }
 
-// AddPrompts handles adding the prompts a player created to the game state
+// AddPrompt handles adding the prompt a player created to the game state
 func AddPrompt(playerName string, groupName string, noun string, adjective1 string, adjective2 string) (*GameStatusResponse, error) {
 	//check if any of the prompt fields were empty
 	if len(noun) < 1 ||
 		len(adjective1) < 1 ||
 		len(adjective2) < 1 {
-		return nil, errors.New("One or more of the prompts was not provided")
+		return nil, errors.New("One or more of the prompt was not provided")
 	}
 
 	stateManager, err := getManagerForGroup(groupName)
@@ -141,7 +141,7 @@ func formatGameStateForPlayer(game *models.Game, playerName string) (*GameStatus
 		return nil, err
 	}
 
-	//TODO : Need to adjust this so we don't send all the prompts back to the client, someone can cheat by inspecting
+	//TODO : Need to adjust this so we don't send all the prompt back to the client, someone can cheat by inspecting
 	statusResponse := map[string]interface{}{
 		"groupName": game.GroupName,
 		"players":   game.Players,

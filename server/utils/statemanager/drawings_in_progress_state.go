@@ -19,5 +19,5 @@ func (state drawingsInProgressState) startGame(groupName string, playerName stri
 }
 
 func (state drawingsInProgressState) addPrompt(prompt *models.Prompt) error {
-	return errors.New("addprompts not supported for drawing state")
+	return errors.New("addprompt not supported for drawing state")
 }
