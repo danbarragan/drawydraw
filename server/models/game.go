@@ -38,8 +38,7 @@ type Prompt struct {
 	Author     string
 	Group      string
 	Noun       string
-	Adjective1 string
-	Adjective2 string
+	Adjectives [2]string
 }
 
 // Game contains all data that represents the game at any point

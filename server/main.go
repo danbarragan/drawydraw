@@ -89,7 +89,7 @@ func addPrompt(ctx *gin.Context) {
 	}
 	gameState, err := statemanager.AddPrompt(addPromptRequest.PlayerName, addPromptRequest.GroupName, addPromptRequest.Noun, addPromptRequest.Adjective1, addPromptRequest.Adjective2)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error adding prompts: %s", err.Error())))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error adding prompt: %s", err.Error())))
 		return
 	}
 	ctx.JSON(http.StatusOK, &gameState)

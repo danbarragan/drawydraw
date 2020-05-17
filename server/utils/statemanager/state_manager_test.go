@@ -46,8 +46,7 @@ func TestAddPlayer_AddHost_Succeeds(t *testing.T) {
 	assert.Equal(t, currentPlayer["name"], "mama cat")
 }
 
-//Should this be _Succeeds?
-func TestAddPlayer_AddToHostedGame_Fails(t *testing.T) {
+func TestAddPlayer_AddToHostedGame_Succeeds(t *testing.T) {
 	groupName := randomGroupName()
 	CreateGroup(groupName)
 	AddPlayer("papa cat", groupName, true)
@@ -94,7 +93,7 @@ func TestAddPlayer_AddSecondHost_Fails(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestStartGame_HostTriesandSucceeds(t *testing.T) {
+func TestStartGame_Host_Succeeds(t *testing.T) {
 	groupName := randomGroupName()
 	CreateGroup(groupName)
 	AddPlayer("host cat", groupName, true)

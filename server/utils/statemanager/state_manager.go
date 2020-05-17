@@ -88,9 +88,7 @@ func AddPrompt(playerName string, groupName string, noun string, adjective1 stri
 		Author:     playerName,
 		Group:      groupName,
 		Noun:       noun,
-		Adjective1: adjective1,
-		Adjective2: adjective2,
-	}
+		Adjectives: [2]string{adjective1, adjective2}}
 
 	err = stateManager.currentState.addPrompt(&newPrompt)
 	if err != nil {

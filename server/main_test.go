@@ -172,7 +172,7 @@ func TestAddPromptRoute(t *testing.T) {
 	}
 	req = createRequest(t, "POST", "/api/add-prompt", data)
 	resp := testHTTPResponse(t, req, http.StatusOK)
-	assert.Equal(t, resp[currentStateKey], initialPromptCreation)
+	assert.Equal(t, initialPromptCreation, resp[currentStateKey])
 
 	//Make a post to the add prompts route from player 2, confirm state has changed to "Drawing"
 	data = map[string]string{
@@ -184,7 +184,7 @@ func TestAddPromptRoute(t *testing.T) {
 	}
 	req = createRequest(t, "POST", "/api/add-prompt", data)
 	resp = testHTTPResponse(t, req, http.StatusOK)
-	assert.Equal(t, resp[currentStateKey], drawingsInProgress)
+	assert.Equal(t, drawingsInProgress, resp[currentStateKey])
 }
 
 // Helper function to process a request and test its response
