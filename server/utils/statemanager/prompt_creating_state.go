@@ -32,16 +32,15 @@ func (state promptCreatingState) submitDrawing(playerName string, encodedImage s
 }
 
 func assignPrompts(game *models.Game) {
-	// Really dumb prompt assignment, each player draws whatever the previous player entered
+	// Really dumb prompt assignment, each player draws whatever the next player (in joining order) entered
 	playerPromptMap := map[string]*models.Prompt{}
 	for _, prompt := range game.Prompts {
 		playerPromptMap[prompt.Author] = prompt
 	}
 	playerCount := len(game.Players)
 	for index, player := range game.Players {
-		// Go's modulus operator is not as magic as python's
-		previousPlayerIndex := (index-1)%playerCount
-		assignedPromptAuthor := game.Players[].Name
+		previousPlayerIndex := (index + 1) % playerCount
+		assignedPromptAuthor := game.Players[previousPlayerIndex].Name
 		player.AssignedPrompt = playerPromptMap[assignedPromptAuthor]
 	}
 }

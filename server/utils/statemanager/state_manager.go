@@ -143,15 +143,35 @@ func formatGameStateForPlayer(game *models.Game, playerName string) (*GameStatus
 		return nil, err
 	}
 
+	var currentPlayer *models.Player
+	for _, player := range game.Players {
+		if player.Name == playerName {
+			currentPlayer = player
+		}
+	}
+
+	if currentPlayer == nil {
+		return nil, errors.New("cannot find current player in game")
+	}
+
 	//TODO : Need to adjust this so we don't send all the prompts back to the client, someone can cheat by inspecting
+	currentPlayerData := map[string]interface{}{
+		"name":   playerName,
+		"isHost": gameHost == playerName,
+	}
+	if currentPlayer.AssignedPrompt != nil {
+		currentPlayerData["assignedPrompt"] = map[string]interface{}{
+			"adjectives": []string{
+				currentPlayer.AssignedPrompt.Adjective1, currentPlayer.AssignedPrompt.Adjective2,
+			},
+			"noun": currentPlayer.AssignedPrompt.Noun,
+		}
+	}
 	statusResponse := map[string]interface{}{
-		"groupName": game.GroupName,
-		"players":   game.Players,
-		"currentPlayer": map[string]interface{}{
-			"name":   playerName,
-			"isHost": gameHost == playerName,
-		},
-		"currentState": game.CurrentState,
+		"groupName":     game.GroupName,
+		"players":       game.Players,
+		"currentPlayer": currentPlayerData,
+		"currentState":  game.CurrentState,
 	}
 	return &statusResponse, nil
 }
@@ -198,21 +218,23 @@ func isPlayerInGroup(playerName string, playersInGroup []*models.Player) bool {
 // SetGameState is a debug method for forcing the gamestate to make UI testing easier.
 func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 	gameState := models.GameState(gameStateName)
+	mockPrompt := []string{"silly", "great", "beluga"}
+	mockPrompts := [][]string{mockPrompt, mockPrompt, mockPrompt}
 	switch currentState := gameState; currentState {
 	case models.Voting:
-		return createGameState("chats", []string{"graisseux", "frere jacques", "pepe le pew"}, gameState)
+		return createGameState("chats", []string{"graisseux", "frere jacques", "pepe le pew"}, mockPrompts, gameState)
 	case models.WaitingForPlayers:
-		return createGameState("not cats", []string{"dog", "cat", "other dog"}, gameState)
+		return createGameState("not cats", []string{"dog", "cat", "other dog"}, mockPrompts, gameState)
 	case models.InitialPromptCreation:
-		return createGameState("fat cats", []string{"chubbs", "chonk", "beefcake"}, gameState)
+		return createGameState("fat cats", []string{"chubbs", "chonk", "beefcake"}, mockPrompts, gameState)
 	case models.DrawingsInProgress:
-		return createGameState("human cats", []string{"sharon", "grandpa", "j. ralphio"}, gameState)
+		return createGameState("human cats", []string{"sharon", "grandpa", "j. ralphio"}, mockPrompts, gameState)
 	default:
 		return nil, fmt.Errorf("failed to set game to state %s", gameState)
 	}
 }
 
-func createGameState(groupName string, players []string, gameState models.GameState) (*GameStatusResponse, error) {
+func createGameState(groupName string, players []string, prompts [][]string, gameState models.GameState) (*GameStatusResponse, error) {
 	hostName := players[0]
 
 	game := &models.Game{
@@ -229,7 +251,19 @@ func createGameState(groupName string, players []string, gameState models.GameSt
 			return nil, err
 		}
 	}
-
+	// Assign prompts if we're in the drawings in progress state
+	if gameState == models.DrawingsInProgress {
+		game.Prompts = make([]*models.Prompt, len(prompts))
+		for index, prompt := range prompts {
+			game.Prompts[index] = &models.Prompt{
+				Adjective1: prompt[0],
+				Adjective2: prompt[1],
+				Noun:       prompt[2],
+				Author:     players[index],
+			}
+		}
+		assignPrompts(game)
+	}
 	formattedState, err := formatGameStateForPlayer(game, hostName)
 	if err != nil {
 		return nil, err

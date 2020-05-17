@@ -32,7 +32,7 @@ type Player struct {
 	Name           string  `json:"name"`
 	Host           bool    `json:"host"`
 	Points         uint64  `json:"points"`
-	AssignedPrompt *Prompt `json:"assignedPrompt`
+	AssignedPrompt *Prompt `json:"-"`
 }
 
 type Prompt struct {

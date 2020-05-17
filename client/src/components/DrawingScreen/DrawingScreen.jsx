@@ -131,10 +131,19 @@ class DrawingScreen extends React.Component {
 
   render() {
     const { error, currentBrushColor, currentBrushSize } = this.state;
+    const { gameState } = this.props;
+    const { noun, adjectives } = gameState.currentPlayer.assignedPrompt;
     return (
       <div className="screen">
         <h1>
-          Draw some prompt
+          Draw
+          {' '}
+          {adjectives[0]}
+          ,
+          {' '}
+          {adjectives[1]}
+          {' '}
+          {noun}
         </h1>
         <BrushConfig
           onColorChange={this.onBrushColorChange}
@@ -161,6 +170,10 @@ DrawingScreen.propTypes = {
   gameState: PropTypes.shape({
     currentPlayer: PropTypes.shape({
       name: PropTypes.string.isRequired,
+      assignedPrompt: PropTypes.shape({
+        adjectives: PropTypes.arrayOf(PropTypes.string).isRequired,
+        noun: PropTypes.string,
+      }),
     }).isRequired,
     groupName: PropTypes.string.isRequired,
   }).isRequired,
