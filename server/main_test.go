@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"drawydraw/models"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -17,6 +18,24 @@ import (
 	- There's a lot of code repetition here and some shortcuts could be taken like setting the game state directly instead of going through different endpoints
 */
 
+type AssignedPrompt struct {
+	Adjectives []string `json:"adjectives"`
+	Noun       string   `"json:noun"`
+}
+
+type CurrentPlayer struct {
+	AssignedPrompt *AssignedPrompt `json:"assignedPrompt"`
+	IsHost         bool            `json:"isHost"`
+	Name           string          `json:"name"`
+}
+
+type GameStateResponse struct {
+	CurrentPlayer *CurrentPlayer   `json:"currentPlayer"`
+	CurrentState  string           `json:"currentState"`
+	GroupName     string           `json:"groupName"`
+	Players       []*models.Player `json:"players"`
+}
+
 func TestCreateGameRoute(t *testing.T) {
 	router := setupRouter("8080")
 	w := httptest.NewRecorder()
@@ -31,9 +50,18 @@ func TestCreateGameRoute(t *testing.T) {
 	req.Header.Add("Content-Type", "application/json")
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-	// Todo: Saner expected state
-	expectedState := `{"currentPlayer":{"isHost":true,"name":"Baby Cat"},"currentState":"WaitingForPlayers","groupName":"Kitten Party","players":[{"name":"Baby Cat","host":true,"points":0}]}`
-	assert.Equal(t, expectedState, w.Body.String())
+	actualResponse := w.Body.String()
+	expectedGameState := GameStateResponse{
+		GroupName:     "Kitten Party",
+		CurrentPlayer: &CurrentPlayer{Name: "Baby Cat", IsHost: true},
+		CurrentState:  string(models.WaitingForPlayers),
+		Players: []*models.Player{
+			{Name: "Baby Cat", Host: true},
+		},
+	}
+	actualGameState := GameStateResponse{}
+	json.Unmarshal([]byte(actualResponse), &actualGameState)
+	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
 func TestGetGameStateStatusRoute(t *testing.T) {
@@ -59,9 +87,18 @@ func TestGetGameStateStatusRoute(t *testing.T) {
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-	// Todo: Saner expected state
-	expectedState := `{"currentPlayer":{"isHost":true,"name":"Player"},"currentState":"WaitingForPlayers","groupName":"somegame","players":[{"name":"Player","host":true,"points":0}]}`
-	assert.Equal(t, expectedState, w.Body.String())
+	actualResponse := w.Body.String()
+	expectedGameState := GameStateResponse{
+		GroupName:     "somegame",
+		CurrentPlayer: &CurrentPlayer{Name: "Player", IsHost: true},
+		CurrentState:  string(models.WaitingForPlayers),
+		Players: []*models.Player{
+			{Name: "Player", Host: true},
+		},
+	}
+	actualGameState := GameStateResponse{}
+	json.Unmarshal([]byte(actualResponse), &actualGameState)
+	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
 func TestCreateGameRoute__GameAlreadyExists(t *testing.T) {
@@ -116,8 +153,19 @@ func TestAddPlayerRoute(t *testing.T) {
 	req.Header.Add("Content-Type", "application/json")
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-	expectedState := `{"currentPlayer":{"isHost":false,"name":"player2"},"currentState":"WaitingForPlayers","groupName":"group","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}]}`
-	assert.Equal(t, expectedState, w.Body.String())
+	actualResponse := w.Body.String()
+	expectedGameState := GameStateResponse{
+		GroupName:     "group",
+		CurrentPlayer: &CurrentPlayer{Name: "player2"},
+		CurrentState:  string(models.WaitingForPlayers),
+		Players: []*models.Player{
+			{Name: "player1", Host: true},
+			{Name: "player2"},
+		},
+	}
+	actualGameState := GameStateResponse{}
+	json.Unmarshal([]byte(actualResponse), &actualGameState)
+	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
 func TestAddPlayerRoute_GroupNotSetup(t *testing.T) {
@@ -164,9 +212,18 @@ func TestStartGameRoute(t *testing.T) {
 	req.Header.Add("Content-Type", "application/json")
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-	expectedState := `{"currentPlayer":{"isHost":true,"name":"player1"},"currentState":"InitialPromptCreation","groupName":"startGameRoute","players":[{"name":"player1","host":true,"points":0}]}`
 	actualResponse := w.Body.String()
-	assert.Equal(t, expectedState, actualResponse)
+	expectedGameState := GameStateResponse{
+		GroupName:     "startGameRoute",
+		CurrentPlayer: &CurrentPlayer{IsHost: true, Name: "player1"},
+		CurrentState:  string(models.InitialPromptCreation),
+		Players: []*models.Player{
+			{Name: "player1", Host: true},
+		},
+	}
+	actualGameState := GameStateResponse{}
+	json.Unmarshal([]byte(actualResponse), &actualGameState)
+	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
 func TestAddPromptRoute(t *testing.T) {
@@ -227,8 +284,18 @@ func TestAddPromptRoute(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	actualResponse := w.Body.String()
-	expectedState := `{"currentPlayer":{"isHost":true,"name":"player1"},"currentState":"InitialPromptCreation","groupName":"addPromptRoute","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}]}`
-	assert.Equal(t, expectedState, actualResponse)
+	expectedGameState := GameStateResponse{
+		GroupName:     "addPromptRoute",
+		CurrentPlayer: &CurrentPlayer{IsHost: true, Name: "player1"},
+		CurrentState:  string(models.InitialPromptCreation),
+		Players: []*models.Player{
+			{Name: "player1", Host: true},
+			{Name: "player2"},
+		},
+	}
+	actualGameState := GameStateResponse{}
+	json.Unmarshal([]byte(actualResponse), &actualGameState)
+	assert.EqualValues(t, expectedGameState, actualGameState)
 
 	//Make a post to the add prompts route from player 2, confirm state has changed to "Drawing"
 	data = map[string]string{
@@ -246,6 +313,13 @@ func TestAddPromptRoute(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	actualResponse = w.Body.String()
-	expectedState = `{"currentPlayer":{"isHost":false,"name":"player2"},"currentState":"DrawingsInProgress","groupName":"addPromptRoute","players":[{"name":"player1","host":true,"points":0},{"name":"player2","host":false,"points":0}]}`
-	assert.Equal(t, expectedState, actualResponse)
+	actualGameState = GameStateResponse{}
+	json.Unmarshal([]byte(actualResponse), &actualGameState)
+	expectedGameState.CurrentPlayer = &CurrentPlayer{Name: "player2"}
+	expectedGameState.CurrentState = string(models.DrawingsInProgress)
+	expectedGameState.CurrentPlayer.AssignedPrompt = &AssignedPrompt{
+		Noun:       "chicken",
+		Adjectives: []string{"snazzy", "portly"},
+	}
+	assert.EqualValues(t, expectedGameState, actualGameState)
 }
