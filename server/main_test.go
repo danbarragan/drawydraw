@@ -6,21 +6,38 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
-/*
-	Several problems with these tests:
-	- They're really more like integration tests, we should improve abtractions sometime and have real unit tests
-	- Asserting on a JSON string is error prone, we should probably have mock game states and deserialize JSON responses to compare against them
-	- There's a lot of code repetition here and some shortcuts could be taken like setting the game state directly instead of going through different endpoints
-*/
+var groupNameKey = "groupName"
+var playersKey = "players"
+var currentPlayerKey = "currentPlayer"
+var currentStateKey = "currentState"
+var waitingForPlayers = "WaitingForPlayers"
+var initialPromptCreation = "InitialPromptCreation"
+var drawingsInProgress = "DrawingsInProgress"
+var nameKey = "name"
+var isHostKey = "isHost"
+
+type Response = map[string]interface{}
+
+// This function is used for setup before executing the test functions
+func TestMain(m *testing.M) {
+	//Set Gin to Test Mode
+	gin.SetMode(gin.TestMode)
+	// Setup here
+	status := m.Run()
+	// Cleanup here
+	os.Exit(status)
+}
 
 type AssignedPrompt struct {
 	Adjectives []string `json:"adjectives"`
-	Noun       string   `"json:noun"`
+	Noun       string   `json:"noun"`
 }
 
 type CurrentPlayer struct {
@@ -37,21 +54,16 @@ type GameStateResponse struct {
 }
 
 func TestCreateGameRoute(t *testing.T) {
-	router := setupRouter("8080")
-	w := httptest.NewRecorder()
+	// Create the game
+	hostName := "Baby Cat"
+	groupName := "Kitten Party"
 	data := map[string]string{
-		"groupName":  "Kitten Party",
-		"playerName": "Baby Cat",
+		"groupName":  groupName,
+		"playerName": hostName,
 	}
-	jsonData, err := json.Marshal(&data)
-	assert.Nil(t, err)
-	req, err := http.NewRequest("POST", "/api/create-game", bytes.NewBuffer(jsonData))
-	assert.Nil(t, err)
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-	actualResponse := w.Body.String()
-	expectedGameState := GameStateResponse{
+	req := createRequest(t, "POST", "/api/create-game", data)
+	actualGameState := sendRequest(t, req, http.StatusOK)
+	expectedGameState := &GameStateResponse{
 		GroupName:     "Kitten Party",
 		CurrentPlayer: &CurrentPlayer{Name: "Baby Cat", IsHost: true},
 		CurrentState:  string(models.WaitingForPlayers),
@@ -59,36 +71,24 @@ func TestCreateGameRoute(t *testing.T) {
 			{Name: "Baby Cat", Host: true},
 		},
 	}
-	actualGameState := GameStateResponse{}
-	json.Unmarshal([]byte(actualResponse), &actualGameState)
 	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
 func TestGetGameStateStatusRoute(t *testing.T) {
 	// Create a game
-	router := setupRouter("8080")
-	w := httptest.NewRecorder()
+	hostName := "Player"
+	groupName := "somegame"
 	data := map[string]string{
-		"groupName":  "somegame",
-		"playerName": "Player",
+		"groupName":  groupName,
+		"playerName": hostName,
 	}
-	jsonData, err := json.Marshal(&data)
-	assert.Nil(t, err)
-	req, err := http.NewRequest("POST", "/api/create-game", bytes.NewBuffer(jsonData))
-	assert.Nil(t, err)
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
+	req := createRequest(t, "POST", "/api/create-game", data)
+	sendRequest(t, req, http.StatusOK)
 
 	// Get the game's status
-	req, err = http.NewRequest("GET", "/api/get-game-status/somegame?playerName=Player", nil)
-	assert.Nil(t, err)
-	req.Header.Add("Content-Type", "application/json")
-	w = httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-	actualResponse := w.Body.String()
-	expectedGameState := GameStateResponse{
+	req = createRequest(t, "GET", "/api/get-game-status/somegame?playerName=Player", nil)
+	actualGameState := sendRequest(t, req, http.StatusOK)
+	expectedGameState := &GameStateResponse{
 		GroupName:     "somegame",
 		CurrentPlayer: &CurrentPlayer{Name: "Player", IsHost: true},
 		CurrentState:  string(models.WaitingForPlayers),
@@ -96,65 +96,41 @@ func TestGetGameStateStatusRoute(t *testing.T) {
 			{Name: "Player", Host: true},
 		},
 	}
-	actualGameState := GameStateResponse{}
-	json.Unmarshal([]byte(actualResponse), &actualGameState)
 	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
 func TestCreateGameRoute__GameAlreadyExists(t *testing.T) {
-	router := setupRouter("8080")
-	w := httptest.NewRecorder()
+	// Create the game
 	data := map[string]string{
 		"groupName":  "magic group",
 		"playerName": "some player",
 	}
-	jsonData, err := json.Marshal(&data)
-	assert.Nil(t, err)
-	// Create the game
-	req, err := http.NewRequest("POST", "/api/create-game", bytes.NewBuffer(jsonData))
-	assert.Nil(t, err)
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
+	req := createRequest(t, "POST", "/api/create-game", data)
+	sendRequest(t, req, http.StatusOK)
 
 	// Try to create the game again
-	req, err = http.NewRequest("POST", "/api/create-game", bytes.NewBuffer(jsonData))
-	assert.Nil(t, err)
-	req.Header.Add("Content-Type", "application/json")
-	w = httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusBadRequest, w.Code)
+	req = createRequest(t, "POST", "/api/create-game", data)
+	sendRequest(t, req, http.StatusBadRequest)
 }
 
 func TestAddPlayerRoute(t *testing.T) {
-	router := setupRouter("8080")
-	w := httptest.NewRecorder()
+	// Create the game
 	data := map[string]string{
 		"groupName":  "group",
 		"playerName": "player1",
 	}
-	jsonData, err := json.Marshal(&data)
-
-	// Create the group
-	req, err := http.NewRequest("POST", "/api/create-game", bytes.NewBuffer(jsonData))
-	assert.Nil(t, err)
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
+	req := createRequest(t, "POST", "/api/create-game", data)
+	sendRequest(t, req, http.StatusOK)
 
 	// Add the player
-	w = httptest.NewRecorder()
+	playerName := "player2"
 	data = map[string]string{
 		"groupName":  "group",
-		"playerName": "player2",
+		"playerName": playerName,
 	}
-	jsonData, err = json.Marshal(&data)
-	req, err = http.NewRequest("POST", "/api/add-player", bytes.NewBuffer(jsonData))
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-	actualResponse := w.Body.String()
-	expectedGameState := GameStateResponse{
+	req = createRequest(t, "POST", "/api/add-player", data)
+	actualGameState := sendRequest(t, req, http.StatusOK)
+	expectedGameState := &GameStateResponse{
 		GroupName:     "group",
 		CurrentPlayer: &CurrentPlayer{Name: "player2"},
 		CurrentState:  string(models.WaitingForPlayers),
@@ -163,42 +139,27 @@ func TestAddPlayerRoute(t *testing.T) {
 			{Name: "player2"},
 		},
 	}
-	actualGameState := GameStateResponse{}
-	json.Unmarshal([]byte(actualResponse), &actualGameState)
 	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
 func TestAddPlayerRoute_GroupNotSetup(t *testing.T) {
-	router := setupRouter("8080")
-	w := httptest.NewRecorder()
 	data := map[string]string{
 		"groupName":  "superGroup",
 		"playerName": "player",
 	}
-	jsonData, err := json.Marshal(&data)
-	assert.Nil(t, err)
-	req, err := http.NewRequest("POST", "/api/add-player", bytes.NewBuffer(jsonData))
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	req := createRequest(t, "POST", "/api/add-player", data)
+	sendRequest(t, req, http.StatusBadRequest)
 }
 
 func TestStartGameRoute(t *testing.T) {
-	// Test set up
-	router := setupRouter("8080")
-	w := httptest.NewRecorder()
+	// Create the game
 	data := map[string]string{
 		"groupName":  "startGameRoute",
 		"playerName": "player1",
 	}
-	jsonData, err := json.Marshal(&data)
-
-	// Create the group
-	req, err := http.NewRequest("POST", "/api/create-game", bytes.NewBuffer(jsonData))
-	assert.Nil(t, err)
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
+	req := createRequest(t, "POST", "/api/create-game", data)
+	sendRequest(t, req, http.StatusOK)
 
 	// Actual test
 	// Make a post to start game route
@@ -206,14 +167,9 @@ func TestStartGameRoute(t *testing.T) {
 		"groupName":  "startGameRoute",
 		"playerName": "player1",
 	}
-	w = httptest.NewRecorder()
-	jsonData, err = json.Marshal(&data)
-	req, err = http.NewRequest("POST", "/api/start-game", bytes.NewBuffer(jsonData))
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-	actualResponse := w.Body.String()
-	expectedGameState := GameStateResponse{
+	req = createRequest(t, "POST", "/api/start-game", data)
+	actualGameState := sendRequest(t, req, http.StatusOK)
+	expectedGameState := &GameStateResponse{
 		GroupName:     "startGameRoute",
 		CurrentPlayer: &CurrentPlayer{IsHost: true, Name: "player1"},
 		CurrentState:  string(models.InitialPromptCreation),
@@ -221,52 +177,33 @@ func TestStartGameRoute(t *testing.T) {
 			{Name: "player1", Host: true},
 		},
 	}
-	actualGameState := GameStateResponse{}
-	json.Unmarshal([]byte(actualResponse), &actualGameState)
 	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
 func TestAddPromptRoute(t *testing.T) {
 	// Test set up
-	router := setupRouter("8080")
-	w := httptest.NewRecorder()
 	data := map[string]string{
 		"groupName":  "addPromptRoute",
 		"playerName": "player1",
 	}
-	jsonData, err := json.Marshal(&data)
-
-	// Create the group
-	req, err := http.NewRequest("POST", "/api/create-game", bytes.NewBuffer(jsonData))
-	assert.Nil(t, err)
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
+	req := createRequest(t, "POST", "/api/create-game", data)
+	sendRequest(t, req, http.StatusOK)
 
 	// Add another player
-	w = httptest.NewRecorder()
 	data = map[string]string{
 		"groupName":  "addPromptRoute",
 		"playerName": "player2",
 	}
-	jsonData, err = json.Marshal(&data)
-	assert.Nil(t, err)
-	req, err = http.NewRequest("POST", "/api/add-player", bytes.NewBuffer(jsonData))
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
+	req = createRequest(t, "POST", "/api/add-player", data)
+	sendRequest(t, req, http.StatusOK)
 
 	// Start the game
 	data = map[string]string{
 		"groupName":  "addPromptRoute",
 		"playerName": "player1",
 	}
-	w = httptest.NewRecorder()
-	jsonData, err = json.Marshal(&data)
-	req, err = http.NewRequest("POST", "/api/start-game", bytes.NewBuffer(jsonData))
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
+	req = createRequest(t, "POST", "/api/start-game", data)
+	sendRequest(t, req, http.StatusOK)
 
 	//Make a post to the add prompts route from player 1, confirm state stays at "Initial Prompt Creation"
 	data = map[string]string{
@@ -276,15 +213,9 @@ func TestAddPromptRoute(t *testing.T) {
 		"adjective1": "snazzy",
 		"adjective2": "portly",
 	}
-	w = httptest.NewRecorder()
-	jsonData, err = json.Marshal(&data)
-	req, err = http.NewRequest("POST", "/api/add-prompts", bytes.NewBuffer(jsonData))
-	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	actualResponse := w.Body.String()
-	expectedGameState := GameStateResponse{
+	req = createRequest(t, "POST", "/api/add-prompt", data)
+	actualGameState := sendRequest(t, req, http.StatusOK)
+	expectedGameState := &GameStateResponse{
 		GroupName:     "addPromptRoute",
 		CurrentPlayer: &CurrentPlayer{IsHost: true, Name: "player1"},
 		CurrentState:  string(models.InitialPromptCreation),
@@ -293,33 +224,32 @@ func TestAddPromptRoute(t *testing.T) {
 			{Name: "player2"},
 		},
 	}
-	actualGameState := GameStateResponse{}
-	json.Unmarshal([]byte(actualResponse), &actualGameState)
 	assert.EqualValues(t, expectedGameState, actualGameState)
+}
 
-	//Make a post to the add prompts route from player 2, confirm state has changed to "Drawing"
-	data = map[string]string{
-		"groupName":  "addPromptRoute",
-		"playerName": "player2",
-		"noun":       "duck",
-		"adjective1": "chilly",
-		"adjective2": "sleepy",
+// Helper function to process a request and test its response
+func sendRequest(t *testing.T, req *http.Request, statusCode int) *GameStateResponse {
+	// Create a response recorder// Test set up
+	w := httptest.NewRecorder()
+
+	// Create the service and process the above request.
+	r := setupRouter("8080")
+	r.ServeHTTP(w, req)
+
+	if w.Code != statusCode {
+		t.Fail()
 	}
-	w = httptest.NewRecorder()
-	jsonData, err = json.Marshal(&data)
-	req, err = http.NewRequest("POST", "/api/add-prompts", bytes.NewBuffer(jsonData))
+
+	actualGameState := &GameStateResponse{}
+	json.Unmarshal([]byte(w.Body.String()), &actualGameState)
+	return actualGameState
+}
+
+func createRequest(t *testing.T, method string, route string, data map[string]string) *http.Request {
+	jsonData, err := json.Marshal(&data)
+	assert.Nil(t, err)
+	req, err := http.NewRequest(method, route, bytes.NewBuffer(jsonData))
+	assert.Nil(t, err)
 	req.Header.Add("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	actualResponse = w.Body.String()
-	actualGameState = GameStateResponse{}
-	json.Unmarshal([]byte(actualResponse), &actualGameState)
-	expectedGameState.CurrentPlayer = &CurrentPlayer{Name: "player2"}
-	expectedGameState.CurrentState = string(models.DrawingsInProgress)
-	expectedGameState.CurrentPlayer.AssignedPrompt = &AssignedPrompt{
-		Noun:       "chicken",
-		Adjectives: []string{"snazzy", "portly"},
-	}
-	assert.EqualValues(t, expectedGameState, actualGameState)
+	return req
 }

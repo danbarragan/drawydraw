@@ -63,13 +63,13 @@ func AddPlayer(playerName string, groupName string, isHost bool) (*GameStatusRes
 	return formattedState, nil
 }
 
-// AddPrompts handles adding the prompts a player created to the game state
-func AddPrompts(playerName string, groupName string, noun string, adjective1 string, adjective2 string) (*GameStatusResponse, error) {
+// AddPrompt handles adding the prompt a player created to the game state
+func AddPrompt(playerName string, groupName string, noun string, adjective1 string, adjective2 string) (*GameStatusResponse, error) {
 	//check if any of the prompt fields were empty
 	if len(noun) < 1 ||
 		len(adjective1) < 1 ||
 		len(adjective2) < 1 {
-		return nil, errors.New("One or more of the prompts was not provided")
+		return nil, errors.New("One or more of the prompt was not provided")
 	}
 
 	stateManager, err := getManagerForGroup(groupName)
@@ -88,11 +88,9 @@ func AddPrompts(playerName string, groupName string, noun string, adjective1 str
 		Author:     playerName,
 		Group:      groupName,
 		Noun:       noun,
-		Adjective1: adjective1,
-		Adjective2: adjective2,
-	}
+		Adjectives: []string{adjective1, adjective2}}
 
-	err = stateManager.currentState.addPrompts(&newPrompt)
+	err = stateManager.currentState.addPrompt(&newPrompt)
 	if err != nil {
 		return nil, err
 	}
@@ -161,10 +159,8 @@ func formatGameStateForPlayer(game *models.Game, playerName string) (*GameStatus
 	}
 	if currentPlayer.AssignedPrompt != nil {
 		currentPlayerData["assignedPrompt"] = map[string]interface{}{
-			"adjectives": []string{
-				currentPlayer.AssignedPrompt.Adjective1, currentPlayer.AssignedPrompt.Adjective2,
-			},
-			"noun": currentPlayer.AssignedPrompt.Noun,
+			"adjectives": currentPlayer.AssignedPrompt.Adjectives,
+			"noun":       currentPlayer.AssignedPrompt.Noun,
 		}
 	}
 	statusResponse := map[string]interface{}{
@@ -256,8 +252,7 @@ func createGameState(groupName string, players []string, prompts [][]string, gam
 		game.Prompts = make([]*models.Prompt, len(prompts))
 		for index, prompt := range prompts {
 			game.Prompts[index] = &models.Prompt{
-				Adjective1: prompt[0],
-				Adjective2: prompt[1],
+				Adjectives: prompt[0:2],
 				Noun:       prompt[2],
 				Author:     players[index],
 			}

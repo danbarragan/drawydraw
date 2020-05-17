@@ -29,6 +29,6 @@ func (state drawingsInProgressState) submitDrawing(playerName string, encodedIma
 	return nil
 }
 
-func (state drawingsInProgressState) addPrompts(prompts *models.Prompt) error {
+func (state drawingsInProgressState) addPrompt(prompts *models.Prompt) error {
 	return errors.New("addprompts not supported for drawing state")
 }

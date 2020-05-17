@@ -18,7 +18,7 @@ type GameState string
 const (
 	// WaitingForPlayers - A group is created and the host is waiting for players
 	WaitingForPlayers GameState = "WaitingForPlayers"
-	// InitialPromptCreation - Players are entering their initial prompts
+	// InitialPromptCreation - Players are entering their initial prompt
 	InitialPromptCreation GameState = "InitialPromptCreation"
 	// DrawingsInProgress - Players currently drawing a prompt
 	DrawingsInProgress GameState = "DrawingsInProgress"
@@ -39,8 +39,7 @@ type Prompt struct {
 	Author     string
 	Group      string
 	Noun       string
-	Adjective1 string
-	Adjective2 string
+	Adjectives []string
 }
 
 type Drawing struct {
@@ -85,9 +84,9 @@ func (game *Game) AddPlayer(player *Player) error {
 	return nil
 }
 
-// AddPrompts adds a player's prompts to the game
-func (game *Game) AddPrompts(prompts *Prompt) error {
-	game.Prompts = append(game.Prompts, prompts)
+// AddPrompt adds a player's prompt to the game
+func (game *Game) AddPrompt(prompt *Prompt) error {
+	game.Prompts = append(game.Prompts, prompt)
 	return nil
 }
 

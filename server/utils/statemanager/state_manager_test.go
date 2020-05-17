@@ -46,8 +46,7 @@ func TestAddPlayer_AddHost_Succeeds(t *testing.T) {
 	assert.Equal(t, currentPlayer["name"], "mama cat")
 }
 
-//Should this be _Succeeds?
-func TestAddPlayer_AddToHostedGame_Fails(t *testing.T) {
+func TestAddPlayer_AddToHostedGame_Succeeds(t *testing.T) {
 	groupName := randomGroupName()
 	CreateGroup(groupName)
 	AddPlayer("papa cat", groupName, true)
@@ -94,7 +93,7 @@ func TestAddPlayer_AddSecondHost_Fails(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestStartGame_HostTriesandSucceeds(t *testing.T) {
+func TestStartGame_Host_Succeeds(t *testing.T) {
 	groupName := randomGroupName()
 	CreateGroup(groupName)
 	AddPlayer("host cat", groupName, true)
@@ -123,7 +122,7 @@ func TestStartGame_NonHost_Fails(t *testing.T) {
 	assert.Nil(t, startResponse)
 }
 
-func TestAddPrompts_Succeeds(t *testing.T) {
+func TestAddPrompt_Succeeds(t *testing.T) {
 	//set up a group, add players, and start the game
 	groupName := randomGroupName()
 	CreateGroup(groupName)
@@ -134,7 +133,7 @@ func TestAddPrompts_Succeeds(t *testing.T) {
 	assert.NotNil(t, startResponse)
 
 	//add prompt and check its in game state
-	addPromptResponse, err := AddPrompts("annoyed cat", groupName, "tuna", "stinky", "yummy")
+	addPromptResponse, err := AddPrompt("annoyed cat", groupName, "tuna", "stinky", "yummy")
 	assert.Nil(t, err)
 	assert.NotNil(t, addPromptResponse)
 
