@@ -64,7 +64,7 @@ func AddPlayer(playerName string, groupName string, isHost bool) (*GameStatusRes
 }
 
 // AddPrompts handles adding the prompts a player created to the game state
-func AddPrompts(playerName string, groupName string, noun string, adjective1 string, adjective2 string) (*GameStatusResponse, error) {
+func AddPrompt(playerName string, groupName string, noun string, adjective1 string, adjective2 string) (*GameStatusResponse, error) {
 	//check if any of the prompt fields were empty
 	if len(noun) < 1 ||
 		len(adjective1) < 1 ||
@@ -84,15 +84,13 @@ func AddPrompts(playerName string, groupName string, noun string, adjective1 str
 		}
 	}
 
-	newPrompt := models.Prompts{
+	newPrompt := models.Prompt{
 		Author:     playerName,
 		Group:      groupName,
 		Noun:       noun,
-		Adjective1: adjective1,
-		Adjective2: adjective2,
-	}
+		Adjectives: [2]string{adjective1, adjective2}}
 
-	err = stateManager.currentState.addPrompts(&newPrompt)
+	err = stateManager.currentState.addPrompt(&newPrompt)
 	if err != nil {
 		return nil, err
 	}
