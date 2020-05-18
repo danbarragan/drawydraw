@@ -30,6 +30,7 @@ func setupRouter(port string) *gin.Engine {
 	router.POST("/api/set-game-state", setGameState)
 	router.POST("/api/echo", echoTest)
 	router.POST("/api/add-prompt", addPrompt)
+	router.POST("/api/submit-drawing", submitDrawing)
 
 	return router
 }
@@ -90,6 +91,27 @@ func addPrompt(ctx *gin.Context) {
 	gameState, err := statemanager.AddPrompt(addPromptRequest.PlayerName, addPromptRequest.GroupName, addPromptRequest.Noun, addPromptRequest.Adjective1, addPromptRequest.Adjective2)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error adding prompt: %s", err.Error())))
+		return
+	}
+	ctx.JSON(http.StatusOK, &gameState)
+}
+
+type submitDrawingRequest struct {
+	PlayerName string `json:"playerName"`
+	GroupName  string `json:"groupName"`
+	ImageData  string `json:"imageData"`
+}
+
+func submitDrawing(ctx *gin.Context) {
+	request := submitDrawingRequest{}
+	err := ctx.BindJSON(&request)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Invalid request: %s", err.Error())))
+		return
+	}
+	gameState, err := statemanager.SubmitDrawing(request.PlayerName, request.GroupName, request.ImageData)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error submitting drawing: %s", err.Error())))
 		return
 	}
 	ctx.JSON(http.StatusOK, &gameState)

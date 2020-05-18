@@ -143,3 +143,31 @@ func TestGameStatusForPlayer_Fails_PlayerMissing(t *testing.T) {
 	assert.Nil(t, gameStatus)
 	assert.NotNil(t, err)
 }
+
+func TestSubmitDrawing(t *testing.T) {
+	//set up a group, add players, add a prompt
+	groupName := randomGroupName()
+	CreateGroup(groupName)
+	AddPlayer("host cat", groupName, true)
+	AddPlayer("annoyed cat", groupName, false)
+	StartGame(groupName, "host cat")
+	AddPrompt("annoyed cat", groupName, "tuna", "stinky", "yummy")
+	AddPrompt("host cat", groupName, "big", "handsome", "can")
+	gameStatus, err := SubmitDrawing("annoyed cat", groupName, "mock data")
+	assert.Nil(t, err)
+	assert.NotNil(t, gameStatus)
+}
+
+func TestSubmitDrawing_Fails_PlayerMissing(t *testing.T) {
+	//set up a group, add players, add a prompt
+	groupName := randomGroupName()
+	CreateGroup(groupName)
+	AddPlayer("host cat", groupName, true)
+	AddPlayer("annoyed cat", groupName, false)
+	StartGame(groupName, "host cat")
+	AddPrompt("annoyed cat", groupName, "tuna", "stinky", "yummy")
+	AddPrompt("host cat", groupName, "big", "handsome", "can")
+	gameStatus, err := SubmitDrawing("ninja cat", groupName, "mock data")
+	assert.Nil(t, gameStatus)
+	assert.NotNil(t, err)
+}

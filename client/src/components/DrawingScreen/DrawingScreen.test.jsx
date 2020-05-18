@@ -6,10 +6,12 @@ import '../../test/setupTests';
 
 describe('DrawingScreen', () => {
   const mockGameState = {
+    players: [{ name: 'baby cat', hasPendingAction: true }, { name: 'omega cat', hasPendingAction: true }],
     groupName: 'kitties4Life',
     currentPlayer: {
       name: 'baby cat',
       assignedPrompt: { noun: 'porridge', adjectives: ['interstellar', 'majestic'] },
+      hasCompletedAction: false,
     },
   };
   const mockOnGameStateChanged = jest.fn();

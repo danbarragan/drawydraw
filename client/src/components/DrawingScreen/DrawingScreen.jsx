@@ -132,9 +132,11 @@ class DrawingScreen extends React.Component {
   render() {
     const { error, currentBrushColor, currentBrushSize } = this.state;
     const { gameState } = this.props;
-    const { noun, adjectives } = gameState.currentPlayer.assignedPrompt;
-    return (
-      <div className="screen">
+    const {currentPlayer} = gameState;
+    const { noun, adjectives } = currentPlayer.assignedPrompt;
+    const { players } = gameState;
+    const drawingElements = (
+      <div>
         <h1>
           Draw
           {' '}
@@ -160,6 +162,26 @@ class DrawingScreen extends React.Component {
         />
         <button type="button" className="button buttonTypeA" onClick={this.onSubmitClick}>Submit</button>
         <button type="button" className="button buttonTypeB" onClick={this.onClearClick}>Clear</button>
+      </div>
+    );
+    const waitingElements = (
+      <div>
+        <h3>Thank you for your drawing, waiting for other players...</h3>
+        <ul>
+          {
+            players.filter((player) => player.name !== currentPlayer.name).map((player) => (
+              <li key={player.name}>
+                {player.name}
+                {player.hasPendingAction ? ' is still drawing' : ' is done'}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    );
+    return (
+      <div className="screen">
+        {currentPlayer.hasCompletedAction ? waitingElements : drawingElements}
         <h3 className="error">{error}</h3>
       </div>
     );
@@ -168,12 +190,17 @@ class DrawingScreen extends React.Component {
 
 DrawingScreen.propTypes = {
   gameState: PropTypes.shape({
+    players: PropTypes.arrayOf(PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      hasPendingAction: PropTypes.bool.isRequired,
+    })),
     currentPlayer: PropTypes.shape({
       name: PropTypes.string.isRequired,
       assignedPrompt: PropTypes.shape({
         adjectives: PropTypes.arrayOf(PropTypes.string).isRequired,
         noun: PropTypes.string,
       }),
+      hasCompletedAction: PropTypes.bool.isRequired,
     }).isRequired,
     groupName: PropTypes.string.isRequired,
   }).isRequired,

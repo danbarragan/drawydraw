@@ -210,6 +210,74 @@ func TestAddPromptRoute(t *testing.T) {
 	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
+func TestSubmitDrawingRoute(t *testing.T) {
+	// Test set up
+	data := map[string]string{
+		"groupName":  "submitDrawingRoute",
+		"playerName": "player1",
+	}
+	req := createRequest(t, "POST", "/api/create-game", data)
+	sendRequest(t, req, http.StatusOK)
+
+	// Add another player
+	data = map[string]string{
+		"groupName":  "submitDrawingRoute",
+		"playerName": "player2",
+	}
+	req = createRequest(t, "POST", "/api/add-player", data)
+	sendRequest(t, req, http.StatusOK)
+
+	// Start the game
+	data = map[string]string{
+		"groupName":  "submitDrawingRoute",
+		"playerName": "player1",
+	}
+	req = createRequest(t, "POST", "/api/start-game", data)
+	sendRequest(t, req, http.StatusOK)
+
+	//Make a post to the add prompts route from player 1, confirm state stays at "Initial Prompt Creation"
+	data = map[string]string{
+		"groupName":  "submitDrawingRoute",
+		"playerName": "player1",
+		"noun":       "chicken",
+		"adjective1": "snazzy",
+		"adjective2": "portly",
+	}
+	req = createRequest(t, "POST", "/api/add-prompt", data)
+	sendRequest(t, req, http.StatusOK)
+	data["playerName"] = "player2"
+	data["noun"] = "tuna"
+	req = createRequest(t, "POST", "/api/add-prompt", data)
+	sendRequest(t, req, http.StatusOK)
+
+	// Submit a drawing
+	data = map[string]string{
+		"groupName":  "submitDrawingRoute",
+		"playerName": "player1",
+		"imageData":  "someImageData",
+	}
+	req = createRequest(t, "POST", "/api/submit-drawing", data)
+	actualGameState := sendRequest(t, req, http.StatusOK)
+	expectedGameState := &statemanager.GameStatusResponse{
+		GroupName: "submitDrawingRoute",
+		CurrentPlayer: &statemanager.CurrentPlayer{
+			IsHost:             true,
+			Name:               "player1",
+			HasCompletedAction: true,
+			AssignedPrompt: &statemanager.AssignedPrompt{
+				Noun:       "tuna",
+				Adjectives: []string{"snazzy", "portly"},
+			},
+		},
+		CurrentState: string(models.DrawingsInProgress),
+		Players: []*statemanager.Player{
+			{Name: "player1", Host: true, HasPendingActions: false},
+			{Name: "player2", HasPendingActions: true},
+		},
+	}
+	assert.EqualValues(t, expectedGameState, actualGameState)
+}
+
 // Helper function to process a request and test its response
 func sendRequest(t *testing.T, req *http.Request, statusCode int) *statemanager.GameStatusResponse {
 	// Create a response recorder// Test set up

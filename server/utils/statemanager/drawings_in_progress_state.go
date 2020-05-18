@@ -24,6 +24,16 @@ func (state drawingsInProgressState) submitDrawing(playerName string, encodedIma
 			return errors.New("player has already submitted a drawing")
 		}
 	}
+	playerExists := false
+	for _, player := range state.game.Players {
+		if player.Name == playerName {
+			playerExists = true
+			break
+		}
+	}
+	if !playerExists {
+		return errors.New("player is not in the group")
+	}
 	drawing := models.Drawing{Author: playerName, ImageData: encodedImage}
 	state.game.Drawings = append(state.game.Drawings, &drawing)
 	return nil
@@ -34,9 +44,23 @@ func (state drawingsInProgressState) addPrompt(prompts *models.Prompt) error {
 }
 
 func (state drawingsInProgressState) addGameStatusPropertiesForPlayer(player *models.Player, gameStatus *GameStatusResponse) error {
-	gameStatus.CurrentPlayer.AssignedPrompt = &AssignedPrompt{
-		Adjectives: player.AssignedPrompt.Adjectives,
-		Noun:       player.AssignedPrompt.Noun,
+	authorToDrawingMap := map[string]*models.Drawing{}
+	for _, currentDrawing := range state.game.Drawings {
+		authorToDrawingMap[currentDrawing.Author] = currentDrawing
+	}
+	// Mark players who haven't submitted their drawing as having pending actions
+	for _, p := range gameStatus.Players {
+		_, hasDrawing := authorToDrawingMap[p.Name]
+		p.HasPendingActions = !hasDrawing
+		if p.Name == player.Name {
+			gameStatus.CurrentPlayer.HasCompletedAction = hasDrawing
+		}
+	}
+	if player.AssignedPrompt != nil {
+		gameStatus.CurrentPlayer.AssignedPrompt = &AssignedPrompt{
+			Adjectives: player.AssignedPrompt.Adjectives,
+			Noun:       player.AssignedPrompt.Noun,
+		}
 	}
 	return nil
 }

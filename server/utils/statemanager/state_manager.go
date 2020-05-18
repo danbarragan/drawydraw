@@ -20,15 +20,17 @@ type AssignedPrompt struct {
 }
 
 type Player struct {
-	Name   string `json:"name"`
-	Host   bool   `json:"host"`
-	Points uint64 `json:"points"`
+	Name              string `json:"name"`
+	Host              bool   `json:"host"`
+	Points            uint64 `json:"points"`
+	HasPendingActions bool   `json:"hasPendingAction"`
 }
 
 type CurrentPlayer struct {
-	AssignedPrompt *AssignedPrompt `json:"assignedPrompt"`
-	IsHost         bool            `json:"isHost"`
-	Name           string          `json:"name"`
+	AssignedPrompt     *AssignedPrompt `json:"assignedPrompt"`
+	IsHost             bool            `json:"isHost"`
+	Name               string          `json:"name"`
+	HasCompletedAction bool            `json:"hasCompletedAction"`
 }
 
 type GameStatusResponse struct {
@@ -119,6 +121,30 @@ func AddPrompt(playerName string, groupName string, noun string, adjective1 stri
 		Adjectives: []string{adjective1, adjective2}}
 
 	err = stateManager.currentState.addPrompt(&newPrompt)
+	if err != nil {
+		return nil, err
+	}
+	models.SaveGame(stateManager.game)
+	gameStatus, err := gameStatusForPlayer(stateManager.game, playerName)
+	if err != nil {
+		return nil, err
+	}
+	return gameStatus, nil
+}
+
+// SubmitDrawing handles a player submitting a drawing
+func SubmitDrawing(playerName string, groupName string, imageData string) (*GameStatusResponse, error) {
+	//check if the image data is empty
+	if len(imageData) < 1 {
+		return nil, errors.New("Image data was not provided")
+	}
+
+	stateManager, err := getManagerForGroup(groupName)
+	if err != nil {
+		return nil, err
+	}
+
+	err = stateManager.currentState.submitDrawing(playerName, imageData)
 	if err != nil {
 		return nil, err
 	}
