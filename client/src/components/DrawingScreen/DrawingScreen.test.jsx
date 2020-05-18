@@ -5,7 +5,13 @@ import DrawingScreen, { Point, Stroke } from './DrawingScreen';
 import '../../test/setupTests';
 
 describe('DrawingScreen', () => {
-  const mockGameState = { groupName: 'kitties4Life', currentPlayer: { name: 'baby cat' } };
+  const mockGameState = {
+    groupName: 'kitties4Life',
+    currentPlayer: {
+      name: 'baby cat',
+      assignedPrompt: { noun: 'porridge', adjectives: ['interstellar', 'majestic'] },
+    },
+  };
   const mockOnGameStateChanged = jest.fn();
   const mockStrokes = [new Stroke([new Point(1, 5), new Point(1, 5.5), new Point(1, 6)], 'black', 3)];
 

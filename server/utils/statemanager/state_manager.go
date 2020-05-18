@@ -214,16 +214,16 @@ func isPlayerInGroup(playerName string, playersInGroup []*models.Player) bool {
 // SetGameState is a debug method for forcing the gamestate to make UI testing easier.
 func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 	gameState := models.GameState(gameStateName)
-	mockPrompt := []string{"silly", "great", "beluga"}
-	mockPrompts := [][]string{mockPrompt, mockPrompt, mockPrompt}
 	switch currentState := gameState; currentState {
 	case models.Voting:
-		return createGameState("chats", []string{"graisseux", "frere jacques", "pepe le pew"}, mockPrompts, gameState)
+		return createGameState("chats", []string{"graisseux", "frere jacques", "pepe le pew"}, nil, gameState)
 	case models.WaitingForPlayers:
-		return createGameState("not cats", []string{"dog", "cat", "other dog"}, mockPrompts, gameState)
+		return createGameState("not cats", []string{"dog", "cat", "other dog"}, nil, gameState)
 	case models.InitialPromptCreation:
-		return createGameState("fat cats", []string{"chubbs", "chonk", "beefcake"}, mockPrompts, gameState)
+		return createGameState("fat cats", []string{"chubbs", "chonk", "beefcake"}, nil, gameState)
 	case models.DrawingsInProgress:
+		mockPrompt := []string{"silly", "great", "beluga"}
+		mockPrompts := [][]string{mockPrompt, mockPrompt, mockPrompt}
 		return createGameState("human cats", []string{"sharon", "grandpa", "j. ralphio"}, mockPrompts, gameState)
 	default:
 		return nil, fmt.Errorf("failed to set game to state %s", gameState)
@@ -247,8 +247,7 @@ func createGameState(groupName string, players []string, prompts [][]string, gam
 			return nil, err
 		}
 	}
-	// Assign prompts if we're in the drawings in progress state
-	if gameState == models.DrawingsInProgress {
+	if prompts != nil {
 		game.Prompts = make([]*models.Prompt, len(prompts))
 		for index, prompt := range prompts {
 			game.Prompts[index] = &models.Prompt{
