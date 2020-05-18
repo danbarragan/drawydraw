@@ -12,8 +12,31 @@ type StateManager struct {
 	game         *models.Game
 }
 
-// GameStatusResponse describes a response informing clients of the game status
-type GameStatusResponse = map[string]interface{}
+// Models used for describing the status of the game to clients
+// Todo: Find a better home for these (or replace them with protos)
+type AssignedPrompt struct {
+	Adjectives []string `json:"adjectives"`
+	Noun       string   `json:"noun"`
+}
+
+type Player struct {
+	Name   string `json:"name"`
+	Host   bool   `json:"host"`
+	Points uint64 `json:"points"`
+}
+
+type CurrentPlayer struct {
+	AssignedPrompt *AssignedPrompt `json:"assignedPrompt"`
+	IsHost         bool            `json:"isHost"`
+	Name           string          `json:"name"`
+}
+
+type GameStatusResponse struct {
+	CurrentPlayer *CurrentPlayer `json:"currentPlayer"`
+	CurrentState  string         `json:"currentState"`
+	GroupName     string         `json:"groupName"`
+	Players       []*Player      `json:"players"`
+}
 
 // CreateGroup Handles creating a group other players can join
 func CreateGroup(groupName string) error {
@@ -43,10 +66,16 @@ func AddPlayer(playerName string, groupName string, isHost bool) (*GameStatusRes
 		return nil, err
 	}
 
-	if isHost &&
-		stateManager.game.HostPlayer != "" &&
-		playerName != stateManager.game.HostPlayer {
-		return nil, fmt.Errorf("failed to add player %s as host - %s is already host", playerName, stateManager.game.HostPlayer)
+	if isHost {
+		if stateManager.game.HostPlayer != "" &&
+			playerName != stateManager.game.HostPlayer {
+			return nil, fmt.Errorf("failed to add player %s as host - %s is already host", playerName, stateManager.game.HostPlayer)
+		}
+	} else {
+		// Non-host player is joining a game without a host - this should not be possible
+		if stateManager.game.HostPlayer == "" {
+			return nil, errors.New("cannot add a non-host player to a game without a host")
+		}
 	}
 
 	// Add the group creator as the first player
@@ -56,11 +85,11 @@ func AddPlayer(playerName string, groupName string, isHost bool) (*GameStatusRes
 		return nil, err
 	}
 	models.SaveGame(stateManager.game)
-	formattedState, err := formatGameStateForPlayer(stateManager.game, playerName)
+	gameStatus, err := gameStatusForPlayer(stateManager.game, playerName)
 	if err != nil {
 		return nil, err
 	}
-	return formattedState, nil
+	return gameStatus, nil
 }
 
 // AddPrompt handles adding the prompt a player created to the game state
@@ -86,7 +115,6 @@ func AddPrompt(playerName string, groupName string, noun string, adjective1 stri
 
 	newPrompt := models.Prompt{
 		Author:     playerName,
-		Group:      groupName,
 		Noun:       noun,
 		Adjectives: []string{adjective1, adjective2}}
 
@@ -95,11 +123,11 @@ func AddPrompt(playerName string, groupName string, noun string, adjective1 stri
 		return nil, err
 	}
 	models.SaveGame(stateManager.game)
-	formattedState, err := formatGameStateForPlayer(stateManager.game, playerName)
+	gameStatus, err := gameStatusForPlayer(stateManager.game, playerName)
 	if err != nil {
 		return nil, err
 	}
-	return formattedState, nil
+	return gameStatus, nil
 }
 
 // GetGameState gets the current state for a given game and player
@@ -108,11 +136,11 @@ func GetGameState(groupName string, playerName string) (*GameStatusResponse, err
 	if err != nil {
 		return nil, err
 	}
-	formattedState, err := formatGameStateForPlayer(stateManager.game, playerName)
+	gameStatus, err := gameStatusForPlayer(stateManager.game, playerName)
 	if err != nil {
 		return nil, err
 	}
-	return formattedState, nil
+	return gameStatus, nil
 }
 
 // StartGame starts the game with the current players
@@ -127,49 +155,42 @@ func StartGame(groupName string, playerName string) (*GameStatusResponse, error)
 		return nil, err
 	}
 	models.SaveGame(stateManager.game)
-	formattedState, err := formatGameStateForPlayer(stateManager.game, playerName)
+	gameStatus, err := gameStatusForPlayer(stateManager.game, playerName)
 	if err != nil {
 		return nil, err
 	}
-	return formattedState, nil
+	return gameStatus, nil
 }
 
-// Todo: This should probably be moved to individual states since there will be different relevant data at each state
-func formatGameStateForPlayer(game *models.Game, playerName string) (*GameStatusResponse, error) {
-	gameHost, err := game.GetHostName()
-	if err != nil {
-		return nil, err
-	}
-
+func gameStatusForPlayer(game *models.Game, playerName string) (*GameStatusResponse, error) {
 	var currentPlayer *models.Player
-	for _, player := range game.Players {
+	players := make([]*Player, len(game.Players))
+	for i, player := range game.Players {
+		players[i] = &Player{Name: player.Name, Points: player.Points, Host: player.Host}
 		if player.Name == playerName {
 			currentPlayer = player
 		}
 	}
-
 	if currentPlayer == nil {
 		return nil, errors.New("cannot find current player in game")
 	}
-
-	//TODO : Need to adjust this so we don't send all the prompts back to the client, someone can cheat by inspecting
-	currentPlayerData := map[string]interface{}{
-		"name":   playerName,
-		"isHost": gameHost == playerName,
+	// Set base properties that do not depend on game state
+	gameStatusResponse := &GameStatusResponse{
+		GroupName:     game.GroupName,
+		CurrentPlayer: &CurrentPlayer{Name: currentPlayer.Name, IsHost: currentPlayer.Host},
+		CurrentState:  string(game.CurrentState),
+		Players:       players,
 	}
-	if currentPlayer.AssignedPrompt != nil {
-		currentPlayerData["assignedPrompt"] = map[string]interface{}{
-			"adjectives": currentPlayer.AssignedPrompt.Adjectives,
-			"noun":       currentPlayer.AssignedPrompt.Noun,
-		}
+	// Add any state-dependent properties to the status
+	currentState, err := getCurrentState(game)
+	if err != nil {
+		return nil, err
 	}
-	statusResponse := map[string]interface{}{
-		"groupName":     game.GroupName,
-		"players":       game.Players,
-		"currentPlayer": currentPlayerData,
-		"currentState":  game.CurrentState,
+	err = currentState.addGameStatusPropertiesForPlayer(currentPlayer, gameStatusResponse)
+	if err != nil {
+		return nil, err
 	}
-	return &statusResponse, nil
+	return gameStatusResponse, nil
 }
 
 func getManagerForGroup(groupName string) (*StateManager, error) {
@@ -258,9 +279,9 @@ func createGameState(groupName string, players []string, prompts [][]string, gam
 		}
 		assignPrompts(game)
 	}
-	formattedState, err := formatGameStateForPlayer(game, hostName)
+	gameStatus, err := gameStatusForPlayer(game, hostName)
 	if err != nil {
 		return nil, err
 	}
-	return formattedState, nil
+	return gameStatus, nil
 }

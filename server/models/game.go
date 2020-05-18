@@ -29,32 +29,31 @@ const (
 // Player contains all the information relevant to a game's participant
 type Player struct {
 	// Todo: Probably worth having a sort of device id in case two players register with the same name
-	Name           string  `json:"name"`
-	Host           bool    `json:"host"`
-	Points         uint64  `json:"points"`
-	AssignedPrompt *Prompt `json:"-"`
+	Name           string
+	Host           bool
+	Points         uint64
+	AssignedPrompt *Prompt
 }
 
 type Prompt struct {
 	Author     string
-	Group      string
 	Noun       string
 	Adjectives []string
 }
 
 type Drawing struct {
-	ImageData string `json:"imageData"`
-	Author    string `json:"author"`
+	ImageData string
+	Author    string
 }
 
 // Game contains all data that represents the game at any point
 type Game struct {
-	GroupName    string     `json:"groupName"`
-	Players      []*Player  `json:"players"`
-	CurrentState GameState  `json:"currentState"`
-	HostPlayer   string     `json:"hostPlayer"`
-	Prompts      []*Prompt  `json:"prompts"`
-	Drawings     []*Drawing `json:"drawings"`
+	GroupName    string
+	Players      []*Player
+	CurrentState GameState
+	HostPlayer   string
+	Prompts      []*Prompt
+	Drawings     []*Drawing
 }
 
 // Todo: Put SaveGame/LoadGame methods behind an interface to faciliate unit tests
