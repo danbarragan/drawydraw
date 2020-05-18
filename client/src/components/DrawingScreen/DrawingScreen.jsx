@@ -172,7 +172,7 @@ class DrawingScreen extends React.Component {
             players.filter((player) => player.name !== currentPlayer.name).map((player) => (
               <li key={player.name}>
                 {player.name}
-                {player.hasPendingAction ? ' is still drawing' : ' is done'}
+                {player.hasPendingActions ? ' is still drawing' : ' is done'}
               </li>
             ))
           }
@@ -192,7 +192,7 @@ DrawingScreen.propTypes = {
   gameState: PropTypes.shape({
     players: PropTypes.arrayOf(PropTypes.shape({
       name: PropTypes.string.isRequired,
-      hasPendingAction: PropTypes.bool.isRequired,
+      hasPendingActions: PropTypes.bool.isRequired,
     })),
     currentPlayer: PropTypes.shape({
       name: PropTypes.string.isRequired,
