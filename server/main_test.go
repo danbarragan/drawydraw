@@ -234,8 +234,7 @@ func TestSubmitDrawingRoute(t *testing.T) {
 	}
 	req = createRequest(t, "POST", "/api/start-game", data)
 	sendRequest(t, req, http.StatusOK)
-
-	//Make a post to the add prompts route from player 1, confirm state stays at "Initial Prompt Creation"
+	// Add prompts for both players
 	data = map[string]string{
 		"groupName":  "submitDrawingRoute",
 		"playerName": "player1",
