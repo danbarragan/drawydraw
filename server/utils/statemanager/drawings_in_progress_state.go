@@ -32,3 +32,11 @@ func (state drawingsInProgressState) submitDrawing(playerName string, encodedIma
 func (state drawingsInProgressState) addPrompt(prompts *models.Prompt) error {
 	return errors.New("addprompts not supported for drawing state")
 }
+
+func (state drawingsInProgressState) addGameStatusPropertiesForPlayer(player *models.Player, gameStatus *GameStatusResponse) error {
+	gameStatus.CurrentPlayer.AssignedPrompt = &AssignedPrompt{
+		Adjectives: player.AssignedPrompt.Adjectives,
+		Noun:       player.AssignedPrompt.Noun,
+	}
+	return nil
+}

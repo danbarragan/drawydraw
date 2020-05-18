@@ -36,14 +36,13 @@ func TestCreateGroup_ShortGroupName_Fails(t *testing.T) {
 func TestAddPlayer_AddHost_Succeeds(t *testing.T) {
 	groupName := randomGroupName()
 	CreateGroup(groupName)
-	gameState, err := AddPlayer("mama cat", groupName, true)
+	gameStatus, err := AddPlayer("mama cat", groupName, true)
 	assert.Nil(t, err)
-	assert.NotNil(t, gameState)
-	expectedPlayers := []*models.Player{{Name: "mama cat", Host: true}}
-	assert.EqualValues(t, (*gameState)["players"], expectedPlayers)
-	currentPlayer := (*gameState)["currentPlayer"].(map[string]interface{})
-	assert.Equal(t, currentPlayer["isHost"], true)
-	assert.Equal(t, currentPlayer["name"], "mama cat")
+	assert.NotNil(t, gameStatus)
+	expectedPlayers := []*Player{{Name: "mama cat", Host: true}}
+	assert.EqualValues(t, gameStatus.Players, expectedPlayers)
+	expectedCurrentPlayer := &CurrentPlayer{Name: "mama cat", IsHost: true}
+	assert.EqualValues(t, expectedCurrentPlayer, gameStatus.CurrentPlayer)
 }
 
 func TestAddPlayer_AddToHostedGame_Succeeds(t *testing.T) {
@@ -78,11 +77,11 @@ func TestAddPlayer_PlayerExistsInGroup_NoOps(t *testing.T) {
 	playerName := "baby cat"
 	CreateGroup(groupName)
 	AddPlayer(playerName, groupName, true)
-	statusResponse, err := AddPlayer(playerName, groupName, true)
+	gameStatus, err := AddPlayer(playerName, groupName, true)
 	assert.Nil(t, err)
-	assert.NotNil(t, statusResponse)
-	expectedPlayers := []*models.Player{{Name: "baby cat", Host: true}}
-	assert.EqualValues(t, (*statusResponse)["players"], expectedPlayers)
+	assert.NotNil(t, gameStatus)
+	expectedPlayers := []*Player{{Name: "baby cat", Host: true}}
+	assert.EqualValues(t, gameStatus.Players, expectedPlayers)
 }
 
 func TestAddPlayer_AddSecondHost_Fails(t *testing.T) {
@@ -98,17 +97,13 @@ func TestStartGame_Host_Succeeds(t *testing.T) {
 	CreateGroup(groupName)
 	AddPlayer("host cat", groupName, true)
 	AddPlayer("angry cat", groupName, false)
-	addPlayerResponse, err := AddPlayer("annoyed cat", groupName, false)
+	statusAfterAddPlayer, err := AddPlayer("annoyed cat", groupName, false)
+	assert.EqualValues(t, statusAfterAddPlayer.CurrentState, models.WaitingForPlayers)
 
-	expectedState1 := models.WaitingForPlayers
-	assert.EqualValues(t, (*addPlayerResponse)["currentState"], expectedState1)
-
-	startResponse, err := StartGame(groupName, "host cat")
+	statusAfterStart, err := StartGame(groupName, "host cat")
 	assert.Nil(t, err)
-	assert.NotNil(t, startResponse)
-
-	expectedState2 := models.InitialPromptCreation
-	assert.EqualValues(t, (*startResponse)["currentState"], expectedState2)
+	assert.NotNil(t, statusAfterStart)
+	assert.EqualValues(t, statusAfterStart.CurrentState, models.InitialPromptCreation)
 }
 
 func TestStartGame_NonHost_Fails(t *testing.T) {
@@ -136,5 +131,15 @@ func TestAddPrompt_Succeeds(t *testing.T) {
 	addPromptResponse, err := AddPrompt("annoyed cat", groupName, "tuna", "stinky", "yummy")
 	assert.Nil(t, err)
 	assert.NotNil(t, addPromptResponse)
+}
 
+func TestGameStatusForPlayer_Fails_PlayerMissing(t *testing.T) {
+	//set up a group, add players, and start the game
+	groupName := randomGroupName()
+	CreateGroup(groupName)
+	AddPlayer("host cat", groupName, true)
+	game := models.LoadGame(groupName)
+	gameStatus, err := gameStatusForPlayer(game, "missing cat")
+	assert.Nil(t, gameStatus)
+	assert.NotNil(t, err)
 }

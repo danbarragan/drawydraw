@@ -29,3 +29,7 @@ func (state waitingForPlayersState) submitDrawing(playerName string, encodedImag
 func (state waitingForPlayersState) addPrompt(prompts *models.Prompt) error {
 	return errors.New("addPrompt not supported for waiting for players state")
 }
+
+func (state waitingForPlayersState) addGameStatusPropertiesForPlayer(player *models.Player, gameStatus *GameStatusResponse) error {
+	return nil
+}

@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"drawydraw/models"
+	"drawydraw/utils/statemanager"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -35,24 +36,6 @@ func TestMain(m *testing.M) {
 	os.Exit(status)
 }
 
-type AssignedPrompt struct {
-	Adjectives []string `json:"adjectives"`
-	Noun       string   `json:"noun"`
-}
-
-type CurrentPlayer struct {
-	AssignedPrompt *AssignedPrompt `json:"assignedPrompt"`
-	IsHost         bool            `json:"isHost"`
-	Name           string          `json:"name"`
-}
-
-type GameStateResponse struct {
-	CurrentPlayer *CurrentPlayer   `json:"currentPlayer"`
-	CurrentState  string           `json:"currentState"`
-	GroupName     string           `json:"groupName"`
-	Players       []*models.Player `json:"players"`
-}
-
 func TestCreateGameRoute(t *testing.T) {
 	// Create the game
 	hostName := "Baby Cat"
@@ -63,11 +46,11 @@ func TestCreateGameRoute(t *testing.T) {
 	}
 	req := createRequest(t, "POST", "/api/create-game", data)
 	actualGameState := sendRequest(t, req, http.StatusOK)
-	expectedGameState := &GameStateResponse{
+	expectedGameState := &statemanager.GameStatusResponse{
 		GroupName:     "Kitten Party",
-		CurrentPlayer: &CurrentPlayer{Name: "Baby Cat", IsHost: true},
+		CurrentPlayer: &statemanager.CurrentPlayer{Name: "Baby Cat", IsHost: true},
 		CurrentState:  string(models.WaitingForPlayers),
-		Players: []*models.Player{
+		Players: []*statemanager.Player{
 			{Name: "Baby Cat", Host: true},
 		},
 	}
@@ -88,11 +71,11 @@ func TestGetGameStateStatusRoute(t *testing.T) {
 	// Get the game's status
 	req = createRequest(t, "GET", "/api/get-game-status/somegame?playerName=Player", nil)
 	actualGameState := sendRequest(t, req, http.StatusOK)
-	expectedGameState := &GameStateResponse{
+	expectedGameState := &statemanager.GameStatusResponse{
 		GroupName:     "somegame",
-		CurrentPlayer: &CurrentPlayer{Name: "Player", IsHost: true},
+		CurrentPlayer: &statemanager.CurrentPlayer{Name: "Player", IsHost: true},
 		CurrentState:  string(models.WaitingForPlayers),
-		Players: []*models.Player{
+		Players: []*statemanager.Player{
 			{Name: "Player", Host: true},
 		},
 	}
@@ -130,11 +113,11 @@ func TestAddPlayerRoute(t *testing.T) {
 	}
 	req = createRequest(t, "POST", "/api/add-player", data)
 	actualGameState := sendRequest(t, req, http.StatusOK)
-	expectedGameState := &GameStateResponse{
+	expectedGameState := &statemanager.GameStatusResponse{
 		GroupName:     "group",
-		CurrentPlayer: &CurrentPlayer{Name: "player2"},
+		CurrentPlayer: &statemanager.CurrentPlayer{Name: "player2"},
 		CurrentState:  string(models.WaitingForPlayers),
-		Players: []*models.Player{
+		Players: []*statemanager.Player{
 			{Name: "player1", Host: true},
 			{Name: "player2"},
 		},
@@ -169,11 +152,11 @@ func TestStartGameRoute(t *testing.T) {
 	}
 	req = createRequest(t, "POST", "/api/start-game", data)
 	actualGameState := sendRequest(t, req, http.StatusOK)
-	expectedGameState := &GameStateResponse{
+	expectedGameState := &statemanager.GameStatusResponse{
 		GroupName:     "startGameRoute",
-		CurrentPlayer: &CurrentPlayer{IsHost: true, Name: "player1"},
+		CurrentPlayer: &statemanager.CurrentPlayer{IsHost: true, Name: "player1"},
 		CurrentState:  string(models.InitialPromptCreation),
-		Players: []*models.Player{
+		Players: []*statemanager.Player{
 			{Name: "player1", Host: true},
 		},
 	}
@@ -215,11 +198,11 @@ func TestAddPromptRoute(t *testing.T) {
 	}
 	req = createRequest(t, "POST", "/api/add-prompt", data)
 	actualGameState := sendRequest(t, req, http.StatusOK)
-	expectedGameState := &GameStateResponse{
+	expectedGameState := &statemanager.GameStatusResponse{
 		GroupName:     "addPromptRoute",
-		CurrentPlayer: &CurrentPlayer{IsHost: true, Name: "player1"},
+		CurrentPlayer: &statemanager.CurrentPlayer{IsHost: true, Name: "player1"},
 		CurrentState:  string(models.InitialPromptCreation),
-		Players: []*models.Player{
+		Players: []*statemanager.Player{
 			{Name: "player1", Host: true},
 			{Name: "player2"},
 		},
@@ -228,7 +211,7 @@ func TestAddPromptRoute(t *testing.T) {
 }
 
 // Helper function to process a request and test its response
-func sendRequest(t *testing.T, req *http.Request, statusCode int) *GameStateResponse {
+func sendRequest(t *testing.T, req *http.Request, statusCode int) *statemanager.GameStatusResponse {
 	// Create a response recorder// Test set up
 	w := httptest.NewRecorder()
 
@@ -240,7 +223,7 @@ func sendRequest(t *testing.T, req *http.Request, statusCode int) *GameStateResp
 		t.Fail()
 	}
 
-	actualGameState := &GameStateResponse{}
+	actualGameState := &statemanager.GameStatusResponse{}
 	json.Unmarshal([]byte(w.Body.String()), &actualGameState)
 	return actualGameState
 }

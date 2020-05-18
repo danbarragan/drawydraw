@@ -44,3 +44,7 @@ func assignPrompts(game *models.Game) {
 		player.AssignedPrompt = playerPromptMap[assignedPromptAuthor]
 	}
 }
+
+func (state promptCreatingState) addGameStatusPropertiesForPlayer(player *models.Player, gameStatus *GameStatusResponse) error {
+	return nil
+}
