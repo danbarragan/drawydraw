@@ -18,6 +18,17 @@ func (state drawingsInProgressState) startGame(groupName string, playerName stri
 	return errors.New("startGame not supported for drawingsInProgress state")
 }
 
-func (state drawingsInProgressState) addPrompt(prompt *models.Prompt) error {
-	return errors.New("addprompt not supported for drawing state")
+func (state drawingsInProgressState) submitDrawing(playerName string, encodedImage string) error {
+	for _, currentDrawing := range state.game.Drawings {
+		if currentDrawing.Author == playerName {
+			return errors.New("player has already submitted a drawing")
+		}
+	}
+	drawing := models.Drawing{Author: playerName, ImageData: encodedImage}
+	state.game.Drawings = append(state.game.Drawings, &drawing)
+	return nil
+}
+
+func (state drawingsInProgressState) addPrompt(prompts *models.Prompt) error {
+	return errors.New("addprompts not supported for drawing state")
 }

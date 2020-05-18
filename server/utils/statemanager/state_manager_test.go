@@ -133,7 +133,7 @@ func TestAddPrompt_Succeeds(t *testing.T) {
 	assert.NotNil(t, startResponse)
 
 	//add prompt and check its in game state
-	addPromptResponse, err := AddPrompt("friendly cat", groupName, "tuna", "stinky", "yummy")
+	addPromptResponse, err := AddPrompt("annoyed cat", groupName, "tuna", "stinky", "yummy")
 	assert.Nil(t, err)
 	assert.NotNil(t, addPromptResponse)
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"drawydraw/models"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -34,6 +35,24 @@ func TestMain(m *testing.M) {
 	os.Exit(status)
 }
 
+type AssignedPrompt struct {
+	Adjectives []string `json:"adjectives"`
+	Noun       string   `json:"noun"`
+}
+
+type CurrentPlayer struct {
+	AssignedPrompt *AssignedPrompt `json:"assignedPrompt"`
+	IsHost         bool            `json:"isHost"`
+	Name           string          `json:"name"`
+}
+
+type GameStateResponse struct {
+	CurrentPlayer *CurrentPlayer   `json:"currentPlayer"`
+	CurrentState  string           `json:"currentState"`
+	GroupName     string           `json:"groupName"`
+	Players       []*models.Player `json:"players"`
+}
+
 func TestCreateGameRoute(t *testing.T) {
 	// Create the game
 	hostName := "Baby Cat"
@@ -43,11 +62,16 @@ func TestCreateGameRoute(t *testing.T) {
 		"playerName": hostName,
 	}
 	req := createRequest(t, "POST", "/api/create-game", data)
-	resp := testHTTPResponse(t, req, http.StatusOK)
-
-	assert.Equal(t, resp[groupNameKey], groupName)
-	assert.Equal(t, resp[currentStateKey], waitingForPlayers)
-	assert.Equal(t, resp[currentPlayerKey], Response{nameKey: hostName, isHostKey: true})
+	actualGameState := sendRequest(t, req, http.StatusOK)
+	expectedGameState := &GameStateResponse{
+		GroupName:     "Kitten Party",
+		CurrentPlayer: &CurrentPlayer{Name: "Baby Cat", IsHost: true},
+		CurrentState:  string(models.WaitingForPlayers),
+		Players: []*models.Player{
+			{Name: "Baby Cat", Host: true},
+		},
+	}
+	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
 func TestGetGameStateStatusRoute(t *testing.T) {
@@ -59,16 +83,20 @@ func TestGetGameStateStatusRoute(t *testing.T) {
 		"playerName": hostName,
 	}
 	req := createRequest(t, "POST", "/api/create-game", data)
-	testHTTPResponse(t, req, http.StatusOK)
+	sendRequest(t, req, http.StatusOK)
 
 	// Get the game's status
 	req = createRequest(t, "GET", "/api/get-game-status/somegame?playerName=Player", nil)
-	resp := testHTTPResponse(t, req, http.StatusOK)
-
-	// Todo: Saner expected state
-	assert.Equal(t, resp[groupNameKey], groupName)
-	assert.Equal(t, resp[currentStateKey], waitingForPlayers)
-	assert.Equal(t, resp[currentPlayerKey], Response{nameKey: hostName, isHostKey: true})
+	actualGameState := sendRequest(t, req, http.StatusOK)
+	expectedGameState := &GameStateResponse{
+		GroupName:     "somegame",
+		CurrentPlayer: &CurrentPlayer{Name: "Player", IsHost: true},
+		CurrentState:  string(models.WaitingForPlayers),
+		Players: []*models.Player{
+			{Name: "Player", Host: true},
+		},
+	}
+	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
 func TestCreateGameRoute__GameAlreadyExists(t *testing.T) {
@@ -78,11 +106,11 @@ func TestCreateGameRoute__GameAlreadyExists(t *testing.T) {
 		"playerName": "some player",
 	}
 	req := createRequest(t, "POST", "/api/create-game", data)
-	testHTTPResponse(t, req, http.StatusOK)
+	sendRequest(t, req, http.StatusOK)
 
 	// Try to create the game again
 	req = createRequest(t, "POST", "/api/create-game", data)
-	testHTTPResponse(t, req, http.StatusBadRequest)
+	sendRequest(t, req, http.StatusBadRequest)
 }
 
 func TestAddPlayerRoute(t *testing.T) {
@@ -92,7 +120,7 @@ func TestAddPlayerRoute(t *testing.T) {
 		"playerName": "player1",
 	}
 	req := createRequest(t, "POST", "/api/create-game", data)
-	testHTTPResponse(t, req, http.StatusOK)
+	sendRequest(t, req, http.StatusOK)
 
 	// Add the player
 	playerName := "player2"
@@ -101,9 +129,17 @@ func TestAddPlayerRoute(t *testing.T) {
 		"playerName": playerName,
 	}
 	req = createRequest(t, "POST", "/api/add-player", data)
-	resp := testHTTPResponse(t, req, http.StatusOK)
-
-	assert.Equal(t, resp[currentPlayerKey], Response{nameKey: playerName, isHostKey: false})
+	actualGameState := sendRequest(t, req, http.StatusOK)
+	expectedGameState := &GameStateResponse{
+		GroupName:     "group",
+		CurrentPlayer: &CurrentPlayer{Name: "player2"},
+		CurrentState:  string(models.WaitingForPlayers),
+		Players: []*models.Player{
+			{Name: "player1", Host: true},
+			{Name: "player2"},
+		},
+	}
+	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
 func TestAddPlayerRoute_GroupNotSetup(t *testing.T) {
@@ -113,7 +149,7 @@ func TestAddPlayerRoute_GroupNotSetup(t *testing.T) {
 	}
 
 	req := createRequest(t, "POST", "/api/add-player", data)
-	testHTTPResponse(t, req, http.StatusBadRequest)
+	sendRequest(t, req, http.StatusBadRequest)
 }
 
 func TestStartGameRoute(t *testing.T) {
@@ -123,7 +159,7 @@ func TestStartGameRoute(t *testing.T) {
 		"playerName": "player1",
 	}
 	req := createRequest(t, "POST", "/api/create-game", data)
-	testHTTPResponse(t, req, http.StatusOK)
+	sendRequest(t, req, http.StatusOK)
 
 	// Actual test
 	// Make a post to start game route
@@ -132,9 +168,16 @@ func TestStartGameRoute(t *testing.T) {
 		"playerName": "player1",
 	}
 	req = createRequest(t, "POST", "/api/start-game", data)
-	resp := testHTTPResponse(t, req, http.StatusOK)
-
-	assert.Equal(t, resp[currentStateKey], initialPromptCreation)
+	actualGameState := sendRequest(t, req, http.StatusOK)
+	expectedGameState := &GameStateResponse{
+		GroupName:     "startGameRoute",
+		CurrentPlayer: &CurrentPlayer{IsHost: true, Name: "player1"},
+		CurrentState:  string(models.InitialPromptCreation),
+		Players: []*models.Player{
+			{Name: "player1", Host: true},
+		},
+	}
+	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
 func TestAddPromptRoute(t *testing.T) {
@@ -144,7 +187,7 @@ func TestAddPromptRoute(t *testing.T) {
 		"playerName": "player1",
 	}
 	req := createRequest(t, "POST", "/api/create-game", data)
-	testHTTPResponse(t, req, http.StatusOK)
+	sendRequest(t, req, http.StatusOK)
 
 	// Add another player
 	data = map[string]string{
@@ -152,7 +195,7 @@ func TestAddPromptRoute(t *testing.T) {
 		"playerName": "player2",
 	}
 	req = createRequest(t, "POST", "/api/add-player", data)
-	testHTTPResponse(t, req, http.StatusOK)
+	sendRequest(t, req, http.StatusOK)
 
 	// Start the game
 	data = map[string]string{
@@ -160,7 +203,7 @@ func TestAddPromptRoute(t *testing.T) {
 		"playerName": "player1",
 	}
 	req = createRequest(t, "POST", "/api/start-game", data)
-	testHTTPResponse(t, req, http.StatusOK)
+	sendRequest(t, req, http.StatusOK)
 
 	//Make a post to the add prompts route from player 1, confirm state stays at "Initial Prompt Creation"
 	data = map[string]string{
@@ -171,25 +214,21 @@ func TestAddPromptRoute(t *testing.T) {
 		"adjective2": "portly",
 	}
 	req = createRequest(t, "POST", "/api/add-prompt", data)
-	resp := testHTTPResponse(t, req, http.StatusOK)
-	assert.Equal(t, initialPromptCreation, resp[currentStateKey])
-
-	//Make a post to the add prompts route from player 2, confirm state has changed to "Drawing"
-	data = map[string]string{
-		"groupName":  "addPromptRoute",
-		"playerName": "player2",
-		"noun":       "duck",
-		"adjective1": "chilly",
-		"adjective2": "sleepy",
+	actualGameState := sendRequest(t, req, http.StatusOK)
+	expectedGameState := &GameStateResponse{
+		GroupName:     "addPromptRoute",
+		CurrentPlayer: &CurrentPlayer{IsHost: true, Name: "player1"},
+		CurrentState:  string(models.InitialPromptCreation),
+		Players: []*models.Player{
+			{Name: "player1", Host: true},
+			{Name: "player2"},
+		},
 	}
-	req = createRequest(t, "POST", "/api/add-prompt", data)
-	resp = testHTTPResponse(t, req, http.StatusOK)
-	assert.Equal(t, drawingsInProgress, resp[currentStateKey])
+	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
 // Helper function to process a request and test its response
-func testHTTPResponse(t *testing.T, req *http.Request, statusCode int) Response {
-
+func sendRequest(t *testing.T, req *http.Request, statusCode int) *GameStateResponse {
 	// Create a response recorder// Test set up
 	w := httptest.NewRecorder()
 
@@ -201,9 +240,9 @@ func testHTTPResponse(t *testing.T, req *http.Request, statusCode int) Response 
 		t.Fail()
 	}
 
-	resp := Response{}
-	json.Unmarshal([]byte(w.Body.String()), &resp)
-	return resp
+	actualGameState := &GameStateResponse{}
+	json.Unmarshal([]byte(w.Body.String()), &actualGameState)
+	return actualGameState
 }
 
 func createRequest(t *testing.T, method string, route string, data map[string]string) *http.Request {

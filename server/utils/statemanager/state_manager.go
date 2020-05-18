@@ -88,7 +88,7 @@ func AddPrompt(playerName string, groupName string, noun string, adjective1 stri
 		Author:     playerName,
 		Group:      groupName,
 		Noun:       noun,
-		Adjectives: [2]string{adjective1, adjective2}}
+		Adjectives: []string{adjective1, adjective2}}
 
 	err = stateManager.currentState.addPrompt(&newPrompt)
 	if err != nil {
@@ -141,15 +141,33 @@ func formatGameStateForPlayer(game *models.Game, playerName string) (*GameStatus
 		return nil, err
 	}
 
-	//TODO : Need to adjust this so we don't send all the prompt back to the client, someone can cheat by inspecting
+	var currentPlayer *models.Player
+	for _, player := range game.Players {
+		if player.Name == playerName {
+			currentPlayer = player
+		}
+	}
+
+	if currentPlayer == nil {
+		return nil, errors.New("cannot find current player in game")
+	}
+
+	//TODO : Need to adjust this so we don't send all the prompts back to the client, someone can cheat by inspecting
+	currentPlayerData := map[string]interface{}{
+		"name":   playerName,
+		"isHost": gameHost == playerName,
+	}
+	if currentPlayer.AssignedPrompt != nil {
+		currentPlayerData["assignedPrompt"] = map[string]interface{}{
+			"adjectives": currentPlayer.AssignedPrompt.Adjectives,
+			"noun":       currentPlayer.AssignedPrompt.Noun,
+		}
+	}
 	statusResponse := map[string]interface{}{
-		"groupName": game.GroupName,
-		"players":   game.Players,
-		"currentPlayer": map[string]interface{}{
-			"name":   playerName,
-			"isHost": gameHost == playerName,
-		},
-		"currentState": game.CurrentState,
+		"groupName":     game.GroupName,
+		"players":       game.Players,
+		"currentPlayer": currentPlayerData,
+		"currentState":  game.CurrentState,
 	}
 	return &statusResponse, nil
 }
@@ -198,19 +216,21 @@ func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 	gameState := models.GameState(gameStateName)
 	switch currentState := gameState; currentState {
 	case models.Voting:
-		return createGameState("chats", []string{"graisseux", "frere jacques", "pepe le pew"}, gameState)
+		return createGameState("chats", []string{"graisseux", "frere jacques", "pepe le pew"}, nil, gameState)
 	case models.WaitingForPlayers:
-		return createGameState("not cats", []string{"dog", "cat", "other dog"}, gameState)
+		return createGameState("not cats", []string{"dog", "cat", "other dog"}, nil, gameState)
 	case models.InitialPromptCreation:
-		return createGameState("fat cats", []string{"chubbs", "chonk", "beefcake"}, gameState)
+		return createGameState("fat cats", []string{"chubbs", "chonk", "beefcake"}, nil, gameState)
 	case models.DrawingsInProgress:
-		return createGameState("human cats", []string{"sharon", "grandpa", "j. ralphio"}, gameState)
+		mockPrompt := []string{"silly", "great", "beluga"}
+		mockPrompts := [][]string{mockPrompt, mockPrompt, mockPrompt}
+		return createGameState("human cats", []string{"sharon", "grandpa", "j. ralphio"}, mockPrompts, gameState)
 	default:
 		return nil, fmt.Errorf("failed to set game to state %s", gameState)
 	}
 }
 
-func createGameState(groupName string, players []string, gameState models.GameState) (*GameStatusResponse, error) {
+func createGameState(groupName string, players []string, prompts [][]string, gameState models.GameState) (*GameStatusResponse, error) {
 	hostName := players[0]
 
 	game := &models.Game{
@@ -227,7 +247,17 @@ func createGameState(groupName string, players []string, gameState models.GameSt
 			return nil, err
 		}
 	}
-
+	if prompts != nil {
+		game.Prompts = make([]*models.Prompt, len(prompts))
+		for index, prompt := range prompts {
+			game.Prompts[index] = &models.Prompt{
+				Adjectives: prompt[0:2],
+				Noun:       prompt[2],
+				Author:     players[index],
+			}
+		}
+		assignPrompts(game)
+	}
 	formattedState, err := formatGameStateForPlayer(game, hostName)
 	if err != nil {
 		return nil, err
