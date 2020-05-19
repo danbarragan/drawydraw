@@ -3,6 +3,7 @@ import axios from 'axios';
 import PropTypes from 'prop-types';
 import { formatServerError } from '../../utils/errorFormatting';
 import './VotingScreen.css';
+import UpdateGameState from '../../utils/updateGameState';
 
 class VotingScreen extends React.Component {
   constructor(props) {
@@ -17,17 +18,16 @@ class VotingScreen extends React.Component {
     this.castVote = this.castVote.bind(this);
   }
 
-  // Todo: Probably move to a helper since it's going to be used in other screens
-  async updateGameState() {
+  updateGameState() {
     const { gameState, onGameStateChanged } = this.props;
     const { groupName, currentPlayer } = gameState;
     const { name: playerName } = currentPlayer;
-    try {
-      const response = await axios.get(`/api/get-game-status/${groupName}?playerName=${playerName}`);
-      onGameStateChanged(response.data);
-    } catch (error) {
-      this.setState({ error: formatServerError(error) });
-    }
+    UpdateGameState(
+      groupName,
+      playerName,
+      onGameStateChanged,
+      (error) => { this.setState({ error: formatServerError(error) }); },
+    );
   }
 
   handleOptionChange(voteEvent) {

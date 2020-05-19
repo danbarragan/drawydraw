@@ -40,7 +40,7 @@ class WaitingForPlayersScreen extends React.Component {
     }
   }
 
-  async updateGameState() {
+  updateGameState() {
     const { gameState, onGameStateChanged } = this.props;
     const { groupName, currentPlayer } = gameState;
     const { name: playerName } = currentPlayer;
