@@ -1,5 +1,5 @@
-# Drawy draw (name not final lol)
-Needs some description
+# Drawy draw (name not final lol) ![CI Status](https://travis-ci.com/danbarragan/drawydraw.svg?branch=master)
+Needs some description 
 
 ## Local development
 ### Client
