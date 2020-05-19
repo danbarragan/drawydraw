@@ -51,7 +51,7 @@ func (state drawingsInProgressState) addGameStatusPropertiesForPlayer(player *mo
 	// Mark players who haven't submitted their drawing as having pending actions
 	for _, p := range gameStatus.Players {
 		_, hasDrawing := authorToDrawingMap[p.Name]
-		p.HasPendingActions = !hasDrawing
+		p.HasPendingAction = !hasDrawing
 		if p.Name == player.Name {
 			gameStatus.CurrentPlayer.HasCompletedAction = hasDrawing
 		}

@@ -6,7 +6,7 @@ import '../../test/setupTests';
 
 describe('DrawingScreen', () => {
   const mockGameState = {
-    players: [{ name: 'baby cat', hasPendingActions: true }, { name: 'omega cat', hasPendingActions: true }],
+    players: [{ name: 'baby cat', hasPendingAction: true }, { name: 'omega cat', hasPendingAction: true }],
     groupName: 'kitties4Life',
     currentPlayer: {
       name: 'baby cat',

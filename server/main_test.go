@@ -270,8 +270,8 @@ func TestSubmitDrawingRoute(t *testing.T) {
 		},
 		CurrentState: string(models.DrawingsInProgress),
 		Players: []*statemanager.Player{
-			{Name: "player1", Host: true, HasPendingActions: false},
-			{Name: "player2", HasPendingActions: true},
+			{Name: "player1", Host: true, HasPendingAction: false},
+			{Name: "player2", HasPendingAction: true},
 		},
 	}
 	assert.EqualValues(t, expectedGameState, actualGameState)

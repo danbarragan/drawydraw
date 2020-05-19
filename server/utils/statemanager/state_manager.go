@@ -20,10 +20,10 @@ type AssignedPrompt struct {
 }
 
 type Player struct {
-	Name              string `json:"name"`
-	Host              bool   `json:"host"`
-	Points            uint64 `json:"points"`
-	HasPendingActions bool   `json:"hasPendingAction"`
+	Name             string `json:"name"`
+	Host             bool   `json:"host"`
+	Points           uint64 `json:"points"`
+	HasPendingAction bool   `json:"hasPendingAction"`
 }
 
 type CurrentPlayer struct {
