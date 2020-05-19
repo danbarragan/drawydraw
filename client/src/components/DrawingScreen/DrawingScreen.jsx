@@ -5,6 +5,7 @@ import axios from 'axios';
 import PropTypes from 'prop-types';
 import { formatServerError } from '../../utils/errorFormatting';
 import { BrushColors, BrushConfig, BrushSizes } from './BrushConfig/BrushConfig';
+import UpdateGameState from '../../utils/updateGameState';
 
 // Tiny classes to make managing points easier
 function Point(x, y) {
@@ -35,6 +36,7 @@ class DrawingScreen extends React.Component {
       strokes: [],
       currentBrushColor: BrushColors.Black,
       currentBrushSize: BrushSizes.Small,
+      timerId: null,
     };
     this.mousePressed = this.mousePressed.bind(this);
     this.mouseDragged = this.mouseDragged.bind(this);
@@ -45,6 +47,14 @@ class DrawingScreen extends React.Component {
     this.renderStrokesAsDataURL = this.renderStrokesAsDataURL.bind(this);
     this.onBrushColorChange = this.onBrushColorChange.bind(this);
     this.onBrushSizeChange = this.onBrushSizeChange.bind(this);
+    this.updateGameState = this.updateGameState.bind(this);
+  }
+
+  componentWillUnmount() {
+    const { timerId } = this.state;
+    if (timerId !== null) {
+      clearInterval(timerId);
+    }
   }
 
   async onSubmitClick() {
@@ -56,6 +66,9 @@ class DrawingScreen extends React.Component {
     const data = { playerName, groupName, imageData };
     try {
       const response = await axios.post('api/submit-drawing', data);
+      // Start listening for game state updates
+      const timerId = setInterval(this.updateGameState, 3000);
+      this.setState({ timerId });
       onGameStateChanged(response.data);
     } catch (error) {
       this.setState({ error: formatServerError(error) });
@@ -103,6 +116,18 @@ class DrawingScreen extends React.Component {
     }
   }
 
+  async updateGameState() {
+    const { gameState, onGameStateChanged } = this.props;
+    const { groupName, currentPlayer } = gameState;
+    const { name: playerName } = currentPlayer;
+    UpdateGameState(
+      groupName,
+      playerName,
+      onGameStateChanged,
+      (error) => { this.setState({ error: formatServerError(error) }); },
+    );
+  }
+
   renderStrokesAsDataURL() {
     const { canvasContainer } = this.state;
     return canvasContainer.canvas.toDataURL();
@@ -132,7 +157,7 @@ class DrawingScreen extends React.Component {
   render() {
     const { error, currentBrushColor, currentBrushSize } = this.state;
     const { gameState } = this.props;
-    const {currentPlayer} = gameState;
+    const { currentPlayer } = gameState;
     const { noun, adjectives } = currentPlayer.assignedPrompt;
     const { players } = gameState;
     const drawingElements = (
@@ -169,11 +194,13 @@ class DrawingScreen extends React.Component {
         <h3>Thank you for your drawing, waiting for other players...</h3>
         <ul>
           {
-            players.filter((player) => player.name !== currentPlayer.name).map((player) => (
-              <li key={player.name}>
-                {player.name}
-                {player.hasPendingActions ? ' is still drawing' : ' is done'}
-              </li>
+            players.map((player) => (
+              player.name === currentPlayer.name ? null : (
+                <li key={player.name}>
+                  {player.name}
+                  {player.hasPendingAction ? ' is still drawing' : ' is done'}
+                </li>
+              )
             ))
           }
         </ul>
@@ -192,7 +219,7 @@ DrawingScreen.propTypes = {
   gameState: PropTypes.shape({
     players: PropTypes.arrayOf(PropTypes.shape({
       name: PropTypes.string.isRequired,
-      hasPendingActions: PropTypes.bool.isRequired,
+      hasPendingAction: PropTypes.bool.isRequired,
     })),
     currentPlayer: PropTypes.shape({
       name: PropTypes.string.isRequired,
