@@ -1,9 +1,5 @@
 package models
 
-import (
-	"errors"
-)
-
 // GameState defines what are the individual states that make up the game
 type GameState string
 
@@ -27,12 +23,14 @@ type Player struct {
 	AssignedPrompt *Prompt
 }
 
+// Prompt is a set of a noun and adjectives that describes a drawing someone will make or has made
 type Prompt struct {
 	Author     string
 	Noun       string
 	Adjectives []string
 }
 
+// Drawing represents a drawing someone has made
 type Drawing struct {
 	ImageData string
 	Author    string
@@ -43,7 +41,6 @@ type Game struct {
 	GroupName    string
 	Players      []*Player
 	CurrentState GameState
-	HostPlayer   string
 	Prompts      []*Prompt
 	Drawings     []*Drawing
 }
@@ -56,10 +53,6 @@ func (game *Game) AddPlayer(player *Player) error {
 			return nil
 		}
 	}
-	// Set the host name if the player joining the game is the host
-	if player.Host {
-		game.HostPlayer = player.Name
-	}
 	game.Players = append(game.Players, player)
 	return nil
 }
@@ -70,12 +63,12 @@ func (game *Game) AddPrompt(prompt *Prompt) error {
 	return nil
 }
 
-// GetHostName Gets the name of the game's host
-func (game *Game) GetHostName() (string, error) {
+// GetHostName Gets the name of the game's host, returns nil if there's no host yet
+func (game *Game) GetHostName() *string {
 	for _, currentPlayer := range game.Players {
 		if currentPlayer.Host {
-			return currentPlayer.Name, nil
+			return &currentPlayer.Name
 		}
 	}
-	return "", errors.New("game has no host")
+	return nil
 }

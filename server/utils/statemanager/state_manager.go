@@ -14,11 +14,14 @@ type StateManager struct {
 
 // Models used for describing the status of the game to clients
 // Todo: Find a better home for these (or replace them with protos)
+
+// AssignedPrompt represents the prompt currently assigned to a player for drawing
 type AssignedPrompt struct {
 	Adjectives []string `json:"adjectives"`
 	Noun       string   `json:"noun"`
 }
 
+// Player represents the status of a player other than the one making the request
 type Player struct {
 	Name             string `json:"name"`
 	Host             bool   `json:"host"`
@@ -26,6 +29,7 @@ type Player struct {
 	HasPendingAction bool   `json:"hasPendingAction"`
 }
 
+// CurrentPlayer represents the status of the player making the request
 type CurrentPlayer struct {
 	AssignedPrompt     *AssignedPrompt `json:"assignedPrompt"`
 	IsHost             bool            `json:"isHost"`
@@ -33,6 +37,7 @@ type CurrentPlayer struct {
 	HasCompletedAction bool            `json:"hasCompletedAction"`
 }
 
+// GameStatusResponse contains all the game status communicated to players
 type GameStatusResponse struct {
 	CurrentPlayer *CurrentPlayer `json:"currentPlayer"`
 	CurrentState  string         `json:"currentState"`
@@ -68,14 +73,15 @@ func AddPlayer(playerName string, groupName string, isHost bool) (*GameStatusRes
 		return nil, err
 	}
 
+	hostName := stateManager.game.GetHostName()
 	if isHost {
-		if stateManager.game.HostPlayer != "" &&
-			playerName != stateManager.game.HostPlayer {
-			return nil, fmt.Errorf("failed to add player %s as host - %s is already host", playerName, stateManager.game.HostPlayer)
+		if hostName != nil &&
+			playerName != *hostName {
+			return nil, fmt.Errorf("failed to add player %s as host - %s is already host", playerName, *hostName)
 		}
 	} else {
 		// Non-host player is joining a game without a host - this should not be possible
-		if stateManager.game.HostPlayer == "" {
+		if hostName == nil {
 			return nil, errors.New("cannot add a non-host player to a game without a host")
 		}
 	}
@@ -278,10 +284,8 @@ func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 }
 
 func createGameState(groupName string, players []string, prompts [][]string, gameState models.GameState) (*GameStatusResponse, error) {
-	hostName := players[0]
-
 	game := &models.Game{
-		GroupName: groupName, CurrentState: gameState, HostPlayer: hostName,
+		GroupName: groupName, CurrentState: gameState,
 	}
 	models.GetGameProvider().SaveGame(game)
 	for idx, playerName := range players {
@@ -305,7 +309,7 @@ func createGameState(groupName string, players []string, prompts [][]string, gam
 		}
 		assignPrompts(game)
 	}
-	gameStatus, err := gameStatusForPlayer(game, hostName)
+	gameStatus, err := gameStatusForPlayer(game, *game.GetHostName())
 	if err != nil {
 		return nil, err
 	}
