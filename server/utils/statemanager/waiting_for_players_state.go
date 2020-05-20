@@ -15,7 +15,7 @@ func (state waitingForPlayersState) addPlayer(player *models.Player) error {
 }
 
 func (state waitingForPlayersState) startGame(groupName string, playerName string) error {
-	if playerName != state.game.HostPlayer {
+	if playerName != *state.game.GetHostName() {
 		return errors.New("only the host can start a game")
 	}
 	state.game.CurrentState = models.InitialPromptCreation

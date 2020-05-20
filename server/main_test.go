@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"drawydraw/models"
+	"drawydraw/test"
 	"drawydraw/utils/statemanager"
 	"encoding/json"
 	"net/http"
@@ -13,18 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
-
-var groupNameKey = "groupName"
-var playersKey = "players"
-var currentPlayerKey = "currentPlayer"
-var currentStateKey = "currentState"
-var waitingForPlayers = "WaitingForPlayers"
-var initialPromptCreation = "InitialPromptCreation"
-var drawingsInProgress = "DrawingsInProgress"
-var nameKey = "name"
-var isHostKey = "isHost"
-
-type Response = map[string]interface{}
 
 // This function is used for setup before executing the test functions
 func TestMain(m *testing.M) {
@@ -37,6 +26,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestCreateGameRoute(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	// Create the game
 	hostName := "Baby Cat"
 	groupName := "Kitten Party"
@@ -58,18 +48,9 @@ func TestCreateGameRoute(t *testing.T) {
 }
 
 func TestGetGameStateStatusRoute(t *testing.T) {
-	// Create a game
-	hostName := "Player"
-	groupName := "somegame"
-	data := map[string]string{
-		"groupName":  groupName,
-		"playerName": hostName,
-	}
-	req := createRequest(t, "POST", "/api/create-game", data)
-	sendRequest(t, req, http.StatusOK)
-
-	// Get the game's status
-	req = createRequest(t, "GET", "/api/get-game-status/somegame?playerName=Player", nil)
+	test.SetupTestGameProvider(t)
+	models.GetGameProvider().SaveGame(test.GameInWaitingForPlayersState())
+	req := createRequest(t, "GET", "/api/get-game-status/somegame?playerName=Player", nil)
 	actualGameState := sendRequest(t, req, http.StatusOK)
 	expectedGameState := &statemanager.GameStatusResponse{
 		GroupName:     "somegame",
@@ -83,42 +64,33 @@ func TestGetGameStateStatusRoute(t *testing.T) {
 }
 
 func TestCreateGameRoute__GameAlreadyExists(t *testing.T) {
-	// Create the game
+	test.SetupTestGameProvider(t)
+	models.GetGameProvider().SaveGame(test.GameInWaitingForPlayersState())
 	data := map[string]string{
-		"groupName":  "magic group",
+		"groupName":  "somegame",
 		"playerName": "some player",
 	}
 	req := createRequest(t, "POST", "/api/create-game", data)
-	sendRequest(t, req, http.StatusOK)
-
-	// Try to create the game again
-	req = createRequest(t, "POST", "/api/create-game", data)
 	sendRequest(t, req, http.StatusBadRequest)
 }
 
 func TestAddPlayerRoute(t *testing.T) {
-	// Create the game
-	data := map[string]string{
-		"groupName":  "group",
-		"playerName": "player1",
-	}
-	req := createRequest(t, "POST", "/api/create-game", data)
-	sendRequest(t, req, http.StatusOK)
-
+	test.SetupTestGameProvider(t)
+	models.GetGameProvider().SaveGame(test.GameInWaitingForPlayersState())
 	// Add the player
 	playerName := "player2"
-	data = map[string]string{
-		"groupName":  "group",
+	data := map[string]string{
+		"groupName":  "somegame",
 		"playerName": playerName,
 	}
-	req = createRequest(t, "POST", "/api/add-player", data)
+	req := createRequest(t, "POST", "/api/add-player", data)
 	actualGameState := sendRequest(t, req, http.StatusOK)
 	expectedGameState := &statemanager.GameStatusResponse{
-		GroupName:     "group",
+		GroupName:     "somegame",
 		CurrentPlayer: &statemanager.CurrentPlayer{Name: "player2"},
 		CurrentState:  string(models.WaitingForPlayers),
 		Players: []*statemanager.Player{
-			{Name: "player1", Host: true},
+			{Name: "Player", Host: true},
 			{Name: "player2"},
 		},
 	}
@@ -126,6 +98,7 @@ func TestAddPlayerRoute(t *testing.T) {
 }
 
 func TestAddPlayerRoute_GroupNotSetup(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	data := map[string]string{
 		"groupName":  "superGroup",
 		"playerName": "player",
@@ -136,67 +109,37 @@ func TestAddPlayerRoute_GroupNotSetup(t *testing.T) {
 }
 
 func TestStartGameRoute(t *testing.T) {
-	// Create the game
+	test.SetupTestGameProvider(t)
+	models.GetGameProvider().SaveGame(test.GameInWaitingForPlayersState())
 	data := map[string]string{
-		"groupName":  "startGameRoute",
-		"playerName": "player1",
+		"groupName":  "somegame",
+		"playerName": "Player",
 	}
-	req := createRequest(t, "POST", "/api/create-game", data)
-	sendRequest(t, req, http.StatusOK)
-
-	// Actual test
-	// Make a post to start game route
-	data = map[string]string{
-		"groupName":  "startGameRoute",
-		"playerName": "player1",
-	}
-	req = createRequest(t, "POST", "/api/start-game", data)
+	req := createRequest(t, "POST", "/api/start-game", data)
 	actualGameState := sendRequest(t, req, http.StatusOK)
 	expectedGameState := &statemanager.GameStatusResponse{
-		GroupName:     "startGameRoute",
-		CurrentPlayer: &statemanager.CurrentPlayer{IsHost: true, Name: "player1"},
+		GroupName:     "somegame",
+		CurrentPlayer: &statemanager.CurrentPlayer{IsHost: true, Name: "Player"},
 		CurrentState:  string(models.InitialPromptCreation),
 		Players: []*statemanager.Player{
-			{Name: "player1", Host: true},
+			{Name: "Player", Host: true},
 		},
 	}
 	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
 func TestAddPromptRoute(t *testing.T) {
-	// Test set up
-	data := map[string]string{
-		"groupName":  "addPromptRoute",
-		"playerName": "player1",
-	}
-	req := createRequest(t, "POST", "/api/create-game", data)
-	sendRequest(t, req, http.StatusOK)
-
-	// Add another player
-	data = map[string]string{
-		"groupName":  "addPromptRoute",
-		"playerName": "player2",
-	}
-	req = createRequest(t, "POST", "/api/add-player", data)
-	sendRequest(t, req, http.StatusOK)
-
-	// Start the game
-	data = map[string]string{
-		"groupName":  "addPromptRoute",
-		"playerName": "player1",
-	}
-	req = createRequest(t, "POST", "/api/start-game", data)
-	sendRequest(t, req, http.StatusOK)
-
+	test.SetupTestGameProvider(t)
+	models.GetGameProvider().SaveGame(test.GameInInitialPromptCreationState())
 	//Make a post to the add prompts route from player 1, confirm state stays at "Initial Prompt Creation"
-	data = map[string]string{
+	data := map[string]string{
 		"groupName":  "addPromptRoute",
 		"playerName": "player1",
 		"noun":       "chicken",
 		"adjective1": "snazzy",
 		"adjective2": "portly",
 	}
-	req = createRequest(t, "POST", "/api/add-prompt", data)
+	req := createRequest(t, "POST", "/api/add-prompt", data)
 	actualGameState := sendRequest(t, req, http.StatusOK)
 	expectedGameState := &statemanager.GameStatusResponse{
 		GroupName:     "addPromptRoute",
@@ -210,52 +153,53 @@ func TestAddPromptRoute(t *testing.T) {
 	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
-func TestSubmitDrawingRoute(t *testing.T) {
-	// Test set up
+func TestAddPromptRoute_AssignsPrompts(t *testing.T) {
+	test.SetupTestGameProvider(t)
+	gameState := test.GameInInitialPromptCreationState()
+	// Add the prompt from player 1
+	gameState.Prompts = []*models.Prompt{{
+		Noun:       "chicken",
+		Adjectives: []string{"snazzy", "portly"}, Author: "player1",
+	}}
+	models.GetGameProvider().SaveGame(gameState)
+	//Make a post to the add prompts route from player 2, state should transition to drawings in progress
 	data := map[string]string{
-		"groupName":  "submitDrawingRoute",
-		"playerName": "player1",
-	}
-	req := createRequest(t, "POST", "/api/create-game", data)
-	sendRequest(t, req, http.StatusOK)
-
-	// Add another player
-	data = map[string]string{
-		"groupName":  "submitDrawingRoute",
+		"groupName":  "addPromptRoute",
 		"playerName": "player2",
+		"noun":       "orangutan",
+		"adjective1": "fiery",
+		"adjective2": "friendly",
 	}
-	req = createRequest(t, "POST", "/api/add-player", data)
-	sendRequest(t, req, http.StatusOK)
+	req := createRequest(t, "POST", "/api/add-prompt", data)
+	actualGameState := sendRequest(t, req, http.StatusOK)
+	expectedGameState := &statemanager.GameStatusResponse{
+		GroupName: "addPromptRoute",
+		CurrentPlayer: &statemanager.CurrentPlayer{
+			Name: "player2",
+			AssignedPrompt: &statemanager.AssignedPrompt{
+				Noun:       "chicken",
+				Adjectives: []string{"snazzy", "portly"},
+			},
+		},
+		CurrentState: string(models.DrawingsInProgress),
+		Players: []*statemanager.Player{
+			{Name: "player1", Host: true, HasPendingAction: true},
+			{Name: "player2", HasPendingAction: true},
+		},
+	}
+	assert.EqualValues(t, expectedGameState, actualGameState)
+}
 
-	// Start the game
-	data = map[string]string{
-		"groupName":  "submitDrawingRoute",
-		"playerName": "player1",
-	}
-	req = createRequest(t, "POST", "/api/start-game", data)
-	sendRequest(t, req, http.StatusOK)
-	// Add prompts for both players
-	data = map[string]string{
-		"groupName":  "submitDrawingRoute",
-		"playerName": "player1",
-		"noun":       "chicken",
-		"adjective1": "snazzy",
-		"adjective2": "portly",
-	}
-	req = createRequest(t, "POST", "/api/add-prompt", data)
-	sendRequest(t, req, http.StatusOK)
-	data["playerName"] = "player2"
-	data["noun"] = "tuna"
-	req = createRequest(t, "POST", "/api/add-prompt", data)
-	sendRequest(t, req, http.StatusOK)
-
+func TestSubmitDrawingRoute(t *testing.T) {
+	test.SetupTestGameProvider(t)
+	models.GetGameProvider().SaveGame(test.GameInDrawingsInProgressState())
 	// Submit a drawing
-	data = map[string]string{
+	data := map[string]string{
 		"groupName":  "submitDrawingRoute",
 		"playerName": "player1",
 		"imageData":  "someImageData",
 	}
-	req = createRequest(t, "POST", "/api/submit-drawing", data)
+	req := createRequest(t, "POST", "/api/submit-drawing", data)
 	actualGameState := sendRequest(t, req, http.StatusOK)
 	expectedGameState := &statemanager.GameStatusResponse{
 		GroupName: "submitDrawingRoute",

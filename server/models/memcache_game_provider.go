@@ -17,6 +17,7 @@ func createMemcacheGameProvider() *MemcacheGameProvider {
 	}
 }
 
+// LoadGame loads a game from memory
 func (provider *MemcacheGameProvider) LoadGame(groupName string) *Game {
 	state, found := provider.internalCache.Get(groupName)
 	if found {
@@ -25,6 +26,7 @@ func (provider *MemcacheGameProvider) LoadGame(groupName string) *Game {
 	return nil
 }
 
+// SaveGame saves a game to memory
 func (provider *MemcacheGameProvider) SaveGame(game *Game) error {
 	provider.internalCache.Set(game.GroupName, game, cache.DefaultExpiration)
 	return nil
