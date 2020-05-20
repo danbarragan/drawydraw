@@ -2,34 +2,36 @@ package statemanager
 
 import (
 	"drawydraw/models"
+	"drawydraw/test"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateGroup_NewGroup_Succeeds(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	groupName := "group"
-	models.SetGameProvider(models.NewTestGameProvider())
 	err := CreateGroup(groupName)
 	assert.Nil(t, err)
 }
 
 func TestCreateGroup_GroupExists_Fails(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	groupName := "group"
-	models.SetGameProvider(models.NewTestGameProvider())
 	CreateGroup(groupName)
 	err := CreateGroup(groupName)
 	assert.NotNil(t, err)
 }
 
 func TestCreateGroup_ShortGroupName_Fails(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	err := CreateGroup("")
 	assert.NotNil(t, err)
 }
 
 func TestAddPlayer_AddHost_Succeeds(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	groupName := "group"
-	models.SetGameProvider(models.NewTestGameProvider())
 	CreateGroup(groupName)
 	gameStatus, err := AddPlayer("mama cat", groupName, true)
 	assert.Nil(t, err)
@@ -41,8 +43,8 @@ func TestAddPlayer_AddHost_Succeeds(t *testing.T) {
 }
 
 func TestAddPlayer_AddToHostedGame_Succeeds(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	groupName := "group"
-	models.SetGameProvider(models.NewTestGameProvider())
 	CreateGroup(groupName)
 	AddPlayer("papa cat", groupName, true)
 	gameState, _ := AddPlayer("mama cat", groupName, false)
@@ -50,31 +52,31 @@ func TestAddPlayer_AddToHostedGame_Succeeds(t *testing.T) {
 }
 
 func TestAddPlayer_AddToUnHostedGame_Fails(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	groupName := "group"
-	models.SetGameProvider(models.NewTestGameProvider())
 	CreateGroup(groupName)
 	gameState, _ := AddPlayer("mama cat", groupName, false)
 	assert.Nil(t, gameState)
 }
 
 func TestAddPlayer_NoGroupCreated_Fails(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	groupName := "group"
-	models.SetGameProvider(models.NewTestGameProvider())
 	_, err := AddPlayer("baby cat", groupName, false)
 	assert.NotNil(t, err)
 }
 
 func TestAddPlayer_ShortPlayerName_Fails(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	groupName := "group"
-	models.SetGameProvider(models.NewTestGameProvider())
 	_, err := AddPlayer("", groupName, false)
 	assert.NotNil(t, err)
 }
 
 func TestAddPlayer_PlayerExistsInGroup_NoOps(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	groupName := "group"
 	playerName := "baby cat"
-	models.SetGameProvider(models.NewTestGameProvider())
 	CreateGroup(groupName)
 	AddPlayer(playerName, groupName, true)
 	gameStatus, err := AddPlayer(playerName, groupName, true)
@@ -85,8 +87,8 @@ func TestAddPlayer_PlayerExistsInGroup_NoOps(t *testing.T) {
 }
 
 func TestAddPlayer_AddSecondHost_Fails(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	groupName := "group"
-	models.SetGameProvider(models.NewTestGameProvider())
 	CreateGroup(groupName)
 	AddPlayer("old cat", groupName, true)
 	_, err := AddPlayer("dead cat", groupName, true)
@@ -94,8 +96,8 @@ func TestAddPlayer_AddSecondHost_Fails(t *testing.T) {
 }
 
 func TestStartGame_Host_Succeeds(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	groupName := "group"
-	models.SetGameProvider(models.NewTestGameProvider())
 	CreateGroup(groupName)
 	AddPlayer("host cat", groupName, true)
 	AddPlayer("angry cat", groupName, false)
@@ -109,8 +111,8 @@ func TestStartGame_Host_Succeeds(t *testing.T) {
 }
 
 func TestStartGame_NonHost_Fails(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	groupName := "group"
-	models.SetGameProvider(models.NewTestGameProvider())
 	CreateGroup(groupName)
 	AddPlayer("host cat", groupName, true)
 	AddPlayer("angry cat", groupName, false)
@@ -121,9 +123,9 @@ func TestStartGame_NonHost_Fails(t *testing.T) {
 }
 
 func TestAddPrompt_Succeeds(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	//set up a group, add players, and start the game
 	groupName := "group"
-	models.SetGameProvider(models.NewTestGameProvider())
 	CreateGroup(groupName)
 	AddPlayer("host cat", groupName, true)
 	AddPlayer("angry cat", groupName, false)
@@ -138,9 +140,9 @@ func TestAddPrompt_Succeeds(t *testing.T) {
 }
 
 func TestGameStatusForPlayer_Fails_PlayerMissing(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	//set up a group, add players, and start the game
 	groupName := "group"
-	models.SetGameProvider(models.NewTestGameProvider())
 	CreateGroup(groupName)
 	AddPlayer("host cat", groupName, true)
 	game := models.GetGameProvider().LoadGame(groupName)
@@ -150,9 +152,9 @@ func TestGameStatusForPlayer_Fails_PlayerMissing(t *testing.T) {
 }
 
 func TestSubmitDrawing(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	//set up a group, add players, add a prompt
 	groupName := "group"
-	models.SetGameProvider(models.NewTestGameProvider())
 	CreateGroup(groupName)
 	AddPlayer("host cat", groupName, true)
 	AddPlayer("annoyed cat", groupName, false)
@@ -165,9 +167,9 @@ func TestSubmitDrawing(t *testing.T) {
 }
 
 func TestSubmitDrawing_Fails_PlayerMissing(t *testing.T) {
+	test.SetupTestGameProvider(t)
 	//set up a group, add players, add a prompt
 	groupName := "group"
-	models.SetGameProvider(models.NewTestGameProvider())
 	CreateGroup(groupName)
 	AddPlayer("host cat", groupName, true)
 	AddPlayer("annoyed cat", groupName, false)

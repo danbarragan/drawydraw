@@ -11,14 +11,10 @@ type MemcacheGameProvider struct {
 	internalCache *cache.Cache
 }
 
-var (
-	providerInstance = &MemcacheGameProvider{
+func createMemcacheGameProvider() *MemcacheGameProvider {
+	return &MemcacheGameProvider{
 		internalCache: cache.New(20*time.Minute, 5*time.Minute),
 	}
-)
-
-func getMemcacheGameProviderInstance() *MemcacheGameProvider {
-	return providerInstance
 }
 
 func (provider *MemcacheGameProvider) LoadGame(groupName string) *Game {
