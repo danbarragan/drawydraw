@@ -2,14 +2,6 @@ package models
 
 import (
 	"errors"
-	"time"
-
-	"github.com/patrickmn/go-cache"
-)
-
-var (
-	// 20 min TTL, purges every 5 min
-	memCache = cache.New(20*time.Minute, 5*time.Minute)
 )
 
 // GameState defines what are the individual states that make up the game
@@ -56,17 +48,6 @@ type Game struct {
 	Drawings     []*Drawing
 }
 
-// Todo: Put SaveGame/LoadGame methods behind an interface to faciliate unit tests
-
-// LoadGame returns the current game for a given group name
-func LoadGame(groupName string) *Game {
-	state, found := memCache.Get(groupName)
-	if found {
-		return state.(*Game)
-	}
-	return nil
-}
-
 // AddPlayer adds a player to the game (if that player isn't there already)
 func (game *Game) AddPlayer(player *Player) error {
 	// First check if the player is already in the game and no-op if that's the case
@@ -97,10 +78,4 @@ func (game *Game) GetHostName() (string, error) {
 		}
 	}
 	return "", errors.New("game has no host")
-}
-
-// SaveGame persists the game
-func SaveGame(state *Game) error {
-	memCache.Set(state.GroupName, state, cache.DefaultExpiration)
-	return nil
 }
