@@ -46,7 +46,7 @@ func CreateGroup(groupName string) error {
 		return errors.New("no group name provided")
 	}
 	// See if there's already a game for that group name and error out if ther eis
-	gameState := models.LoadGame(groupName)
+	gameState := models.GetGameProvider().LoadGame(groupName)
 	if gameState != nil {
 		return fmt.Errorf("group '%s' already exists", groupName)
 	}
@@ -54,7 +54,7 @@ func CreateGroup(groupName string) error {
 	gameState = &models.Game{
 		GroupName: groupName, CurrentState: models.WaitingForPlayers,
 	}
-	models.SaveGame(gameState)
+	models.GetGameProvider().SaveGame(gameState)
 	return nil
 }
 
@@ -86,7 +86,7 @@ func AddPlayer(playerName string, groupName string, isHost bool) (*GameStatusRes
 	if err != nil {
 		return nil, err
 	}
-	models.SaveGame(stateManager.game)
+	models.GetGameProvider().SaveGame(stateManager.game)
 	gameStatus, err := gameStatusForPlayer(stateManager.game, playerName)
 	if err != nil {
 		return nil, err
@@ -124,7 +124,7 @@ func AddPrompt(playerName string, groupName string, noun string, adjective1 stri
 	if err != nil {
 		return nil, err
 	}
-	models.SaveGame(stateManager.game)
+	models.GetGameProvider().SaveGame(stateManager.game)
 	gameStatus, err := gameStatusForPlayer(stateManager.game, playerName)
 	if err != nil {
 		return nil, err
@@ -148,7 +148,7 @@ func SubmitDrawing(playerName string, groupName string, imageData string) (*Game
 	if err != nil {
 		return nil, err
 	}
-	models.SaveGame(stateManager.game)
+	models.GetGameProvider().SaveGame(stateManager.game)
 	gameStatus, err := gameStatusForPlayer(stateManager.game, playerName)
 	if err != nil {
 		return nil, err
@@ -180,7 +180,7 @@ func StartGame(groupName string, playerName string) (*GameStatusResponse, error)
 	if err != nil {
 		return nil, err
 	}
-	models.SaveGame(stateManager.game)
+	models.GetGameProvider().SaveGame(stateManager.game)
 	gameStatus, err := gameStatusForPlayer(stateManager.game, playerName)
 	if err != nil {
 		return nil, err
@@ -220,7 +220,7 @@ func gameStatusForPlayer(game *models.Game, playerName string) (*GameStatusRespo
 }
 
 func getManagerForGroup(groupName string) (*StateManager, error) {
-	gameState := models.LoadGame(groupName)
+	gameState := models.GetGameProvider().LoadGame(groupName)
 	if gameState == nil {
 		return nil, errors.New("Could not find a group with that name")
 	}
@@ -283,7 +283,7 @@ func createGameState(groupName string, players []string, prompts [][]string, gam
 	game := &models.Game{
 		GroupName: groupName, CurrentState: gameState, HostPlayer: hostName,
 	}
-	models.SaveGame(game)
+	models.GetGameProvider().SaveGame(game)
 	for idx, playerName := range players {
 		isHost := false
 		if idx == 0 {
