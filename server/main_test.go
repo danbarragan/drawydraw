@@ -122,7 +122,7 @@ func TestStartGameRoute(t *testing.T) {
 		CurrentPlayer: &statemanager.CurrentPlayer{IsHost: true, Name: "Player"},
 		CurrentState:  string(models.InitialPromptCreation),
 		Players: []*statemanager.Player{
-			{Name: "Player", Host: true},
+			{Name: "Player", Host: true, HasPendingAction: true},
 		},
 	}
 	assert.EqualValues(t, expectedGameState, actualGameState)
@@ -142,12 +142,16 @@ func TestAddPromptRoute(t *testing.T) {
 	req := createRequest(t, "POST", "/api/add-prompt", data)
 	actualGameState := sendRequest(t, req, http.StatusOK)
 	expectedGameState := &statemanager.GameStatusResponse{
-		GroupName:     "addPromptRoute",
-		CurrentPlayer: &statemanager.CurrentPlayer{IsHost: true, Name: "player1"},
-		CurrentState:  string(models.InitialPromptCreation),
+		GroupName: "addPromptRoute",
+		CurrentPlayer: &statemanager.CurrentPlayer{
+			IsHost:             true,
+			Name:               "player1",
+			HasCompletedAction: true,
+		},
+		CurrentState: string(models.InitialPromptCreation),
 		Players: []*statemanager.Player{
-			{Name: "player1", Host: true},
-			{Name: "player2"},
+			{Name: "player1", Host: true, HasPendingAction: false},
+			{Name: "player2", HasPendingAction: true},
 		},
 	}
 	assert.EqualValues(t, expectedGameState, actualGameState)

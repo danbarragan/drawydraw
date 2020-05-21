@@ -10,7 +10,8 @@ type promptCreatingState struct {
 }
 
 func (state promptCreatingState) addPlayer(player *models.Player) error {
-	return errors.New("Add Player cannot be performed in the Prompt Creating State")
+	state.game.AddPlayer(player)
+	return nil
 }
 
 func (state promptCreatingState) startGame(groupName string, playerName string) error {
@@ -46,5 +47,21 @@ func assignPrompts(game *models.Game) {
 }
 
 func (state promptCreatingState) addGameStatusPropertiesForPlayer(player *models.Player, gameStatus *GameStatusResponse) error {
+
+	authorToPromptMap := map[string]*models.Prompt{}
+	for _, currentPrompt := range state.game.Prompts {
+		authorToPromptMap[currentPrompt.Author] = currentPrompt
+	}
+
+	// Mark players who haven't submitted their prompt as having pending actions
+	for _, p := range gameStatus.Players {
+		_, hasPrompt := authorToPromptMap[p.Name]
+		p.HasPendingAction = !hasPrompt
+
+		if p.Name == player.Name {
+			gameStatus.CurrentPlayer.HasCompletedAction = hasPrompt
+		}
+	}
+
 	return nil
 }
