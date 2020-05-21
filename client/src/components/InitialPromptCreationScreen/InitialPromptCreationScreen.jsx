@@ -3,6 +3,7 @@ import axios from 'axios';
 import PropTypes from 'prop-types';
 import './InitialPromptCreationScreen.css';
 import { formatServerError } from '../../utils/errorFormatting';
+import UpdateGameState from '../../utils/updateGameState';
 
 
 class InitialPromptCreationScreen extends React.Component {
@@ -15,17 +16,13 @@ class InitialPromptCreationScreen extends React.Component {
       error: null,
     };
 
-    this.onSubmitPromptsButtonClicked = this.onSubmitPromptsButtonClicked.bind(this);
+    this.onSubmitPromptButtonClicked = this.onSubmitPromptButtonClicked.bind(this);
     this.updateGameState = this.updateGameState.bind(this);
     this.onNounChange = this.onNounChange.bind(this);
     this.onAdjective1Change = this.onAdjective1Change.bind(this);
     this.onAdjective2Change = this.onAdjective2Change.bind(this);
   }
 
-  componentDidMount() {
-    const timerId = setInterval(this.updateGameState, 3000);
-    this.setState({ timerId });
-  }
 
   componentWillUnmount() {
     const { timerId } = this.state;
@@ -46,18 +43,21 @@ class InitialPromptCreationScreen extends React.Component {
     this.setState({ adjective2: event.target.value });
   }
 
-  async onSubmitPromptsButtonClicked() {
+  async onSubmitPromptButtonClicked() {
     const { gameState, onGameStateChanged } = this.props;
     const { groupName, currentPlayer } = gameState;
     const { name } = currentPlayer;
     const { noun, adjective1, adjective2 } = this.state;
-
     const data = {
       playerName: name, groupName, noun, adjective1, adjective2,
     };
+
     try {
       const response = await axios.post('/api/add-prompt', data);
       onGameStateChanged(response.data);
+      // Start listening for game state updates
+      const timerId = setInterval(this.updateGameState, 3000);
+      this.setState({ timerId });
     } catch (error) {
       this.setState({ error: formatServerError(error) });
     }
@@ -68,12 +68,12 @@ class InitialPromptCreationScreen extends React.Component {
     const { gameState, onGameStateChanged } = this.props;
     const { groupName, currentPlayer } = gameState;
     const { name: playerName } = currentPlayer;
-    try {
-      const response = await axios.get(`/api/get-game-status/${groupName}?playerName=${playerName}`);
-      onGameStateChanged(response.data);
-    } catch (error) {
-      this.setState({ error: formatServerError(error) });
-    }
+    UpdateGameState(
+      groupName,
+      playerName,
+      onGameStateChanged,
+      (error) => { this.setState({ error: formatServerError(error) }); },
+    );
   }
 
   render() {
@@ -86,11 +86,7 @@ class InitialPromptCreationScreen extends React.Component {
 
     const promptCreatingElements = (
       <div>
-        <h3>Enter the prompts for other players to draw</h3>
-        <label htmlFor="noun">
-          Noun
-          <input id="noun" type="text" value={noun} onChange={this.onNounChange} />
-        </label>
+        <h3>Enter the prompt for other players to draw</h3>
         <label htmlFor="adjective1">
           First Adjective
           <input id="adj1" type="text" value={adjective1} onChange={this.onAdjective1Change} />
@@ -99,7 +95,11 @@ class InitialPromptCreationScreen extends React.Component {
           Second Adjective
           <input id="adj2" type="text" value={adjective2} onChange={this.onAdjective2Change} />
         </label>
-        <button className="button buttonTypeA" type="button" onClick={this.onSubmitPromptsButtonClicked}>Submit Prompts</button>
+        <label htmlFor="noun">
+          Noun
+          <input id="noun" type="text" value={noun} onChange={this.onNounChange} />
+        </label>
+        <button className="button buttonTypeA" type="button" onClick={this.onSubmitPromptButtonClicked}>Submit Prompt</button>
       </div>
     );
 
