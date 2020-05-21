@@ -6,3 +6,4 @@ client/dist
 client/npm-debug.log
 
 server/drawydraw
+.DS_Store
