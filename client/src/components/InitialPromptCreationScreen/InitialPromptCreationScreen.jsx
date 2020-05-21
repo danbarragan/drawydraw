@@ -1,6 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import PropTypes from 'prop-types';
+import './InitialPromptCreationScreen.css';
 import { formatServerError } from '../../utils/errorFormatting';
 
 
@@ -79,8 +80,12 @@ class InitialPromptCreationScreen extends React.Component {
     const {
       noun, adjective1, adjective2, error,
     } = this.state;
-    return (
-      <div className="InitialPromptCreationScreen">
+    const { gameState } = this.props;
+    const { players, currentPlayer } = gameState;
+
+
+    const promptCreatingElements = (
+      <div>
         <h3>Enter the prompts for other players to draw</h3>
         <label htmlFor="noun">
           Noun
@@ -94,11 +99,30 @@ class InitialPromptCreationScreen extends React.Component {
           Second Adjective
           <input id="adj2" type="text" value={adjective2} onChange={this.onAdjective2Change} />
         </label>
-
         <button className="button buttonTypeA" type="button" onClick={this.onSubmitPromptsButtonClicked}>Submit Prompts</button>
+      </div>
+    );
+
+    const filteredPlayers = players.filter((player) => player.hasPendingAction === true);
+    const playersPendingAction = filteredPlayers.map((player) => (
+      <li key={player.name}>
+        {player.name}
+      </li>
+    ));
+
+    const waitingElements = (
+      <div>
+        <h3 className="initialPromptCreationScreen">Thanks, waiting for these players to finish submitting their prompts:</h3>
+        <ul>{playersPendingAction}</ul>
+      </div>
+    );
+
+
+    return (
+      <div className="screen initialPromptCreationScreen">
+        {currentPlayer.hasCompletedAction ? waitingElements : promptCreatingElements}
         <h3 className="error">{error}</h3>
       </div>
-
     );
   }
 }
@@ -108,6 +132,7 @@ InitialPromptCreationScreen.propTypes = {
     currentPlayer: PropTypes.shape({
       name: PropTypes.string.isRequired,
       isHost: PropTypes.bool.isRequired,
+      hasCompletedAction: PropTypes.bool.isRequired,
     }).isRequired,
     players: PropTypes.arrayOf(PropTypes.shape({
       name: PropTypes.string.isRequired,
@@ -116,5 +141,6 @@ InitialPromptCreationScreen.propTypes = {
   }).isRequired,
   onGameStateChanged: PropTypes.func.isRequired,
 };
+
 
 export default InitialPromptCreationScreen;
