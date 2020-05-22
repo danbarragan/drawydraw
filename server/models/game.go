@@ -65,10 +65,12 @@ func (game *Game) AddPlayer(player *Player) error {
 	return nil
 }
 
+// IsPlayerInGame determines if a player is already in a game or not
 func (game *Game) IsPlayerInGame(player *Player) bool {
 	for _, currentPlayer := range game.Players {
 		if currentPlayer.Name == player.Name {
 			return true
+		}
 	}
 	return false
 }
