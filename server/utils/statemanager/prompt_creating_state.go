@@ -11,7 +11,7 @@ type promptCreatingState struct {
 
 func (state promptCreatingState) addPlayer(player *models.Player) error {
 	// Only allow existing players to rejoin the game and in that case, no-op
-	if state.game.IsPlayerInGame(player) {
+	if state.game.IsPlayerInGame(player.Name) {
 		return nil
 	}
 	return errors.New("Cannot add new players to a game in this state")
@@ -74,4 +74,8 @@ func (state promptCreatingState) addGameStatusPropertiesForPlayer(player *models
 	}
 
 	return nil
+}
+
+func (state promptCreatingState) castVote(player *models.Player, promptIdentifier string) error {
+	return errors.New("Casting votes is not allowed at this stage of the game")
 }

@@ -198,6 +198,22 @@ func TestAddDecoyPrompt_Success(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestCastVote_Success(t *testing.T) {
+	test.SetupTestGameProvider(t)
+	game := test.GameInVotingState()
+	models.GetGameProvider().SaveGame(game)
+	activeDrawing := game.Drawings[0]
+	gameStatus, err := CastVote(game.Players[0].Name, game.GroupName, activeDrawing.DecoyPrompts[game.Players[2].Name].Identifier)
+	assert.Nil(t, err)
+	assert.NotNil(t, gameStatus)
+	assert.EqualValues(t, models.Voting, gameStatus.CurrentState)
+	// Once all players vote we should move to scoring
+	gameStatus, err = CastVote(game.Players[2].Name, game.GroupName, activeDrawing.OriginalPrompt.Identifier)
+	assert.Nil(t, err)
+	assert.NotNil(t, gameStatus)
+	assert.EqualValues(t, models.Scoring, gameStatus.CurrentState)
+}
+
 func TestAddDecoyPrompt_Error_duplicatePromptEntry(t *testing.T) {
 	test.SetupTestGameProvider(t)
 	//set up a group, add players, add a prompt

@@ -14,6 +14,7 @@ class Game extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      consoleEnabled: false,
       gameState: {
         currentState: GameStates.GroupSelection, // Start in the group selection state
       },
@@ -24,7 +25,6 @@ class Game extends React.Component {
     this.debugConsole = this.debugConsole.bind(this);
     this.toggleConsole = this.toggleConsole.bind(this);
     this.debugSetGameState = this.debugSetGameState.bind(this);
-    this.consoleEnabled = true;
   }
 
   onGameEntered(gameState) {
@@ -73,9 +73,8 @@ class Game extends React.Component {
   }
 
   toggleConsole() {
-    this.consoleEnabled = !this.consoleEnabled;
-    // Re-render when the debug button is pressed.
-    this.forceUpdate();
+    const { consoleEnabled } = this.state;
+    this.setState({ consoleEnabled: !consoleEnabled });
   }
 
   async debugSetGameState(gameStateName) {
@@ -91,21 +90,17 @@ class Game extends React.Component {
 
   debugConsole() {
     const { error } = this.state;
-    const { gameState } = this.state;
+    const { gameState, consoleEnabled } = this.state;
     return (
       <div className="debug">
-        <button className="toggleConsole" type="button" onClick={this.toggleConsole}>debug</button>
+        <button className="debugButton buttonTypeA" type="button" onClick={this.toggleConsole}>debug</button>
         {Object.values(GameStates).map((state) => (state !== GameStates.GroupSelection ? (
-          <button key={state} className="setState" type="button" onClick={(() => this.debugSetGameState(state))}>{state}</button>
+          <button key={state} className="debugButton buttonTypeB" type="button" onClick={(() => this.debugSetGameState(state))}>{state}</button>
         ) : null))}
-        {this.consoleEnabled ? (
+        {consoleEnabled ? (
           <div className="console">
             {error ? `Error:${error}` : null}
-            <pre>
-              {' '}
-              {JSON.stringify(gameState, null, 4)}
-              {' '}
-            </pre>
+            <textarea className="debugGameState" value={JSON.stringify(gameState, null, 4)} disabled />
           </div>
         ) : null}
       </div>
@@ -115,7 +110,7 @@ class Game extends React.Component {
   render() {
     return (
       <div className="game">
-        <div className="gameTitle"><h1>Drawydraw</h1></div>
+        <div className="gameTitle"><h2>Drawydraw</h2></div>
         {this.getCurrentComponent()}
         {this.debugConsole()}
       </div>

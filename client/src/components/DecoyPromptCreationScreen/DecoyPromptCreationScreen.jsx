@@ -82,8 +82,8 @@ class DecoyPromptCreationScreen extends React.Component {
 
     const promptEnteringElements = (
       <div className="promptForm">
-        <h3>Enter a decoy prompt for other players to draw...</h3>
         <img className="promptImage" src={currentDrawing.imageData} alt="a drawing" />
+        <h3>Enter a decoy prompt for other players to draw...</h3>
         <div className="promptFieldContainer">
           <label htmlFor="adjective1">
             First Adjective
@@ -97,20 +97,20 @@ class DecoyPromptCreationScreen extends React.Component {
             Noun
             <input id="noun" type="text" value={noun} onChange={this.onNounChange} />
           </label>
-          <button className="button buttonTypeA" type="button" onClick={this.onSubmitPromptButtonClicked}>Submit Prompt</button>
+          <button className="buttonTypeA" type="button" onClick={this.onSubmitPromptButtonClicked}>Submit</button>
         </div>
       </div>
     );
     const waitingElements = (
       <div>
-        <h3>Thank you for your prompt, waiting for other players...</h3>
+        <h3>Waiting for other players to enter their prompt...</h3>
         <ul>
           {
             players.map((player) => (
               player.name === currentPlayer.name ? null : (
                 <li key={player.name}>
                   {player.name}
-                  {player.hasPendingAction ? ' is still entering a prompt' : ' is done'}
+                  {player.hasPendingAction ? ' is still working on their prompt' : ' is done'}
                 </li>
               )
             ))

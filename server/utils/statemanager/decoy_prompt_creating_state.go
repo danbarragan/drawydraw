@@ -11,7 +11,7 @@ type decoyPromptCreatingState struct {
 
 func (state decoyPromptCreatingState) addPlayer(player *models.Player) error {
 	// Only allow existing players to rejoin the game and in that case, no-op
-	if state.game.IsPlayerInGame(player) {
+	if state.game.IsPlayerInGame(player.Name) {
 		return nil
 	}
 	return errors.New("Cannot add new players to a game in this state")
@@ -27,7 +27,7 @@ func (state decoyPromptCreatingState) submitDrawing(playerName string, encodedIm
 }
 
 func (state decoyPromptCreatingState) addPrompt(prompt *models.Prompt) error {
-	activeDrawing := getCurrentDrawing(state.game)
+	activeDrawing := state.game.GetActiveDrawing()
 	if activeDrawing == nil {
 		return errors.New("Cannot submit a prompt when there's no current drawing")
 	}
@@ -43,7 +43,7 @@ func (state decoyPromptCreatingState) addPrompt(prompt *models.Prompt) error {
 }
 
 func (state decoyPromptCreatingState) addGameStatusPropertiesForPlayer(player *models.Player, gameStatus *GameStatusResponse) error {
-	activeDrawing := getCurrentDrawing(state.game)
+	activeDrawing := state.game.GetActiveDrawing()
 	if activeDrawing == nil {
 		return errors.New("There is no active drawing available for this state")
 	}
@@ -58,9 +58,6 @@ func (state decoyPromptCreatingState) addGameStatusPropertiesForPlayer(player *m
 	for _, p := range gameStatus.Players {
 		_, hasPrompt := authorToDecoyPromptMap[p.Name]
 		p.HasPendingAction = !hasPrompt
-		if p.Name == player.Name {
-			gameStatus.CurrentPlayer.HasCompletedAction = hasPrompt
-		}
 	}
 	// If the current player is the author of the active drawing they have nothing to do but wait
 	if activeDrawing.Author == player.Name {
@@ -69,14 +66,6 @@ func (state decoyPromptCreatingState) addGameStatusPropertiesForPlayer(player *m
 	return nil
 }
 
-func getCurrentDrawing(game *models.Game) *models.Drawing {
-	var activeDrawing *models.Drawing = nil
-	for _, drawing := range game.Drawings {
-		// Find the first drawing that has not been voted on
-		if len(drawing.Votes) < len(game.Players) {
-			activeDrawing = drawing
-			break
-		}
-	}
-	return activeDrawing
+func (state decoyPromptCreatingState) castVote(player *models.Player, promptIdentifier string) error {
+	return errors.New("Casting votes is not allowed at this stage of the game")
 }

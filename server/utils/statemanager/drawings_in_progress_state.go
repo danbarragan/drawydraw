@@ -11,7 +11,7 @@ type drawingsInProgressState struct {
 
 func (state drawingsInProgressState) addPlayer(player *models.Player) error {
 	// Only allow existing players to rejoin the game and in that case, no-op
-	if state.game.IsPlayerInGame(player) {
+	if state.game.IsPlayerInGame(player.Name) {
 		return nil
 	}
 	return errors.New("Cannot add new players to a game in this state")
@@ -27,20 +27,16 @@ func (state drawingsInProgressState) submitDrawing(playerName string, encodedIma
 			return errors.New("player has already submitted a drawing")
 		}
 	}
-	playerExists := false
-	for _, player := range state.game.Players {
-		if player.Name == playerName {
-			playerExists = true
-			break
-		}
-	}
-	if !playerExists {
+	player := state.game.GetPlayer(playerName)
+	if player == nil {
 		return errors.New("player is not in the group")
 	}
 	drawing := models.Drawing{
-		Author:       playerName,
-		ImageData:    encodedImage,
-		DecoyPrompts: map[string]*models.Prompt{},
+		OriginalPrompt: player.AssignedPrompt,
+		Author:         playerName,
+		ImageData:      encodedImage,
+		DecoyPrompts:   map[string]*models.Prompt{},
+		Votes:          map[string]*models.Vote{},
 	}
 	state.game.Drawings = append(state.game.Drawings, &drawing)
 	// If this is the last drawing, transition to the fake prompt creation state
@@ -74,4 +70,8 @@ func (state drawingsInProgressState) addGameStatusPropertiesForPlayer(player *mo
 		}
 	}
 	return nil
+}
+
+func (state drawingsInProgressState) castVote(player *models.Player, promptIdentifier string) error {
+	return errors.New("Casting votes is not allowed at this stage of the game")
 }

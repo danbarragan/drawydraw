@@ -70,7 +70,7 @@ class WaitingForPlayersScreen extends React.Component {
           {groupName}
         </h1>
         <ul>{playerList}</ul>
-        { isHost ? <button type="button" onClick={this.onStartGameButtonClicked}>Start game</button>
+        { isHost ? <button type="button" className="buttonTypeA" onClick={this.onStartGameButtonClicked}>Start</button>
           : <h3>Waiting for the host to start the game...</h3>}
         <h3 className="error">{error}</h3>
       </div>

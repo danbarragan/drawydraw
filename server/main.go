@@ -25,13 +25,12 @@ func setupRouter(port string) *gin.Engine {
 	router.POST("/api/add-player", addPlayer)
 	router.POST("/api/create-game", createGroup)
 	router.POST("/api/start-game", startGame)
+	router.POST("/api/add-prompt", addPrompt)
+	router.POST("/api/submit-drawing", submitDrawing)
+	router.POST("/api/cast-vote", castVote)
 
 	// Debug endpoints - delete eventually
 	router.POST("/api/set-game-state", setGameState)
-	router.POST("/api/echo", echoTest)
-	router.POST("/api/add-prompt", addPrompt)
-	router.POST("/api/submit-drawing", submitDrawing)
-
 	return router
 }
 
@@ -43,13 +42,6 @@ func main() {
 	}
 	router := setupRouter(port)
 	router.Run(":" + port)
-}
-
-// Todo: Remove this once we start building real APIs
-func echoTest(ctx *gin.Context) {
-	requestBody := make(map[string]string)
-	ctx.BindJSON(&requestBody)
-	ctx.JSON(http.StatusOK, &requestBody)
 }
 
 // Todo: Probably move each handler / request schema to its own file
@@ -112,6 +104,27 @@ func submitDrawing(ctx *gin.Context) {
 	gameState, err := statemanager.SubmitDrawing(request.PlayerName, request.GroupName, request.ImageData)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error submitting drawing: %s", err.Error())))
+		return
+	}
+	ctx.JSON(http.StatusOK, &gameState)
+}
+
+type castVoteRequest struct {
+	PlayerName       string `json:"playerName"`
+	GroupName        string `json:"groupName"`
+	SelectedPromptID string `json:"selectedPromptId"`
+}
+
+func castVote(ctx *gin.Context) {
+	request := castVoteRequest{}
+	err := ctx.BindJSON(&request)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Invalid request: %s", err.Error())))
+		return
+	}
+	gameState, err := statemanager.CastVote(request.PlayerName, request.GroupName, request.SelectedPromptID)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, formatError(fmt.Sprintf("Error casting vote: %s", err.Error())))
 		return
 	}
 	ctx.JSON(http.StatusOK, &gameState)

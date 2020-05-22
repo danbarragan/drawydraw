@@ -225,6 +225,42 @@ func TestSubmitDrawingRoute(t *testing.T) {
 	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
+func TestCastVoteRoute(t *testing.T) {
+	test.SetupTestGameProvider(t)
+	models.GetGameProvider().SaveGame(test.GameInVotingState())
+	// Cast a vote
+	data := map[string]string{
+		"groupName":        "castVoteRoute",
+		"playerName":       "player1",
+		"selectedPromptId": "7876445554424581103",
+	}
+	req := createRequest(t, "POST", "/api/cast-vote", data)
+	actualGameState := sendRequest(t, req, http.StatusOK)
+	expectedGameState := &statemanager.GameStatusResponse{
+		GroupName: "castVoteRoute",
+		CurrentPlayer: &statemanager.CurrentPlayer{
+			IsHost:             true,
+			Name:               "player1",
+			HasCompletedAction: true,
+		},
+		CurrentState: string(models.Voting),
+		Players: []*statemanager.Player{
+			{Name: "player1", Host: true, HasPendingAction: false},
+			{Name: "player2", HasPendingAction: false},
+			{Name: "player3", HasPendingAction: true},
+		},
+		CurrentDrawing: &statemanager.Drawing{
+			ImageData: "mockImage",
+			Prompts: []*statemanager.Prompt{
+				{Identifier: "7876445554424581103", Noun: "chicken", Adjectives: []string{"snazzy", "portly"}},
+				{Identifier: "9033667170926423839", Noun: "toucan", Adjectives: []string{"happy", "big"}},
+				{Identifier: "2289583145965790902", Noun: "birb", Adjectives: []string{"jumpy", "edgy"}},
+			},
+		},
+	}
+	assert.EqualValues(t, expectedGameState, actualGameState)
+}
+
 // Helper function to process a request and test its response
 func sendRequest(t *testing.T, req *http.Request, statusCode int) *statemanager.GameStatusResponse {
 	// Create a response recorder// Test set up

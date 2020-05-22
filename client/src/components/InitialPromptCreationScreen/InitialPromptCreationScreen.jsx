@@ -54,10 +54,10 @@ class InitialPromptCreationScreen extends React.Component {
 
     try {
       const response = await axios.post('/api/add-prompt', data);
-      onGameStateChanged(response.data);
       // Start listening for game state updates
       const timerId = setInterval(this.updateGameState, 3000);
       this.setState({ timerId });
+      onGameStateChanged(response.data);
     } catch (error) {
       this.setState({ error: formatServerError(error) });
     }
@@ -99,7 +99,7 @@ class InitialPromptCreationScreen extends React.Component {
           Noun
           <input id="noun" type="text" value={noun} onChange={this.onNounChange} />
         </label>
-        <button className="button buttonTypeA" type="button" onClick={this.onSubmitPromptButtonClicked}>Submit Prompt</button>
+        <button className="buttonTypeA" type="button" onClick={this.onSubmitPromptButtonClicked}>Submit</button>
       </div>
     );
 
