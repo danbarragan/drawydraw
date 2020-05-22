@@ -88,7 +88,7 @@ class DrawingScreen extends React.Component {
   }
 
   setupCanvas(p5, canvasParentRef) {
-    const canvasContainer = p5.createCanvas(900, 900).parent(canvasParentRef);
+    const canvasContainer = p5.createCanvas(700, 700).parent(canvasParentRef);
     this.setState({ canvasContainer });
   }
 
@@ -157,9 +157,8 @@ class DrawingScreen extends React.Component {
   render() {
     const { error, currentBrushColor, currentBrushSize } = this.state;
     const { gameState } = this.props;
-    const { currentPlayer } = gameState;
+    const { currentPlayer, players } = gameState;
     const { noun, adjectives } = currentPlayer.assignedPrompt;
-    const { players } = gameState;
     const drawingElements = (
       <div>
         <h1>

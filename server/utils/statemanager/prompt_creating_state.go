@@ -18,8 +18,15 @@ func (state promptCreatingState) startGame(groupName string, playerName string) 
 	return errors.New("startGame not supported for initial prompt creation state")
 }
 
-func (state promptCreatingState) addPrompt(prompts *models.Prompt) error {
-	state.game.AddPrompt(prompts)
+func (state promptCreatingState) addPrompt(prompt *models.Prompt) error {
+	//check if the player had already entered a prompt (not sure if needed)
+	for _, p := range state.game.Prompts {
+		if prompt.Author == p.Author {
+			return errors.New("The player has already entered their prompt")
+		}
+	}
+
+	state.game.AddPrompt(prompt)
 	//TODO better logic to change state when all players have added prompts
 	if len(state.game.Prompts) == len(state.game.Players) {
 		state.game.CurrentState = models.DrawingsInProgress

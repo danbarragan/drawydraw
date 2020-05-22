@@ -180,7 +180,7 @@ func TestAddPromptRoute_AssignsPrompts(t *testing.T) {
 		GroupName: "addPromptRoute",
 		CurrentPlayer: &statemanager.CurrentPlayer{
 			Name: "player2",
-			AssignedPrompt: &statemanager.AssignedPrompt{
+			AssignedPrompt: &statemanager.Prompt{
 				Noun:       "chicken",
 				Adjectives: []string{"snazzy", "portly"},
 			},
@@ -211,7 +211,7 @@ func TestSubmitDrawingRoute(t *testing.T) {
 			IsHost:             true,
 			Name:               "player1",
 			HasCompletedAction: true,
-			AssignedPrompt: &statemanager.AssignedPrompt{
+			AssignedPrompt: &statemanager.Prompt{
 				Noun:       "tuna",
 				Adjectives: []string{"snazzy", "portly"},
 			},

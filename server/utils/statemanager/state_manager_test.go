@@ -180,3 +180,38 @@ func TestSubmitDrawing_Fails_PlayerMissing(t *testing.T) {
 	assert.Nil(t, gameStatus)
 	assert.NotNil(t, err)
 }
+
+func TestAddDecoyPrompt_Success(t *testing.T) {
+	test.SetupTestGameProvider(t)
+	//set up a group, add players, add a prompt
+	groupName := "group"
+	CreateGroup(groupName)
+	AddPlayer("host cat", groupName, true)
+	AddPlayer("annoyed cat", groupName, false)
+	StartGame(groupName, "host cat")
+	AddPrompt("annoyed cat", groupName, "tuna", "stinky", "yummy")
+	AddPrompt("host cat", groupName, "big", "handsome", "can")
+	SubmitDrawing("annoyed cat", groupName, "someImage")
+	SubmitDrawing("host cat", groupName, "someImage")
+	gameStatus, err := AddPrompt("host cat", groupName, "fish", "tasty", "red")
+	assert.NotNil(t, gameStatus)
+	assert.Nil(t, err)
+}
+
+func TestAddDecoyPrompt_Error_duplicatePromptEntry(t *testing.T) {
+	test.SetupTestGameProvider(t)
+	//set up a group, add players, add a prompt
+	groupName := "group"
+	CreateGroup(groupName)
+	AddPlayer("host cat", groupName, true)
+	AddPlayer("annoyed cat", groupName, false)
+	StartGame(groupName, "host cat")
+	AddPrompt("annoyed cat", groupName, "tuna", "stinky", "yummy")
+	AddPrompt("host cat", groupName, "big", "handsome", "can")
+	SubmitDrawing("annoyed cat", groupName, "someImage")
+	SubmitDrawing("host cat", groupName, "someImage")
+	AddPrompt("host cat", groupName, "fish", "tasty", "red")
+	gameStatus, err := AddPrompt("host cat", groupName, "fish", "tasty", "red")
+	assert.Nil(t, gameStatus)
+	assert.NotNil(t, err)
+}

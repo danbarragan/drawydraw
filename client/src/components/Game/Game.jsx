@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import DecoyPromptCreationScreen from '../DecoyPromptCreationScreen/DecoyPromptCreationScreen';
 import DrawingScreen from '../DrawingScreen/DrawingScreen';
 import GroupSelectionScreen from '../GroupSelectionScreen/GroupSelectionScreen';
 import WaitingForPlayersScreen from '../WaitingForPlayersScreen/WaitingForPlayersScreen';
@@ -38,6 +39,13 @@ class Game extends React.Component {
     const { gameState } = this.state;
     const { currentState } = gameState;
     switch (currentState) {
+      case GameStates.DecoyPromptCreation:
+        return (
+          <DecoyPromptCreationScreen
+            onGameStateChanged={this.onGameStateChanged}
+            gameState={gameState}
+          />
+        );
       case GameStates.Voting:
         return <VotingScreen onGameStateChanged={this.onGameStateChanged} gameState={gameState} />;
       case GameStates.DrawingsInProgress:
@@ -87,10 +95,9 @@ class Game extends React.Component {
     return (
       <div className="debug">
         <button className="toggleConsole" type="button" onClick={this.toggleConsole}>debug</button>
-        <button className="setState" type="button" onClick={(() => this.debugSetGameState('WaitingForPlayers'))}>WaitingForPlayers</button>
-        <button className="setState" type="button" onClick={(() => this.debugSetGameState('InitialPromptCreation'))}>PromptCreation</button>
-        <button className="setState" type="button" onClick={(() => this.debugSetGameState('DrawingsInProgress'))}>Drawing</button>
-        <button className="setState" type="button" onClick={(() => this.debugSetGameState('Voting'))}>Voting</button>
+        {Object.values(GameStates).map((state) => (
+          <button key={state} className="setState" type="button" onClick={(() => this.debugSetGameState(state))}>{state}</button>
+        ))}
         {this.consoleEnabled ? (
           <div className="console">
             {error ? `Error:${error}` : null}

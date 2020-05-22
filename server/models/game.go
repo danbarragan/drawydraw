@@ -10,6 +10,8 @@ const (
 	InitialPromptCreation GameState = "InitialPromptCreation"
 	// DrawingsInProgress - Players currently drawing a prompt
 	DrawingsInProgress GameState = "DrawingsInProgress"
+	// DecoyPromptCreation - Players are creating decoy prompts for a drawing they didn't make
+	DecoyPromptCreation GameState = "DecoyPromptCreation"
 	// Voting - Players currently drawing a prompt
 	Voting GameState = "Voting"
 )
@@ -30,10 +32,19 @@ type Prompt struct {
 	Adjectives []string
 }
 
+// Vote represents a prompt selected by a player in a drawing
+type Vote struct {
+	Player         *Player
+	SelectedPrompt *Prompt
+}
+
 // Drawing represents a drawing someone has made
 type Drawing struct {
-	ImageData string
-	Author    string
+	ImageData      string
+	Author         string
+	DecoyPrompts   map[string]*Prompt
+	OriginalPrompt *Prompt
+	Votes          []*Vote
 }
 
 // Game contains all data that represents the game at any point
