@@ -309,18 +309,12 @@ func createGameState(
 	gameState models.GameState,
 ) (*GameStatusResponse, error) {
 	game := &models.Game{
-		GroupName: groupName, CurrentState: gameState,
+		GroupName:    groupName,
+		CurrentState: gameState,
+		Players:      make([]*models.Player, len(players)),
 	}
-	models.GetGameProvider().SaveGame(game)
 	for idx, playerName := range players {
-		isHost := false
-		if idx == 0 {
-			isHost = true
-		}
-		_, err := AddPlayer(playerName, groupName, isHost)
-		if err != nil {
-			return nil, err
-		}
+		game.Players[idx] = &models.Player{Name: playerName, Host: idx == 0}
 	}
 	if prompts != nil {
 		game.Prompts = make([]*models.Prompt, len(prompts))
@@ -334,6 +328,7 @@ func createGameState(
 		assignPrompts(game)
 	}
 	game.Drawings = drawings
+	models.GetGameProvider().SaveGame(game)
 	gameStatus, err := gameStatusForPlayer(game, *game.GetHostName())
 	if err != nil {
 		return nil, err

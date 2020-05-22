@@ -95,9 +95,9 @@ class Game extends React.Component {
     return (
       <div className="debug">
         <button className="toggleConsole" type="button" onClick={this.toggleConsole}>debug</button>
-        {Object.values(GameStates).map((state) => (
+        {Object.values(GameStates).map((state) => (state !== GameStates.GroupSelection ? (
           <button key={state} className="setState" type="button" onClick={(() => this.debugSetGameState(state))}>{state}</button>
-        ))}
+        ) : null))}
         {this.consoleEnabled ? (
           <div className="console">
             {error ? `Error:${error}` : null}

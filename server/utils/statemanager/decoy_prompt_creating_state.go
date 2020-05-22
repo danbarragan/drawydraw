@@ -44,9 +44,8 @@ func (state decoyPromptCreatingState) addPrompt(prompt *models.Prompt) error {
 
 func (state decoyPromptCreatingState) addGameStatusPropertiesForPlayer(player *models.Player, gameStatus *GameStatusResponse) error {
 	activeDrawing := getCurrentDrawing(state.game)
-	// Todo: this shouldn't happen outside debug situations, we should rework that code and error out in this case
 	if activeDrawing == nil {
-		return nil
+		return errors.New("There is no active drawing available for this state")
 	}
 	gameStatus.CurrentDrawing = &Drawing{
 		ImageData: activeDrawing.ImageData,
