@@ -10,8 +10,11 @@ type drawingsInProgressState struct {
 }
 
 func (state drawingsInProgressState) addPlayer(player *models.Player) error {
-	state.game.AddPlayer(player)
-	return nil
+	// Only allow existing players to rejoin the game and in that case, no-op
+	if state.game.IsPlayerInGame(player) {
+		return nil
+	}
+	return errors.New("Cannot add new players to a game in this state")
 }
 
 func (state drawingsInProgressState) startGame(groupName string, playerName string) error {
@@ -34,8 +37,16 @@ func (state drawingsInProgressState) submitDrawing(playerName string, encodedIma
 	if !playerExists {
 		return errors.New("player is not in the group")
 	}
-	drawing := models.Drawing{Author: playerName, ImageData: encodedImage}
+	drawing := models.Drawing{
+		Author:       playerName,
+		ImageData:    encodedImage,
+		DecoyPrompts: map[string]*models.Prompt{},
+	}
 	state.game.Drawings = append(state.game.Drawings, &drawing)
+	// If this is the last drawing, transition to the fake prompt creation state
+	if len(state.game.Drawings) == len(state.game.Players) {
+		state.game.CurrentState = models.DecoyPromptCreation
+	}
 	return nil
 }
 
@@ -57,7 +68,7 @@ func (state drawingsInProgressState) addGameStatusPropertiesForPlayer(player *mo
 		}
 	}
 	if player.AssignedPrompt != nil {
-		gameStatus.CurrentPlayer.AssignedPrompt = &AssignedPrompt{
+		gameStatus.CurrentPlayer.AssignedPrompt = &Prompt{
 			Adjectives: player.AssignedPrompt.Adjectives,
 			Noun:       player.AssignedPrompt.Noun,
 		}

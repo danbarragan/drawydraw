@@ -3,6 +3,7 @@ const GameStates = Object.freeze({
   WaitingForPlayers: 'WaitingForPlayers',
   InitialPromptCreation: 'InitialPromptCreation',
   DrawingsInProgress: 'DrawingsInProgress',
+  DecoyPromptCreation: 'DecoyPromptCreation',
   Voting: 'Voting',
 });
 

@@ -1,4 +1,6 @@
 .drawingCanvas {
     border-style: solid;
     border-color: black;
+    width: fit-content;
+    height: fit-content;
 }

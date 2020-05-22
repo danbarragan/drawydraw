@@ -10,6 +10,8 @@ const (
 	InitialPromptCreation GameState = "InitialPromptCreation"
 	// DrawingsInProgress - Players currently drawing a prompt
 	DrawingsInProgress GameState = "DrawingsInProgress"
+	// DecoyPromptCreation - Players are creating decoy prompts for a drawing they didn't make
+	DecoyPromptCreation GameState = "DecoyPromptCreation"
 	// Voting - Players currently drawing a prompt
 	Voting GameState = "Voting"
 )
@@ -30,10 +32,19 @@ type Prompt struct {
 	Adjectives []string
 }
 
+// Vote represents a prompt selected by a player in a drawing
+type Vote struct {
+	Player         *Player
+	SelectedPrompt *Prompt
+}
+
 // Drawing represents a drawing someone has made
 type Drawing struct {
-	ImageData string
-	Author    string
+	ImageData      string
+	Author         string
+	DecoyPrompts   map[string]*Prompt
+	OriginalPrompt *Prompt
+	Votes          []*Vote
 }
 
 // Game contains all data that represents the game at any point
@@ -48,13 +59,20 @@ type Game struct {
 // AddPlayer adds a player to the game (if that player isn't there already)
 func (game *Game) AddPlayer(player *Player) error {
 	// First check if the player is already in the game and no-op if that's the case
+	if !game.IsPlayerInGame(player) {
+		game.Players = append(game.Players, player)
+	}
+	return nil
+}
+
+// IsPlayerInGame determines if a player is already in a game or not
+func (game *Game) IsPlayerInGame(player *Player) bool {
 	for _, currentPlayer := range game.Players {
 		if currentPlayer.Name == player.Name {
-			return nil
+			return true
 		}
 	}
-	game.Players = append(game.Players, player)
-	return nil
+	return false
 }
 
 // AddPrompt adds a player's prompt to the game

@@ -4,6 +4,9 @@ import (
 	"drawydraw/models"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
 )
 
 // StateManager handles the different states and actions throughout the game
@@ -15,8 +18,8 @@ type StateManager struct {
 // Models used for describing the status of the game to clients
 // Todo: Find a better home for these (or replace them with protos)
 
-// AssignedPrompt represents the prompt currently assigned to a player for drawing
-type AssignedPrompt struct {
+// Prompt represents the prompt currently assigned to a player for drawing
+type Prompt struct {
 	Adjectives []string `json:"adjectives"`
 	Noun       string   `json:"noun"`
 }
@@ -31,18 +34,25 @@ type Player struct {
 
 // CurrentPlayer represents the status of the player making the request
 type CurrentPlayer struct {
-	AssignedPrompt     *AssignedPrompt `json:"assignedPrompt"`
-	IsHost             bool            `json:"isHost"`
-	Name               string          `json:"name"`
-	HasCompletedAction bool            `json:"hasCompletedAction"`
+	AssignedPrompt     *Prompt `json:"assignedPrompt"`
+	IsHost             bool    `json:"isHost"`
+	Name               string  `json:"name"`
+	HasCompletedAction bool    `json:"hasCompletedAction"`
+}
+
+// Drawing represents a drawing that players are either making prompts for or voting on prompts for it
+type Drawing struct {
+	ImageData string    `json:"imageData"`
+	Prompts   []*Prompt `json:"prompts"`
 }
 
 // GameStatusResponse contains all the game status communicated to players
 type GameStatusResponse struct {
-	CurrentPlayer *CurrentPlayer `json:"currentPlayer"`
-	CurrentState  string         `json:"currentState"`
-	GroupName     string         `json:"groupName"`
-	Players       []*Player      `json:"players"`
+	CurrentPlayer  *CurrentPlayer `json:"currentPlayer"`
+	CurrentState   string         `json:"currentState"`
+	GroupName      string         `json:"groupName"`
+	Players        []*Player      `json:"players"`
+	CurrentDrawing *Drawing       `json:"currentDrawing"`
 }
 
 // CreateGroup Handles creating a group other players can join
@@ -112,13 +122,6 @@ func AddPrompt(playerName string, groupName string, noun string, adjective1 stri
 	stateManager, err := getManagerForGroup(groupName)
 	if err != nil {
 		return nil, err
-	}
-
-	//check if the player had already entered a prompt (not sure if needed)
-	for _, prompt := range stateManager.game.Prompts {
-		if playerName == prompt.Author {
-			return nil, errors.New("The player has already entered their prompt")
-		}
 	}
 
 	newPrompt := models.Prompt{
@@ -240,6 +243,8 @@ func getManagerForGroup(groupName string) (*StateManager, error) {
 
 func getCurrentState(game *models.Game) (state, error) {
 	switch currentState := game.CurrentState; currentState {
+	case models.DecoyPromptCreation:
+		return decoyPromptCreatingState{game: game}, nil
 	case models.Voting:
 		return voting{game: game}, nil
 	case models.WaitingForPlayers:
@@ -267,36 +272,49 @@ func isPlayerInGroup(playerName string, playersInGroup []*models.Player) bool {
 // SetGameState is a debug method for forcing the gamestate to make UI testing easier.
 func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 	gameState := models.GameState(gameStateName)
+	mockPrompts := [][]string{
+		{"silly", "great", "beluga"},
+		{"happy", "elderly", "unicorn"},
+	}
+	currentDir, _ := os.Getwd()
+	mockImageData, err := ioutil.ReadFile(path.Join(currentDir, "test", "testImageData.txt"))
+	if err != nil {
+		return nil, err
+	}
 	switch currentState := gameState; currentState {
+	case models.DecoyPromptCreation:
+		mockDrawings := []*models.Drawing{
+			{Author: "chair", ImageData: string(mockImageData), DecoyPrompts: map[string]*models.Prompt{}},
+			{Author: "table", ImageData: string(mockImageData), DecoyPrompts: map[string]*models.Prompt{}},
+		}
+		return createGameState("furnitures", []string{"table", "chair"}, mockPrompts, mockDrawings, gameState)
 	case models.Voting:
-		return createGameState("chats", []string{"graisseux", "frere jacques", "pepe le pew"}, nil, gameState)
+		return createGameState("chats", []string{"graisseux", "frere jacques", "pepe le pew"}, nil, nil, gameState)
 	case models.WaitingForPlayers:
-		return createGameState("not cats", []string{"dog", "cat", "other dog"}, nil, gameState)
+		return createGameState("not cats", []string{"dog", "cat", "other dog"}, nil, nil, gameState)
 	case models.InitialPromptCreation:
-		return createGameState("fat cats", []string{"chubbs", "chonk", "beefcake"}, nil, gameState)
+		return createGameState("fat cats", []string{"chubbs", "chonk", "beefcake"}, nil, nil, gameState)
 	case models.DrawingsInProgress:
-		mockPrompt := []string{"silly", "great", "beluga"}
-		mockPrompts := [][]string{mockPrompt, mockPrompt, mockPrompt}
-		return createGameState("human cats", []string{"sharon", "grandpa", "j. ralphio"}, mockPrompts, gameState)
+		return createGameState("human cats", []string{"sharon", "grandpa"}, mockPrompts, nil, gameState)
 	default:
 		return nil, fmt.Errorf("failed to set game to state %s", gameState)
 	}
 }
 
-func createGameState(groupName string, players []string, prompts [][]string, gameState models.GameState) (*GameStatusResponse, error) {
+func createGameState(
+	groupName string,
+	players []string,
+	prompts [][]string,
+	drawings []*models.Drawing,
+	gameState models.GameState,
+) (*GameStatusResponse, error) {
 	game := &models.Game{
-		GroupName: groupName, CurrentState: gameState,
+		GroupName:    groupName,
+		CurrentState: gameState,
+		Players:      make([]*models.Player, len(players)),
 	}
-	models.GetGameProvider().SaveGame(game)
 	for idx, playerName := range players {
-		isHost := false
-		if idx == 0 {
-			isHost = true
-		}
-		_, err := AddPlayer(playerName, groupName, isHost)
-		if err != nil {
-			return nil, err
-		}
+		game.Players[idx] = &models.Player{Name: playerName, Host: idx == 0}
 	}
 	if prompts != nil {
 		game.Prompts = make([]*models.Prompt, len(prompts))
@@ -309,6 +327,8 @@ func createGameState(groupName string, players []string, prompts [][]string, gam
 		}
 		assignPrompts(game)
 	}
+	game.Drawings = drawings
+	models.GetGameProvider().SaveGame(game)
 	gameStatus, err := gameStatusForPlayer(game, *game.GetHostName())
 	if err != nil {
 		return nil, err
