@@ -1,5 +1,7 @@
 body {
     overscroll-behavior: contain;
+    scroll-behavior: unset;
+    height: 100%;
 }
 
 .game {
@@ -12,7 +14,7 @@ body {
 }
 
 .gameTitle {
-    font-size: 30pt;
+    font-size:4rem;
 }
 
 .console {
@@ -32,16 +34,20 @@ body {
     margin-top: 0.25rem;
 }
 
+.screen h2 {
+    font-size:4rem;
+}
+
 .screen h3 {
-    font-size:25pt;
+    font-size:3rem;
 }
 
 .screen label {
-    font-size:18pt;
+    font-size:2rem;
 }
 
 .screen input {
-    font-size:18pt;
+    font-size:2rem;
     border-color: black;
     border-style: solid;
 }
@@ -58,7 +64,18 @@ body {
     text-align: center;
     text-decoration: none;
     border-radius: 8px;
-    font-size: 20pt;
+    font-size: 2.5rem;
+}
+
+.debugButton {
+    display: inline-block;
+    margin-top: 0.5rem;
+    margin-right: 0.5rem;
+    border: none;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 1rem;
 }
 
 .buttonTypeA {
@@ -69,3 +86,9 @@ body {
     background-color: rgb(135, 202, 247);
 }
 
+.debugGameState {
+    width: 100%;
+    overflow: auto;
+    resize: none;
+    font-size: 0.5em;
+}

@@ -161,8 +161,8 @@ class DrawingScreen extends React.Component {
     const { noun, adjectives } = currentPlayer.assignedPrompt;
     const drawingElements = (
       <div>
-        <h1>
-          Draw
+        <h2>
+          Draw:
           {' '}
           {adjectives[0]}
           ,
@@ -170,7 +170,7 @@ class DrawingScreen extends React.Component {
           {adjectives[1]}
           {' '}
           {noun}
-        </h1>
+        </h2>
         <BrushConfig
           onColorChange={this.onBrushColorChange}
           currentColor={currentBrushColor}
@@ -184,8 +184,8 @@ class DrawingScreen extends React.Component {
           touchMoved={this.mouseDragged}
           touchStarted={this.mousePressed}
         />
-        <button type="button" className="button buttonTypeA" onClick={this.onSubmitClick}>Submit</button>
-        <button type="button" className="button buttonTypeB" onClick={this.onClearClick}>Clear</button>
+        <button type="button" className="buttonTypeA" onClick={this.onSubmitClick}>Submit</button>
+        <button type="button" className="buttonTypeB" onClick={this.onClearClick}>Clear</button>
       </div>
     );
     const waitingElements = (

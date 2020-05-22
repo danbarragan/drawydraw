@@ -33,3 +33,7 @@ func (state waitingForPlayersState) addPrompt(prompts *models.Prompt) error {
 func (state waitingForPlayersState) addGameStatusPropertiesForPlayer(player *models.Player, gameStatus *GameStatusResponse) error {
 	return nil
 }
+
+func (state waitingForPlayersState) castVote(player *models.Player, promptIdentifier string) error {
+	return errors.New("Casting votes is not allowed at this stage of the game")
+}

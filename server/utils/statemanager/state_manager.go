@@ -20,6 +20,7 @@ type StateManager struct {
 
 // Prompt represents the prompt currently assigned to a player for drawing
 type Prompt struct {
+	Identifier string   `json:"identifier"`
 	Adjectives []string `json:"adjectives"`
 	Noun       string   `json:"noun"`
 }
@@ -48,11 +49,12 @@ type Drawing struct {
 
 // GameStatusResponse contains all the game status communicated to players
 type GameStatusResponse struct {
-	CurrentPlayer  *CurrentPlayer `json:"currentPlayer"`
-	CurrentState   string         `json:"currentState"`
-	GroupName      string         `json:"groupName"`
-	Players        []*Player      `json:"players"`
-	CurrentDrawing *Drawing       `json:"currentDrawing"`
+	CurrentPlayer  *CurrentPlayer     `json:"currentPlayer"`
+	CurrentState   string             `json:"currentState"`
+	GroupName      string             `json:"groupName"`
+	Players        []*Player          `json:"players"`
+	CurrentDrawing *Drawing           `json:"currentDrawing"`
+	RoundScores    *map[string]uint64 `json:"roundScores"`
 }
 
 // CreateGroup Handles creating a group other players can join
@@ -116,7 +118,7 @@ func AddPrompt(playerName string, groupName string, noun string, adjective1 stri
 	if len(noun) < 1 ||
 		len(adjective1) < 1 ||
 		len(adjective2) < 1 {
-		return nil, errors.New("One or more of the prompt was not provided")
+		return nil, errors.New("Prompt is missing a field")
 	}
 
 	stateManager, err := getManagerForGroup(groupName)
@@ -124,12 +126,9 @@ func AddPrompt(playerName string, groupName string, noun string, adjective1 stri
 		return nil, err
 	}
 
-	newPrompt := models.Prompt{
-		Author:     playerName,
-		Noun:       noun,
-		Adjectives: []string{adjective1, adjective2}}
+	newPrompt := models.BuildPrompt(noun, []string{adjective1, adjective2}, playerName)
 
-	err = stateManager.currentState.addPrompt(&newPrompt)
+	err = stateManager.currentState.addPrompt(newPrompt)
 	if err != nil {
 		return nil, err
 	}
@@ -154,6 +153,30 @@ func SubmitDrawing(playerName string, groupName string, imageData string) (*Game
 	}
 
 	err = stateManager.currentState.submitDrawing(playerName, imageData)
+	if err != nil {
+		return nil, err
+	}
+	models.GetGameProvider().SaveGame(stateManager.game)
+	gameStatus, err := gameStatusForPlayer(stateManager.game, playerName)
+	if err != nil {
+		return nil, err
+	}
+	return gameStatus, nil
+}
+
+// CastVote handles a player casting a vote for a prompt in a drawing
+func CastVote(playerName string, groupName string, promptIdentifier string) (*GameStatusResponse, error) {
+	stateManager, err := getManagerForGroup(groupName)
+	if err != nil {
+		return nil, err
+	}
+
+	player := stateManager.game.GetPlayer(playerName)
+	if player == nil {
+		return nil, errors.New("Player is not in the game")
+	}
+
+	err = stateManager.currentState.castVote(player, promptIdentifier)
 	if err != nil {
 		return nil, err
 	}
@@ -246,13 +269,15 @@ func getCurrentState(game *models.Game) (state, error) {
 	case models.DecoyPromptCreation:
 		return decoyPromptCreatingState{game: game}, nil
 	case models.Voting:
-		return voting{game: game}, nil
+		return votingState{game: game}, nil
 	case models.WaitingForPlayers:
 		return waitingForPlayersState{game: game}, nil
 	case models.InitialPromptCreation:
 		return promptCreatingState{game: game}, nil
 	case models.DrawingsInProgress:
 		return drawingsInProgressState{game: game}, nil
+	case models.Scoring:
+		return scoringState{game: game}, nil
 	default:
 		return nil, errors.New("Game is at an unknown state")
 	}
@@ -277,19 +302,53 @@ func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 		{"happy", "elderly", "unicorn"},
 	}
 	currentDir, _ := os.Getwd()
-	mockImageData, err := ioutil.ReadFile(path.Join(currentDir, "test", "testImageData.txt"))
+	mockImageDataPath := path.Join(currentDir, "test", "testImageData.txt")
+	mockImageData, err := ioutil.ReadFile(mockImageDataPath)
 	if err != nil {
+		fmt.Printf("Could not find file at %s, current dir %s", mockImageDataPath, currentDir)
 		return nil, err
 	}
 	switch currentState := gameState; currentState {
 	case models.DecoyPromptCreation:
 		mockDrawings := []*models.Drawing{
-			{Author: "chair", ImageData: string(mockImageData), DecoyPrompts: map[string]*models.Prompt{}},
-			{Author: "table", ImageData: string(mockImageData), DecoyPrompts: map[string]*models.Prompt{}},
+			{
+				Votes:          map[string]*models.Vote{},
+				Author:         "chair",
+				ImageData:      string(mockImageData),
+				DecoyPrompts:   map[string]*models.Prompt{},
+				OriginalPrompt: models.BuildPrompt("lady", []string{"serious", "mysterious"}, "table"),
+			},
+			{
+				Votes:          map[string]*models.Vote{},
+				Author:         "table",
+				ImageData:      string(mockImageData),
+				DecoyPrompts:   map[string]*models.Prompt{},
+				OriginalPrompt: models.BuildPrompt("woman", []string{"smiling", "kind"}, "chair"),
+			},
 		}
 		return createGameState("furnitures", []string{"table", "chair"}, mockPrompts, mockDrawings, gameState)
 	case models.Voting:
-		return createGameState("chats", []string{"graisseux", "frere jacques", "pepe le pew"}, nil, nil, gameState)
+		mockDrawings := []*models.Drawing{
+			{
+				Votes:     map[string]*models.Vote{},
+				Author:    "chair",
+				ImageData: string(mockImageData),
+				DecoyPrompts: map[string]*models.Prompt{
+					"phone": models.BuildPrompt("person", []string{"weird", "funky"}, "phone"),
+				},
+				OriginalPrompt: models.BuildPrompt("lady", []string{"serious", "mysterious"}, "tablet"),
+			},
+			{
+				Votes:     map[string]*models.Vote{},
+				Author:    "table",
+				ImageData: string(mockImageData),
+				DecoyPrompts: map[string]*models.Prompt{
+					"tablet": models.BuildPrompt("human", []string{"smelly", "hairy"}, "tablet"),
+				},
+				OriginalPrompt: models.BuildPrompt("woman", []string{"smiling", "kind"}, "phone"),
+			},
+		}
+		return createGameState("electronics", []string{"phone", "tablet"}, mockPrompts, mockDrawings, gameState)
 	case models.WaitingForPlayers:
 		return createGameState("not cats", []string{"dog", "cat", "other dog"}, nil, nil, gameState)
 	case models.InitialPromptCreation:

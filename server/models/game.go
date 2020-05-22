@@ -1,5 +1,10 @@
 package models
 
+import (
+	"fmt"
+	"hash/fnv"
+)
+
 // GameState defines what are the individual states that make up the game
 type GameState string
 
@@ -14,6 +19,8 @@ const (
 	DecoyPromptCreation GameState = "DecoyPromptCreation"
 	// Voting - Players currently drawing a prompt
 	Voting GameState = "Voting"
+	// Scoring - Players are shown the current scores
+	Scoring GameState = "Scoring"
 )
 
 // Player contains all the information relevant to a game's participant
@@ -27,6 +34,7 @@ type Player struct {
 
 // Prompt is a set of a noun and adjectives that describes a drawing someone will make or has made
 type Prompt struct {
+	Identifier string
 	Author     string
 	Noun       string
 	Adjectives []string
@@ -44,7 +52,8 @@ type Drawing struct {
 	Author         string
 	DecoyPrompts   map[string]*Prompt
 	OriginalPrompt *Prompt
-	Votes          []*Vote
+	Votes          map[string]*Vote
+	Scored         bool
 }
 
 // Game contains all data that represents the game at any point
@@ -56,23 +65,41 @@ type Game struct {
 	Drawings     []*Drawing
 }
 
+// GetPromptWithIdentifier returns the prompt that has a given identifier in a drawing
+func (drawing *Drawing) GetPromptWithIdentifier(identifier string) *Prompt {
+	if identifierForPrompt(drawing.OriginalPrompt) == identifier {
+		return drawing.OriginalPrompt
+	}
+	for _, prompt := range drawing.DecoyPrompts {
+		if identifierForPrompt(prompt) == identifier {
+			return prompt
+		}
+	}
+	return nil
+}
+
 // AddPlayer adds a player to the game (if that player isn't there already)
 func (game *Game) AddPlayer(player *Player) error {
 	// First check if the player is already in the game and no-op if that's the case
-	if !game.IsPlayerInGame(player) {
+	if !game.IsPlayerInGame(player.Name) {
 		game.Players = append(game.Players, player)
 	}
 	return nil
 }
 
-// IsPlayerInGame determines if a player is already in a game or not
-func (game *Game) IsPlayerInGame(player *Player) bool {
+// IsPlayerInGame  determines if a player is already in a game or not
+func (game *Game) IsPlayerInGame(playerName string) bool {
+	return game.GetPlayer(playerName) != nil
+}
+
+// GetPlayer returns a player object for the given player name
+func (game *Game) GetPlayer(playerName string) *Player {
 	for _, currentPlayer := range game.Players {
-		if currentPlayer.Name == player.Name {
-			return true
+		if currentPlayer.Name == playerName {
+			return currentPlayer
 		}
 	}
-	return false
+	return nil
 }
 
 // AddPrompt adds a player's prompt to the game
@@ -89,4 +116,30 @@ func (game *Game) GetHostName() *string {
 		}
 	}
 	return nil
+}
+
+// GetActiveDrawing gets the drawing players are either entering prompts for or voting on prompts for
+func (game *Game) GetActiveDrawing() *Drawing {
+	for _, drawing := range game.Drawings {
+		// Find the first drawing that has not been scored
+		if !drawing.Scored {
+			return drawing
+		}
+	}
+	return nil
+}
+
+// BuildPrompt creates a prompt object with the right internal properties
+func BuildPrompt(noun string, adjectives []string, author string) *Prompt {
+	prompt := &Prompt{Noun: noun, Adjectives: adjectives, Author: author}
+	prompt.Identifier = identifierForPrompt(prompt)
+	return prompt
+}
+
+func identifierForPrompt(prompt *Prompt) string {
+	hashFunction := fnv.New64()
+	hashFunction.Write([]byte(
+		fmt.Sprintf("%s-%s-%s", prompt.Adjectives[0], prompt.Adjectives[1], prompt.Noun),
+	))
+	return fmt.Sprintf("%d", hashFunction.Sum64())
 }
