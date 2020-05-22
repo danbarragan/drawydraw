@@ -59,13 +59,18 @@ type Game struct {
 // AddPlayer adds a player to the game (if that player isn't there already)
 func (game *Game) AddPlayer(player *Player) error {
 	// First check if the player is already in the game and no-op if that's the case
+	if !game.IsPlayerInGame(player) {
+		game.Players = append(game.Players, player)
+	}
+	return nil
+}
+
+func (game *Game) IsPlayerInGame(player *Player) bool {
 	for _, currentPlayer := range game.Players {
 		if currentPlayer.Name == player.Name {
-			return nil
-		}
+			return true
 	}
-	game.Players = append(game.Players, player)
-	return nil
+	return false
 }
 
 // AddPrompt adds a player's prompt to the game

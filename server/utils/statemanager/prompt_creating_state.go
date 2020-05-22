@@ -10,8 +10,11 @@ type promptCreatingState struct {
 }
 
 func (state promptCreatingState) addPlayer(player *models.Player) error {
-	state.game.AddPlayer(player)
-	return nil
+	// Only allow existing players to rejoin the game and in that case, no-op
+	if state.game.IsPlayerInGame(player) {
+		return nil
+	}
+	return errors.New("Cannot add new players to a game in this state")
 }
 
 func (state promptCreatingState) startGame(groupName string, playerName string) error {

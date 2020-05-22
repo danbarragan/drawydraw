@@ -10,8 +10,11 @@ type decoyPromptCreatingState struct {
 }
 
 func (state decoyPromptCreatingState) addPlayer(player *models.Player) error {
-	state.game.AddPlayer(player)
-	return nil
+	// Only allow existing players to rejoin the game and in that case, no-op
+	if state.game.IsPlayerInGame(player) {
+		return nil
+	}
+	return errors.New("Cannot add new players to a game in this state")
 }
 
 func (state decoyPromptCreatingState) startGame(groupName string, playerName string) error {
@@ -19,7 +22,7 @@ func (state decoyPromptCreatingState) startGame(groupName string, playerName str
 }
 
 func (state decoyPromptCreatingState) submitDrawing(playerName string, encodedImage string) error {
-	return errors.New("startGame not supported for decoyPromptCreatingStage state")
+	return errors.New("submitDrawing not supported for decoyPromptCreatingStage state")
 
 }
 
