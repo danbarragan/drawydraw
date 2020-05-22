@@ -1,7 +1,3 @@
-.decoyPromptCreationScreen * {
-    display: inline-block;
-}
-
 .promptImage, .promptFieldContainer, .promptFieldContainer * {
     display: block;
 }
