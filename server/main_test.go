@@ -3,8 +3,8 @@ package main
 import (
 	"bytes"
 	"drawydraw/models"
+	"drawydraw/statemanager"
 	"drawydraw/test"
-	"drawydraw/utils/statemanager"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -258,6 +258,18 @@ func TestCastVoteRoute(t *testing.T) {
 			},
 		},
 	}
+	// This is tricky because the prompts will be shuffled, so let's just make sure the sets are equivalent
+	expectedPromptMap := map[string]*statemanager.Prompt{}
+	for _, prompt := range expectedGameState.CurrentDrawing.Prompts {
+		expectedPromptMap[prompt.Identifier] = prompt
+	}
+	actualPromptMap := map[string]*statemanager.Prompt{}
+	for _, prompt := range actualGameState.CurrentDrawing.Prompts {
+		actualPromptMap[prompt.Identifier] = prompt
+	}
+	assert.EqualValues(t, expectedPromptMap, actualPromptMap)
+	// Now that we checked the prompts let's just ignore that property
+	actualGameState.CurrentDrawing.Prompts = expectedGameState.CurrentDrawing.Prompts
 	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
