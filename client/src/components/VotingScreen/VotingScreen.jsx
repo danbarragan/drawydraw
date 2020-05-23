@@ -16,6 +16,13 @@ class VotingScreen extends React.Component {
     this.updateGameState = this.updateGameState.bind(this);
     this.handleOptionChange = this.handleOptionChange.bind(this);
     this.onVoteClicked = this.onVoteClicked.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
+  }
+
+  componentDidMount() {
+    // Start listening for game state updates
+    const timerId = setInterval(this.updateGameState, 3000);
+    this.setState({ timerId });
   }
 
   componentWillUnmount() {
@@ -35,9 +42,6 @@ class VotingScreen extends React.Component {
 
     try {
       const response = await axios.post('/api/cast-vote', data);
-      const timerId = setInterval(this.updateGameState, 3000);
-      this.setState({ timerId });
-      // Start listening for game state updates
       onGameStateChanged(response.data);
     } catch (error) {
       this.setState({ error: formatServerError(error) });

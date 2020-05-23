@@ -5,6 +5,7 @@ const GameStates = Object.freeze({
   DrawingsInProgress: 'DrawingsInProgress',
   DecoyPromptCreation: 'DecoyPromptCreation',
   Voting: 'Voting',
+  Scoring: 'Scoring',
 });
 
 exports.GameStates = GameStates;

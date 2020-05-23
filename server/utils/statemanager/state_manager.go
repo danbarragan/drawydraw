@@ -331,7 +331,7 @@ func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 		mockDrawings := []*models.Drawing{
 			{
 				Votes:     map[string]*models.Vote{},
-				Author:    "chair",
+				Author:    "tablet",
 				ImageData: string(mockImageData),
 				DecoyPrompts: map[string]*models.Prompt{
 					"phone": models.BuildPrompt("person", []string{"weird", "funky"}, "phone"),
@@ -339,12 +339,10 @@ func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 				OriginalPrompt: models.BuildPrompt("lady", []string{"serious", "mysterious"}, "tablet"),
 			},
 			{
-				Votes:     map[string]*models.Vote{},
-				Author:    "table",
-				ImageData: string(mockImageData),
-				DecoyPrompts: map[string]*models.Prompt{
-					"tablet": models.BuildPrompt("human", []string{"smelly", "hairy"}, "tablet"),
-				},
+				Votes:          map[string]*models.Vote{},
+				Author:         "phone",
+				ImageData:      string(mockImageData),
+				DecoyPrompts:   map[string]*models.Prompt{},
 				OriginalPrompt: models.BuildPrompt("woman", []string{"smiling", "kind"}, "phone"),
 			},
 		}
