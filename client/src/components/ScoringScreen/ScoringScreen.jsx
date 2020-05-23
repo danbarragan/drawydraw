@@ -70,7 +70,7 @@ class ScoringScreen extends React.Component {
       </li>
     ));
     return (
-      <div className="screen waitingForPlayersScreen">
+      <div className="screen votingScreen">
         <ul>{scores}</ul>
         { isHost ? <button type="button" className="buttonTypeA" onClick={this.onNextRoundButtonClicked}>Next</button>
           : <h3>Waiting for the host to start the next round...</h3>}

@@ -86,8 +86,8 @@ class DecoyPromptCreationScreen extends React.Component {
 
     const promptEnteringElements = (
       <div className="promptForm">
+        <h3>Enter a decoy prompt for this drawing:</h3>
         <img className="promptImage" src={currentDrawing.imageData} alt="a drawing" />
-        <h3>Enter a decoy prompt for other players to draw...</h3>
         <div className="promptFieldContainer">
           <label htmlFor="adjective1">
             First Adjective

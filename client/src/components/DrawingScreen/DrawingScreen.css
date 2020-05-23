@@ -2,5 +2,6 @@
     border-style: solid;
     border-color: black;
     width: fit-content;
+    touch-action: none;
     height: fit-content;
 }

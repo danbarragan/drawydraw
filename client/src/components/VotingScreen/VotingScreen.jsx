@@ -70,7 +70,7 @@ class VotingScreen extends React.Component {
     const { players, currentDrawing, currentPlayer } = gameState;
     const votingElements = (
       <form className="votingForm">
-        <h3>What is this?</h3>
+        <h4 className="votingQuestion">What was the original prompt for this drawing?</h4>
         {currentDrawing.prompts.map((prompt) => (
           <div className="votingOption" key={prompt.identifier}>
             <label htmlFor={prompt.identifier}>

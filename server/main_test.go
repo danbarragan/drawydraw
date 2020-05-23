@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"sort"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -258,6 +259,19 @@ func TestCastVoteRoute(t *testing.T) {
 			},
 		},
 	}
+	// Sort prompts by id since they're shuffled
+	sort.Slice(
+		expectedGameState.CurrentDrawing.Prompts,
+		func(i, j int) bool {
+			return expectedGameState.CurrentDrawing.Prompts[1].Identifier < expectedGameState.CurrentDrawing.Prompts[j].Identifier
+		},
+	)
+	sort.Slice(
+		actualGameState.CurrentDrawing.Prompts,
+		func(i, j int) bool {
+			return actualGameState.CurrentDrawing.Prompts[1].Identifier < actualGameState.CurrentDrawing.Prompts[j].Identifier
+		},
+	)
 	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
