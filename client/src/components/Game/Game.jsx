@@ -6,6 +6,7 @@ import GroupSelectionScreen from '../GroupSelectionScreen/GroupSelectionScreen';
 import WaitingForPlayersScreen from '../WaitingForPlayersScreen/WaitingForPlayersScreen';
 import InitialPromptCreationScreen from '../InitialPromptCreationScreen/InitialPromptCreationScreen';
 import VotingScreen from '../VotingScreen/VotingScreen';
+import ScoringScreen from '../ScoringScreen/ScoringScreen';
 import './Game.css';
 import { GameStates } from '../../utils/constants';
 import { formatServerError } from '../../utils/errorFormatting';
@@ -39,6 +40,8 @@ class Game extends React.Component {
     const { gameState } = this.state;
     const { currentState } = gameState;
     switch (currentState) {
+      case GameStates.Scoring:
+        return <ScoringScreen onGameStateChanged={this.onGameStateChanged} gameState={gameState} />;
       case GameStates.DecoyPromptCreation:
         return (
           <DecoyPromptCreationScreen

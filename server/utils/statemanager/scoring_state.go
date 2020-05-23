@@ -3,6 +3,7 @@ package statemanager
 import (
 	"drawydraw/models"
 	"errors"
+	"fmt"
 )
 
 type scoringState struct {
@@ -18,7 +19,35 @@ func (state scoringState) addPlayer(player *models.Player) error {
 }
 
 func (state scoringState) startGame(groupName string, playerName string) error {
-	return errors.New("startGame not supported for voting state")
+	activeDrawing := state.game.GetActiveDrawing()
+	if activeDrawing == nil {
+		return errors.New("Could not find active drawing for game")
+	}
+	// Add all the round scores
+	roundScores := state.calculateRoundScores(activeDrawing)
+	for name, score := range *roundScores {
+		player := state.game.GetPlayer(name)
+		if player == nil {
+			return fmt.Errorf("Could not find player %s in the game", name)
+		}
+		player.Points += score
+	}
+	// Mark the active drawing as scored
+	activeDrawing.Scored = true
+	if state.game.GetActiveDrawing() != nil {
+		// If there's another active drawing, go to the decoy prompts state
+		state.game.CurrentState = models.DecoyPromptCreation
+	} else {
+		// If there isn't, then we need to reset prompts/drawings and go to prompts
+		state.game.Prompts = []*models.Prompt{}
+		state.game.Drawings = []*models.Drawing{}
+		// Also clear out assigned prompts
+		for _, player := range state.game.Players {
+			player.AssignedPrompt = nil
+		}
+		state.game.CurrentState = models.InitialPromptCreation
+	}
+	return nil
 }
 
 func (state scoringState) submitDrawing(playerName string, encodedImage string) error {

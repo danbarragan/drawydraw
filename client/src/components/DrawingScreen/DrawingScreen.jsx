@@ -48,6 +48,13 @@ class DrawingScreen extends React.Component {
     this.onBrushColorChange = this.onBrushColorChange.bind(this);
     this.onBrushSizeChange = this.onBrushSizeChange.bind(this);
     this.updateGameState = this.updateGameState.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
+  }
+
+  componentDidMount() {
+    // Start listening for game state updates
+    const timerId = setInterval(this.updateGameState, 3000);
+    this.setState({ timerId });
   }
 
   componentWillUnmount() {
@@ -66,9 +73,6 @@ class DrawingScreen extends React.Component {
     const data = { playerName, groupName, imageData };
     try {
       const response = await axios.post('api/submit-drawing', data);
-      // Start listening for game state updates
-      const timerId = setInterval(this.updateGameState, 3000);
-      this.setState({ timerId });
       onGameStateChanged(response.data);
     } catch (error) {
       this.setState({ error: formatServerError(error) });

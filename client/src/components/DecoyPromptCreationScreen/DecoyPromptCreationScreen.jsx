@@ -20,6 +20,13 @@ class DecoyPromptCreationScreen extends React.Component {
     this.onNounChange = this.onNounChange.bind(this);
     this.onAdjective1Change = this.onAdjective1Change.bind(this);
     this.onAdjective2Change = this.onAdjective2Change.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
+  }
+
+  componentDidMount() {
+    // Start listening for game state updates
+    const timerId = setInterval(this.updateGameState, 3000);
+    this.setState({ timerId });
   }
 
   componentWillUnmount() {
@@ -52,9 +59,6 @@ class DecoyPromptCreationScreen extends React.Component {
 
     try {
       const response = await axios.post('/api/add-prompt', data);
-      const timerId = setInterval(this.updateGameState, 3000);
-      this.setState({ timerId });
-      // Start listening for game state updates
       onGameStateChanged(response.data);
     } catch (error) {
       this.setState({ error: formatServerError(error) });
