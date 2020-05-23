@@ -252,24 +252,12 @@ func TestCastVoteRoute(t *testing.T) {
 		CurrentDrawing: &statemanager.Drawing{
 			ImageData: "mockImage",
 			Prompts: []*statemanager.Prompt{
-				{Identifier: "7876445554424581103", Noun: "chicken", Adjectives: []string{"snazzy", "portly"}},
 				{Identifier: "9033667170926423839", Noun: "toucan", Adjectives: []string{"happy", "big"}},
 				{Identifier: "2289583145965790902", Noun: "birb", Adjectives: []string{"jumpy", "edgy"}},
+				{Identifier: "7876445554424581103", Noun: "chicken", Adjectives: []string{"snazzy", "portly"}},
 			},
 		},
 	}
-	// This is tricky because the prompts will be shuffled, so let's just make sure the sets are equivalent
-	expectedPromptMap := map[string]*statemanager.Prompt{}
-	for _, prompt := range expectedGameState.CurrentDrawing.Prompts {
-		expectedPromptMap[prompt.Identifier] = prompt
-	}
-	actualPromptMap := map[string]*statemanager.Prompt{}
-	for _, prompt := range actualGameState.CurrentDrawing.Prompts {
-		actualPromptMap[prompt.Identifier] = prompt
-	}
-	assert.EqualValues(t, expectedPromptMap, actualPromptMap)
-	// Now that we checked the prompts let's just ignore that property
-	actualGameState.CurrentDrawing.Prompts = expectedGameState.CurrentDrawing.Prompts
 	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 
