@@ -1,7 +1,7 @@
 package main
 
 import (
-	"drawydraw/utils/statemanager"
+	"drawydraw/statemanager"
 	"fmt"
 	"net/http"
 	"os"

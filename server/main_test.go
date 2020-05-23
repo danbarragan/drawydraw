@@ -3,8 +3,8 @@ package main
 import (
 	"bytes"
 	"drawydraw/models"
+	"drawydraw/statemanager"
 	"drawydraw/test"
-	"drawydraw/utils/statemanager"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -252,9 +252,9 @@ func TestCastVoteRoute(t *testing.T) {
 		CurrentDrawing: &statemanager.Drawing{
 			ImageData: "mockImage",
 			Prompts: []*statemanager.Prompt{
-				{Identifier: "7876445554424581103", Noun: "chicken", Adjectives: []string{"snazzy", "portly"}},
 				{Identifier: "9033667170926423839", Noun: "toucan", Adjectives: []string{"happy", "big"}},
 				{Identifier: "2289583145965790902", Noun: "birb", Adjectives: []string{"jumpy", "edgy"}},
+				{Identifier: "7876445554424581103", Noun: "chicken", Adjectives: []string{"snazzy", "portly"}},
 			},
 		},
 	}
