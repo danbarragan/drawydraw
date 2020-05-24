@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"sort"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -253,25 +252,12 @@ func TestCastVoteRoute(t *testing.T) {
 		CurrentDrawing: &statemanager.Drawing{
 			ImageData: "mockImage",
 			Prompts: []*statemanager.Prompt{
-				{Identifier: "9033667170926423839", Noun: "toucan", Adjectives: []string{"happy", "big"}},
 				{Identifier: "2289583145965790902", Noun: "birb", Adjectives: []string{"jumpy", "edgy"}},
 				{Identifier: "7876445554424581103", Noun: "chicken", Adjectives: []string{"snazzy", "portly"}},
+				{Identifier: "9033667170926423839", Noun: "toucan", Adjectives: []string{"happy", "big"}},
 			},
 		},
 	}
-	// Sort prompts by id since they're shuffled
-	sort.Slice(
-		expectedGameState.CurrentDrawing.Prompts,
-		func(i, j int) bool {
-			return expectedGameState.CurrentDrawing.Prompts[1].Identifier < expectedGameState.CurrentDrawing.Prompts[j].Identifier
-		},
-	)
-	sort.Slice(
-		actualGameState.CurrentDrawing.Prompts,
-		func(i, j int) bool {
-			return actualGameState.CurrentDrawing.Prompts[1].Identifier < actualGameState.CurrentDrawing.Prompts[j].Identifier
-		},
-	)
 	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 

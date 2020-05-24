@@ -91,6 +91,13 @@ class VotingScreen extends React.Component {
     );
     const waitingElements = (
       <div>
+        <ul>
+          {currentDrawing.prompts.map((prompt) => (
+            <li key={prompt.identifier}>
+              {`${prompt.adjectives.join(', ')} ${prompt.noun}`}
+            </li>
+          ))}
+        </ul>
         <h3>Waiting for other players to vote on a prompt...</h3>
         <ul>
           {

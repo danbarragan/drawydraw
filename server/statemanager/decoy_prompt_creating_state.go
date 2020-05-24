@@ -62,6 +62,8 @@ func (state decoyPromptCreatingState) addGameStatusPropertiesForPlayer(player *m
 	// If the current player is the author of the active drawing they have nothing to do but wait
 	if activeDrawing.Author == player.Name {
 		gameStatus.CurrentPlayer.HasCompletedAction = true
+	} else {
+		_, gameStatus.CurrentPlayer.HasCompletedAction = authorToDecoyPromptMap[player.Name]
 	}
 	return nil
 }
