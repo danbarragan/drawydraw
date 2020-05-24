@@ -92,15 +92,15 @@ class InitialPromptCreationScreen extends React.Component {
         <h3>Enter the prompt for other players to draw</h3>
         <label htmlFor="adjective1">
           First Adjective
-          <input id="adj1" type="text" value={adjective1} onChange={this.onAdjective1Change} />
+          <input id="adj1" type="text" value={adjective1} onChange={this.onAdjective1Change} autoComplete="off" />
         </label>
         <label htmlFor="adjective2">
           Second Adjective
-          <input id="adj2" type="text" value={adjective2} onChange={this.onAdjective2Change} />
+          <input id="adj2" type="text" value={adjective2} onChange={this.onAdjective2Change} autoComplete="off" />
         </label>
         <label htmlFor="noun">
           Noun
-          <input id="noun" type="text" value={noun} onChange={this.onNounChange} />
+          <input id="noun" type="text" value={noun} onChange={this.onNounChange} autoComplete="off" />
         </label>
         <button className="buttonTypeA" type="button" onClick={this.onSubmitPromptButtonClicked}>Submit</button>
       </div>

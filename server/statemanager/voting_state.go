@@ -3,10 +3,7 @@ package statemanager
 import (
 	"drawydraw/models"
 	"errors"
-	"fmt"
-	"hash/fnv"
-	"math/rand"
-	"strings"
+	"sort"
 )
 
 type votingState struct {
@@ -41,19 +38,12 @@ func (state votingState) addGameStatusPropertiesForPlayer(player *models.Player,
 
 	// Get all available prompts for the drawing
 	prompts := make([]*Prompt, 0, len(state.game.Players))
-	// Build an array of all prompt ids that will be used as a seed for shuffling prompts
-	promptIds := make([]string, 0, len(state.game.Players))
 	prompts = append(prompts, makeResponsePromptFromModelPrompt(activeDrawing.OriginalPrompt))
-	promptIds = append(promptIds, activeDrawing.OriginalPrompt.Identifier)
 	for _, decoyPrompt := range activeDrawing.DecoyPrompts {
 		prompts = append(prompts, makeResponsePromptFromModelPrompt(decoyPrompt))
-		promptIds = append(promptIds, decoyPrompt.Identifier)
 	}
-	// Shuffle the prompts
-	hashFunction := fnv.New64()
-	hashFunction.Write([]byte(strings.Join(strings.Fields(fmt.Sprint(promptIds)), "-")))
-	rand.Seed(int64(hashFunction.Sum64()))
-	rand.Shuffle(len(prompts), func(i, j int) { prompts[i], prompts[j] = prompts[j], prompts[i] })
+	// Sort the prompts by prompt id
+	sort.Slice(prompts, func(i, j int) bool { return prompts[i].Identifier < prompts[j].Identifier })
 	gameStatus.CurrentDrawing = &Drawing{
 		ImageData: activeDrawing.ImageData,
 		Prompts:   prompts,

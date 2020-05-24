@@ -1,3 +1,12 @@
 .promptImage, .promptFieldContainer, .promptFieldContainer * {
     display: block;
 }
+
+.promptForm {
+    width:70%;
+    margin: 0 auto;
+}
+
+.promptImage {
+    width:60%;
+}
