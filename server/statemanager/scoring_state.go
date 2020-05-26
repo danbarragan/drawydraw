@@ -63,6 +63,9 @@ func (state scoringState) addGameStatusPropertiesForPlayer(player *models.Player
 	if activeDrawing == nil {
 		return errors.New("Could not find active drawing for game")
 	}
+	gameStatus.CurrentDrawing = &Drawing{
+		ImageData: activeDrawing.ImageData,
+	}
 	gameStatus.RoundScores = state.calculateRoundScores(activeDrawing)
 	return nil
 }

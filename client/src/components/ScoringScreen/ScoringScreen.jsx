@@ -65,7 +65,7 @@ class ScoringScreen extends React.Component {
     const scores = Object.entries(roundScores).map(([player, score]) => (
       <li key={player}>
         {player === currentPlayerName ? '*' : null}
-        {`${player}: ${score + scoresBeforeRound[player]} points`}
+        {`${player}:a ${score + scoresBeforeRound[player]} points`}
         {` (+${score} points this round)`}
       </li>
     ));
