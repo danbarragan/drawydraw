@@ -41,18 +41,25 @@ type CurrentPlayer struct {
 
 // Drawing represents a drawing that players are either making prompts for or voting on prompts for it
 type Drawing struct {
-	ImageData string    `json:"imageData"`
-	Prompts   []*Prompt `json:"prompts"`
+	ImageData      string    `json:"imageData"`
+	Prompts        []*Prompt `json:"prompts"`
+	OriginalPrompt string    `json:"originalPrompt"`
+}
+
+// PointsBreakdown describes a set of points awarded to a player
+type PointsBreakdown struct {
+	Amount uint64 `json:"amount"`
+	Reason string `json:"reason"`
 }
 
 // GameStatusResponse contains all the game status communicated to players
 type GameStatusResponse struct {
-	CurrentPlayer  *CurrentPlayer     `json:"currentPlayer"`
-	CurrentState   string             `json:"currentState"`
-	GroupName      string             `json:"groupName"`
-	Players        []*Player          `json:"players"`
-	CurrentDrawing *Drawing           `json:"currentDrawing"`
-	RoundScores    *map[string]uint64 `json:"roundScores"`
+	CurrentPlayer  *CurrentPlayer                 `json:"currentPlayer"`
+	CurrentState   string                         `json:"currentState"`
+	GroupName      string                         `json:"groupName"`
+	Players        []*Player                      `json:"players"`
+	CurrentDrawing *Drawing                       `json:"currentDrawing"`
+	RoundScores    *map[string][]*PointsBreakdown `json:"roundScores"`
 }
 
 // CreateGroup Handles creating a group other players can join

@@ -50,6 +50,10 @@
     font-size:large;
 }
 
+.screen span {
+    font-size: large;
+}
+
 .screen button {
     display: inline-block;
     margin-top: 0.5rem;
