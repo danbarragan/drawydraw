@@ -2,11 +2,9 @@ package statemanager
 
 import (
 	"drawydraw/models"
+	"drawydraw/test"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path"
 )
 
 // StateManager handles the different states and actions throughout the game
@@ -43,18 +41,25 @@ type CurrentPlayer struct {
 
 // Drawing represents a drawing that players are either making prompts for or voting on prompts for it
 type Drawing struct {
-	ImageData string    `json:"imageData"`
-	Prompts   []*Prompt `json:"prompts"`
+	ImageData      string    `json:"imageData"`
+	Prompts        []*Prompt `json:"prompts"`
+	OriginalPrompt string    `json:"originalPrompt"`
+}
+
+// PointsBreakdown describes a set of points awarded to a player
+type PointsBreakdown struct {
+	Amount uint64 `json:"amount"`
+	Reason string `json:"reason"`
 }
 
 // GameStatusResponse contains all the game status communicated to players
 type GameStatusResponse struct {
-	CurrentPlayer  *CurrentPlayer     `json:"currentPlayer"`
-	CurrentState   string             `json:"currentState"`
-	GroupName      string             `json:"groupName"`
-	Players        []*Player          `json:"players"`
-	CurrentDrawing *Drawing           `json:"currentDrawing"`
-	RoundScores    *map[string]uint64 `json:"roundScores"`
+	CurrentPlayer  *CurrentPlayer                 `json:"currentPlayer"`
+	CurrentState   string                         `json:"currentState"`
+	GroupName      string                         `json:"groupName"`
+	Players        []*Player                      `json:"players"`
+	CurrentDrawing *Drawing                       `json:"currentDrawing"`
+	RoundScores    *map[string][]*PointsBreakdown `json:"roundScores"`
 }
 
 // CreateGroup Handles creating a group other players can join
@@ -297,31 +302,33 @@ func isPlayerInGroup(playerName string, playersInGroup []*models.Player) bool {
 // SetGameState is a debug method for forcing the gamestate to make UI testing easier.
 func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 	gameState := models.GameState(gameStateName)
+	mockImageData := "data:image/bmp;base64,Qk0eAAAAAAAAABoAAAAMAAAAAQABAAEAGAAAAP8A"
 	mockPrompts := [][]string{
 		{"silly", "great", "beluga"},
 		{"happy", "elderly", "unicorn"},
 	}
-	currentDir, _ := os.Getwd()
-	mockImageDataPath := path.Join(currentDir, "test", "testImageData.txt")
-	mockImageData, err := ioutil.ReadFile(mockImageDataPath)
-	if err != nil {
-		fmt.Printf("Could not find file at %s, current dir %s", mockImageDataPath, currentDir)
-		return nil, err
-	}
 	switch currentState := gameState; currentState {
+	case models.Scoring:
+		game := test.GameInScoringState()
+		models.GetGameProvider().SaveGame(game)
+		gameStatus, err := gameStatusForPlayer(game, *game.GetHostName())
+		if err != nil {
+			return nil, err
+		}
+		return gameStatus, nil
 	case models.DecoyPromptCreation:
 		mockDrawings := []*models.Drawing{
 			{
 				Votes:          map[string]*models.Vote{},
 				Author:         "chair",
-				ImageData:      string(mockImageData),
+				ImageData:      mockImageData,
 				DecoyPrompts:   map[string]*models.Prompt{},
 				OriginalPrompt: models.BuildPrompt("lady", []string{"serious", "mysterious"}, "table"),
 			},
 			{
 				Votes:          map[string]*models.Vote{},
 				Author:         "table",
-				ImageData:      string(mockImageData),
+				ImageData:      mockImageData,
 				DecoyPrompts:   map[string]*models.Prompt{},
 				OriginalPrompt: models.BuildPrompt("woman", []string{"smiling", "kind"}, "chair"),
 			},
@@ -332,7 +339,7 @@ func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 			{
 				Votes:     map[string]*models.Vote{},
 				Author:    "tablet",
-				ImageData: string(mockImageData),
+				ImageData: mockImageData,
 				DecoyPrompts: map[string]*models.Prompt{
 					"phone": models.BuildPrompt("person", []string{"weird", "funky"}, "phone"),
 				},
@@ -341,7 +348,7 @@ func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 			{
 				Votes:          map[string]*models.Vote{},
 				Author:         "phone",
-				ImageData:      string(mockImageData),
+				ImageData:      mockImageData,
 				DecoyPrompts:   map[string]*models.Prompt{},
 				OriginalPrompt: models.BuildPrompt("woman", []string{"smiling", "kind"}, "phone"),
 			},

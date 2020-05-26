@@ -56,22 +56,52 @@ class ScoringScreen extends React.Component {
     const { error } = this.state;
     const { gameState } = this.props;
     const {
-      players, currentPlayer, roundScores,
+      players, currentPlayer, roundScores, currentDrawing,
     } = gameState;
     const { name: currentPlayerName, isHost } = currentPlayer;
     const scoresBeforeRound = players.reduce(
       (dict, player) => ({ ...dict, [player.name]: player.points }), {},
     );
-    const scores = Object.entries(roundScores).map(([player, score]) => (
-      <li key={player}>
-        {player === currentPlayerName ? '*' : null}
-        {`${player}: ${score + scoresBeforeRound[player]} points`}
-        {` (+${score} points this round)`}
-      </li>
-    ));
+    const playerScores = [];
+    Object.entries(roundScores).forEach(([player, breakdown]) => {
+      const scoreItems = [];
+      let totalRoundScore = 0;
+      breakdown.sort(
+        (itemA, itemB) => (
+          // Sort breakdown items first by score (desc) and then by reason
+          itemA.amount === itemB.amount
+            ? itemA.reason.localeCompare(itemB.reason)
+            : itemB.amount - itemA.amount
+        ),
+      );
+      breakdown.forEach((scoreItem) => {
+        totalRoundScore += scoreItem.amount;
+        scoreItems.push(
+          <li key={`${player}-${scoreItem.amount}-${scoreItem.reason}`}>
+            {`+${scoreItem.amount} because ${scoreItem.reason}`}
+          </li>,
+        );
+      });
+      playerScores.push(
+        <li key={player}>
+          {player === currentPlayerName ? '*' : null}
+          {`${player}: ${totalRoundScore + scoresBeforeRound[player]} points`}
+          {` (+${totalRoundScore} points this round)`}
+          <ul>
+            {scoreItems}
+          </ul>
+        </li>,
+      );
+    });
     return (
       <div className="screen votingScreen">
-        <ul>{scores}</ul>
+        <img className="promptImage" src={currentDrawing.imageData} alt="a drawing" />
+        <span>
+          The correct prompt for this image was:
+          <b>{` ${currentDrawing.originalPrompt}`}</b>
+        </span>
+        <h3>Current Scores:</h3>
+        <ul>{playerScores}</ul>
         { isHost ? <button type="button" className="buttonTypeA" onClick={this.onNextRoundButtonClicked}>Next</button>
           : <h3>Waiting for the host to start the next round...</h3>}
         <h3 className="error">{error}</h3>
@@ -82,7 +112,14 @@ class ScoringScreen extends React.Component {
 
 ScoringScreen.propTypes = {
   gameState: PropTypes.shape({
-    roundScores: PropTypes.objectOf(PropTypes.number).isRequired,
+    roundScores: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.shape({
+      amount: PropTypes.number.isRequired,
+      reason: PropTypes.string.isRequired,
+    }))).isRequired,
+    currentDrawing: PropTypes.shape({
+      imageData: PropTypes.string.isRequired,
+      originalPrompt: PropTypes.string.isRequired,
+    }),
     currentPlayer: PropTypes.shape({
       name: PropTypes.string.isRequired,
       isHost: PropTypes.bool.isRequired,

@@ -4,6 +4,7 @@ import (
 	"drawydraw/models"
 	"errors"
 	"fmt"
+	"strings"
 )
 
 type scoringState struct {
@@ -24,13 +25,15 @@ func (state scoringState) startGame(groupName string, playerName string) error {
 		return errors.New("Could not find active drawing for game")
 	}
 	// Add all the round scores
-	roundScores := state.calculateRoundScores(activeDrawing)
+	roundScores := state.calculateRoundScores(activeDrawing, state.game)
 	for name, score := range *roundScores {
 		player := state.game.GetPlayer(name)
 		if player == nil {
 			return fmt.Errorf("Could not find player %s in the game", name)
 		}
-		player.Points += score
+		for _, points := range score {
+			player.Points += points.Amount
+		}
 	}
 	// Mark the active drawing as scored
 	activeDrawing.Scored = true
@@ -63,7 +66,15 @@ func (state scoringState) addGameStatusPropertiesForPlayer(player *models.Player
 	if activeDrawing == nil {
 		return errors.New("Could not find active drawing for game")
 	}
-	gameStatus.RoundScores = state.calculateRoundScores(activeDrawing)
+	gameStatus.CurrentDrawing = &Drawing{
+		ImageData: activeDrawing.ImageData,
+		OriginalPrompt: fmt.Sprintf(
+			"%s %s",
+			strings.Join(activeDrawing.OriginalPrompt.Adjectives, ","),
+			activeDrawing.OriginalPrompt.Noun,
+		),
+	}
+	gameStatus.RoundScores = state.calculateRoundScores(activeDrawing, state.game)
 	return nil
 }
 
@@ -71,22 +82,30 @@ func (state scoringState) castVote(player *models.Player, promptIdentifier strin
 	return errors.New("Casting votes is not allowed at this stage of the game")
 }
 
-func (state scoringState) calculateRoundScores(activeDrawing *models.Drawing) *map[string]uint64 {
-	scoreMap := map[string]uint64{}
-	// Initialize score map with 0s
-	for _, player := range state.game.Players {
-		scoreMap[player.Name] = 0
+func (state scoringState) calculateRoundScores(activeDrawing *models.Drawing, game *models.Game) *map[string][]*PointsBreakdown {
+	scoreMap := map[string][]*PointsBreakdown{}
+	// Initialize score map with empty score arrays
+	for _, player := range game.Players {
+		scoreMap[player.Name] = []*PointsBreakdown{}
 	}
-
 	for playerName, vote := range activeDrawing.Votes {
 		if vote.SelectedPrompt == activeDrawing.OriginalPrompt {
 			// Voter earns 3 points for picking the right prompt
-			scoreMap[playerName] += 3
+			scoreMap[playerName] = append(
+				scoreMap[playerName],
+				&PointsBreakdown{Amount: 3, Reason: "you chose the correct prompt"},
+			)
 			// Author gets 1 point for someone picking the right prompt
-			scoreMap[activeDrawing.Author]++
+			scoreMap[activeDrawing.Author] = append(
+				scoreMap[activeDrawing.Author],
+				&PointsBreakdown{Amount: 1, Reason: fmt.Sprintf("%s chose your original prompt", playerName)},
+			)
 		} else {
 			// The person who fooled the voter earns 1 point
-			scoreMap[vote.SelectedPrompt.Author]++
+			scoreMap[vote.SelectedPrompt.Author] = append(
+				scoreMap[vote.SelectedPrompt.Author],
+				&PointsBreakdown{Amount: 1, Reason: fmt.Sprintf("%s chose your decoy prompt", playerName)},
+			)
 		}
 	}
 	return &scoreMap

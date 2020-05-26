@@ -55,9 +55,10 @@ func GameInVotingState() *models.Game {
 		models.BuildPrompt("tuna", []string{"big", "majestic"}, "player2"),
 		models.BuildPrompt("boat", []string{"elegant", "sharp"}, "player3"),
 	}
+	mockImageData := "data:image/bmp;base64,Qk0eAAAAAAAAABoAAAAMAAAAAQABAAEAGAAAAP8A"
 	drawings := []*models.Drawing{
 		{
-			ImageData: "mockImage",
+			ImageData: mockImageData,
 			Author:    "player2",
 			DecoyPrompts: map[string]*models.Prompt{
 				"player1": models.BuildPrompt("toucan", []string{"happy", "big"}, "player1"),
@@ -67,7 +68,7 @@ func GameInVotingState() *models.Game {
 			Votes:          map[string]*models.Vote{},
 		},
 		{
-			ImageData: "mockImage",
+			ImageData: mockImageData,
 			Author:    "player3",
 			DecoyPrompts: map[string]*models.Prompt{
 				"player1": models.BuildPrompt("raft", []string{"happy", "big"}, "player1"),
@@ -77,7 +78,7 @@ func GameInVotingState() *models.Game {
 			Votes:          map[string]*models.Vote{},
 		},
 		{
-			ImageData: "mockImage",
+			ImageData: mockImageData,
 			Author:    "player1",
 			DecoyPrompts: map[string]*models.Prompt{
 				"player2": models.BuildPrompt("fish", []string{"happy", "big"}, "player1"),
@@ -98,4 +99,17 @@ func GameInVotingState() *models.Game {
 		CurrentState: models.Voting,
 		Drawings:     drawings,
 	}
+}
+
+// GameInScoringState describes a game where the round is being scored
+func GameInScoringState() *models.Game {
+	// Start off from the voting state and just add some votes to it
+	game := GameInVotingState()
+	game.CurrentState = models.Scoring
+	activeDrawing := game.GetActiveDrawing()
+	activeDrawing.Votes = map[string]*models.Vote{
+		"player1": {Player: game.GetPlayer("player1"), SelectedPrompt: activeDrawing.OriginalPrompt},
+		"player3": {Player: game.GetPlayer("player3"), SelectedPrompt: activeDrawing.DecoyPrompts["player1"]},
+	}
+	return game
 }
