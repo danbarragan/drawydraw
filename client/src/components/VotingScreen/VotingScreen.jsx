@@ -91,6 +91,7 @@ class VotingScreen extends React.Component {
     );
     const waitingElements = (
       <div>
+        <h3>The available prompts are...</h3>
         <ul>
           {currentDrawing.prompts.map((prompt) => (
             <li key={prompt.identifier}>

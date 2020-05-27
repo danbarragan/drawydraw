@@ -43,8 +43,9 @@ func GameInDrawingsInProgressState() *models.Game {
 			{Name: "player1", Host: true, AssignedPrompt: player2Prompt},
 			{Name: "player2", AssignedPrompt: player1Prompt},
 		},
-		Prompts:      []*models.Prompt{player1Prompt, player2Prompt},
-		CurrentState: models.DrawingsInProgress,
+		GeneratedPrompts: []*models.Prompt{player1Prompt, player2Prompt},
+		OriginalPrompts:  []*models.Prompt{player1Prompt, player2Prompt},
+		CurrentState:     models.DrawingsInProgress,
 	}
 }
 
@@ -95,9 +96,10 @@ func GameInVotingState() *models.Game {
 			{Name: "player2", AssignedPrompt: prompts[0]},
 			{Name: "player3", AssignedPrompt: prompts[1]},
 		},
-		Prompts:      prompts,
-		CurrentState: models.Voting,
-		Drawings:     drawings,
+		GeneratedPrompts: prompts,
+		OriginalPrompts:  prompts,
+		CurrentState:     models.Voting,
+		Drawings:         drawings,
 	}
 }
 

@@ -3,6 +3,8 @@ package statemanager
 import (
 	"drawydraw/models"
 	"errors"
+	"math/rand"
+	"time"
 )
 
 type promptCreatingState struct {
@@ -23,7 +25,7 @@ func (state promptCreatingState) startGame(groupName string, playerName string) 
 
 func (state promptCreatingState) addPrompt(prompt *models.Prompt) error {
 	//check if the player had already entered a prompt (not sure if needed)
-	for _, p := range state.game.Prompts {
+	for _, p := range state.game.OriginalPrompts {
 		if prompt.Author == p.Author {
 			return errors.New("The player has already entered their prompt")
 		}
@@ -31,9 +33,9 @@ func (state promptCreatingState) addPrompt(prompt *models.Prompt) error {
 
 	state.game.AddPrompt(prompt)
 	//TODO better logic to change state when all players have added prompts
-	if len(state.game.Prompts) == len(state.game.Players) {
+	if len(state.game.OriginalPrompts) == len(state.game.Players) {
 		state.game.CurrentState = models.DrawingsInProgress
-		assignPrompts(state.game)
+		generatePrompts(state.game)
 	}
 	return nil
 }
@@ -42,24 +44,41 @@ func (state promptCreatingState) submitDrawing(playerName string, encodedImage s
 	return errors.New("Submitting drawings is not allowed in the initial prompt creation state")
 }
 
-func assignPrompts(game *models.Game) {
-	// Really dumb prompt assignment, each player draws whatever the next player (in joining order) entered
-	playerPromptMap := map[string]*models.Prompt{}
-	for _, prompt := range game.Prompts {
-		playerPromptMap[prompt.Author] = prompt
-	}
+func generatePrompts(game *models.Game) {
 	playerCount := len(game.Players)
+	// Create a pool of adjectives
+	adjectives := make([]string, 0, playerCount*2)
+	playerPromptMap := map[string]*models.Prompt{}
+	for _, prompt := range game.OriginalPrompts {
+		playerPromptMap[prompt.Author] = prompt
+		adjectives = append(adjectives, prompt.Adjectives...)
+	}
+	rand.Seed(time.Now().UnixNano())
 	for index, player := range game.Players {
+		// Give each player the noun entered by the next player
 		previousPlayerIndex := (index + 1) % playerCount
-		assignedPromptAuthor := game.Players[previousPlayerIndex].Name
-		player.AssignedPrompt = playerPromptMap[assignedPromptAuthor]
+		assignedNounAuthor := game.Players[previousPlayerIndex].Name
+		// Pick two random adjectives. If they are the same, pick the next adjective in the list
+		firstAdjectiveIndex := rand.Intn(len(adjectives))
+		firstAdjective := adjectives[firstAdjectiveIndex]
+		// Remove each adjective from the list of adjectives once it's picked
+		adjectives = append(adjectives[:firstAdjectiveIndex], adjectives[firstAdjectiveIndex+1:]...)
+		secondAdjectiveIndex := rand.Intn(len(adjectives))
+		secondAdjective := adjectives[secondAdjectiveIndex]
+		adjectives = append(adjectives[:secondAdjectiveIndex], adjectives[secondAdjectiveIndex+1:]...)
+		player.AssignedPrompt = models.BuildPrompt(
+			playerPromptMap[assignedNounAuthor].Noun,
+			[]string{firstAdjective, secondAdjective},
+			"generated",
+		)
+		game.GeneratedPrompts = append(game.GeneratedPrompts, player.AssignedPrompt)
 	}
 }
 
 func (state promptCreatingState) addGameStatusPropertiesForPlayer(player *models.Player, gameStatus *GameStatusResponse) error {
 
 	authorToPromptMap := map[string]*models.Prompt{}
-	for _, currentPrompt := range state.game.Prompts {
+	for _, currentPrompt := range state.game.OriginalPrompts {
 		authorToPromptMap[currentPrompt.Author] = currentPrompt
 	}
 

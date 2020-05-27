@@ -58,11 +58,12 @@ type Drawing struct {
 
 // Game contains all data that represents the game at any point
 type Game struct {
-	GroupName    string
-	Players      []*Player
-	CurrentState GameState
-	Prompts      []*Prompt
-	Drawings     []*Drawing
+	GroupName        string
+	Players          []*Player
+	CurrentState     GameState
+	OriginalPrompts  []*Prompt
+	GeneratedPrompts []*Prompt
+	Drawings         []*Drawing
 }
 
 // GetPromptWithIdentifier returns the prompt that has a given identifier in a drawing
@@ -104,7 +105,7 @@ func (game *Game) GetPlayer(playerName string) *Player {
 
 // AddPrompt adds a player's prompt to the game
 func (game *Game) AddPrompt(prompt *Prompt) error {
-	game.Prompts = append(game.Prompts, prompt)
+	game.OriginalPrompts = append(game.OriginalPrompts, prompt)
 	return nil
 }
 
