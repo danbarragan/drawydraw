@@ -161,7 +161,7 @@ func TestAddPromptRoute_AssignsPrompts(t *testing.T) {
 	test.SetupTestGameProvider(t)
 	gameState := test.GameInInitialPromptCreationState()
 	// Add the prompt from player 1
-	gameState.Prompts = []*models.Prompt{{
+	gameState.OriginalPrompts = []*models.Prompt{{
 		Noun:       "chicken",
 		Adjectives: []string{"snazzy", "portly"}, Author: "player1",
 	}}
@@ -191,6 +191,19 @@ func TestAddPromptRoute_AssignsPrompts(t *testing.T) {
 			{Name: "player2", HasPendingAction: true},
 		},
 	}
+	// Since prompt assignment is random, check that the adjectives assigned are in the original list
+	allAdjectives := map[string]bool{"snazzy": true, "portly": true, "fiery": true, "friendly": true}
+	for _, adjective := range actualGameState.CurrentPlayer.AssignedPrompt.Adjectives {
+		assert.True(t, allAdjectives[adjective])
+	}
+	// The same adjective should not be picked twice
+	assert.NotEqual(
+		t,
+		actualGameState.CurrentPlayer.AssignedPrompt.Adjectives[0],
+		actualGameState.CurrentPlayer.AssignedPrompt.Adjectives[1],
+	)
+	// Since we checked the adjectives let's just ignore those in the comparison with the expected state
+	expectedGameState.CurrentPlayer.AssignedPrompt.Adjectives = actualGameState.CurrentPlayer.AssignedPrompt.Adjectives
 	assert.EqualValues(t, expectedGameState, actualGameState)
 }
 

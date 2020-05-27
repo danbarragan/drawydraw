@@ -58,6 +58,10 @@ func (state decoyPromptCreatingState) addGameStatusPropertiesForPlayer(player *m
 	for _, p := range gameStatus.Players {
 		_, hasPrompt := authorToDecoyPromptMap[p.Name]
 		p.HasPendingAction = !hasPrompt
+		// The author does not have a pending action
+		if activeDrawing.Author == p.Name {
+			p.HasPendingAction = false
+		}
 	}
 	// If the current player is the author of the active drawing they have nothing to do but wait
 	if activeDrawing.Author == player.Name {

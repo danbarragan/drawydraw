@@ -42,7 +42,8 @@ func (state scoringState) startGame(groupName string, playerName string) error {
 		state.game.CurrentState = models.DecoyPromptCreation
 	} else {
 		// If there isn't, then we need to reset prompts/drawings and go to prompts
-		state.game.Prompts = []*models.Prompt{}
+		state.game.OriginalPrompts = []*models.Prompt{}
+		state.game.GeneratedPrompts = []*models.Prompt{}
 		state.game.Drawings = []*models.Drawing{}
 		// Also clear out assigned prompts
 		for _, player := range state.game.Players {

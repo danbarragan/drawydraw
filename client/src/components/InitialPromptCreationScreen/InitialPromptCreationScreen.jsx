@@ -89,7 +89,7 @@ class InitialPromptCreationScreen extends React.Component {
 
     const promptCreatingElements = (
       <div>
-        <h3>Enter the prompt for other players to draw</h3>
+        <h3>Please provide a few words to generate drawing prompts</h3>
         <label htmlFor="adjective1">
           First Adjective
           <input id="adj1" type="text" value={adjective1} onChange={this.onAdjective1Change} autoComplete="off" />

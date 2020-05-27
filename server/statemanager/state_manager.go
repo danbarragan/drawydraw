@@ -381,15 +381,15 @@ func createGameState(
 		game.Players[idx] = &models.Player{Name: playerName, Host: idx == 0}
 	}
 	if prompts != nil {
-		game.Prompts = make([]*models.Prompt, len(prompts))
+		game.OriginalPrompts = make([]*models.Prompt, len(prompts))
 		for index, prompt := range prompts {
-			game.Prompts[index] = &models.Prompt{
+			game.OriginalPrompts[index] = &models.Prompt{
 				Adjectives: prompt[0:2],
 				Noun:       prompt[2],
 				Author:     players[index],
 			}
 		}
-		assignPrompts(game)
+		generatePrompts(game)
 	}
 	game.Drawings = drawings
 	models.GetGameProvider().SaveGame(game)

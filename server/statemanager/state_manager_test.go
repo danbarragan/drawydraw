@@ -137,6 +137,7 @@ func TestAddPrompt_Succeeds(t *testing.T) {
 	addPromptResponse, err := AddPrompt("annoyed cat", groupName, "tuna", "stinky", "yummy")
 	assert.Nil(t, err)
 	assert.NotNil(t, addPromptResponse)
+	assert.EqualValues(t, addPromptResponse.CurrentState, models.InitialPromptCreation)
 }
 
 func TestGameStatusForPlayer_Fails_PlayerMissing(t *testing.T) {
