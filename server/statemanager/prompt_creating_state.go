@@ -58,10 +58,9 @@ func generatePrompts(game *models.Game) {
 		// Give each player the noun entered by the next player
 		previousPlayerIndex := (index + 1) % playerCount
 		assignedNounAuthor := game.Players[previousPlayerIndex].Name
-		// Pick two random adjectives. If they are the same, pick the next adjective in the list
+		// Pick and remove two random adjectives from the list
 		firstAdjectiveIndex := rand.Intn(len(adjectives))
 		firstAdjective := adjectives[firstAdjectiveIndex]
-		// Remove each adjective from the list of adjectives once it's picked
 		adjectives = append(adjectives[:firstAdjectiveIndex], adjectives[firstAdjectiveIndex+1:]...)
 		secondAdjectiveIndex := rand.Intn(len(adjectives))
 		secondAdjective := adjectives[secondAdjectiveIndex]
