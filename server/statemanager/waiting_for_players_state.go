@@ -18,6 +18,10 @@ func (state waitingForPlayersState) startGame(groupName string, playerName strin
 	if playerName != *state.game.GetHostName() {
 		return errors.New("only the host can start a game")
 	}
+	// The game doesn't make any sense with less than 3 players
+	if len(state.game.Players) < 3 {
+		return errors.New("3 is the minimum number of players to play the game")
+	}
 	state.game.CurrentState = models.InitialPromptCreation
 	return nil
 }

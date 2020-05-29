@@ -302,96 +302,23 @@ func isPlayerInGroup(playerName string, playersInGroup []*models.Player) bool {
 // SetGameState is a debug method for forcing the gamestate to make UI testing easier.
 func SetGameState(gameStateName string) (*GameStatusResponse, error) {
 	gameState := models.GameState(gameStateName)
-	mockImageData := "data:image/bmp;base64,Qk0eAAAAAAAAABoAAAAMAAAAAQABAAEAGAAAAP8A"
-	mockPrompts := [][]string{
-		{"silly", "great", "beluga"},
-		{"happy", "elderly", "unicorn"},
-	}
+	var game *models.Game = nil
 	switch currentState := gameState; currentState {
 	case models.Scoring:
-		game := test.GameInScoringState()
-		models.GetGameProvider().SaveGame(game)
-		gameStatus, err := gameStatusForPlayer(game, *game.GetHostName())
-		if err != nil {
-			return nil, err
-		}
-		return gameStatus, nil
+		game = test.GameInScoringState()
 	case models.DecoyPromptCreation:
-		mockDrawings := []*models.Drawing{
-			{
-				Votes:          map[string]*models.Vote{},
-				Author:         "chair",
-				ImageData:      mockImageData,
-				DecoyPrompts:   map[string]*models.Prompt{},
-				OriginalPrompt: models.BuildPrompt("lady", []string{"serious", "mysterious"}, "table"),
-			},
-			{
-				Votes:          map[string]*models.Vote{},
-				Author:         "table",
-				ImageData:      mockImageData,
-				DecoyPrompts:   map[string]*models.Prompt{},
-				OriginalPrompt: models.BuildPrompt("woman", []string{"smiling", "kind"}, "chair"),
-			},
-		}
-		return createGameState("furnitures", []string{"table", "chair"}, mockPrompts, mockDrawings, gameState)
+		game = test.GameInDecoyPromptCreationState()
 	case models.Voting:
-		mockDrawings := []*models.Drawing{
-			{
-				Votes:     map[string]*models.Vote{},
-				Author:    "tablet",
-				ImageData: mockImageData,
-				DecoyPrompts: map[string]*models.Prompt{
-					"phone": models.BuildPrompt("person", []string{"weird", "funky"}, "phone"),
-				},
-				OriginalPrompt: models.BuildPrompt("lady", []string{"serious", "mysterious"}, "tablet"),
-			},
-			{
-				Votes:          map[string]*models.Vote{},
-				Author:         "phone",
-				ImageData:      mockImageData,
-				DecoyPrompts:   map[string]*models.Prompt{},
-				OriginalPrompt: models.BuildPrompt("woman", []string{"smiling", "kind"}, "phone"),
-			},
-		}
-		return createGameState("electronics", []string{"phone", "tablet"}, mockPrompts, mockDrawings, gameState)
+		game = test.GameInVotingState()
 	case models.WaitingForPlayers:
-		return createGameState("not cats", []string{"dog", "cat", "other dog"}, nil, nil, gameState)
+		game = test.GameInWaitingForPlayersState()
 	case models.InitialPromptCreation:
-		return createGameState("fat cats", []string{"chubbs", "chonk", "beefcake"}, nil, nil, gameState)
+		game = test.GameInInitialPromptCreationState()
 	case models.DrawingsInProgress:
-		return createGameState("human cats", []string{"sharon", "grandpa"}, mockPrompts, nil, gameState)
+		game = test.GameInDrawingsInProgressState()
 	default:
 		return nil, fmt.Errorf("failed to set game to state %s", gameState)
 	}
-}
-
-func createGameState(
-	groupName string,
-	players []string,
-	prompts [][]string,
-	drawings []*models.Drawing,
-	gameState models.GameState,
-) (*GameStatusResponse, error) {
-	game := &models.Game{
-		GroupName:    groupName,
-		CurrentState: gameState,
-		Players:      make([]*models.Player, len(players)),
-	}
-	for idx, playerName := range players {
-		game.Players[idx] = &models.Player{Name: playerName, Host: idx == 0}
-	}
-	if prompts != nil {
-		game.OriginalPrompts = make([]*models.Prompt, len(prompts))
-		for index, prompt := range prompts {
-			game.OriginalPrompts[index] = &models.Prompt{
-				Adjectives: prompt[0:2],
-				Noun:       prompt[2],
-				Author:     players[index],
-			}
-		}
-		generatePrompts(game)
-	}
-	game.Drawings = drawings
 	models.GetGameProvider().SaveGame(game)
 	gameStatus, err := gameStatusForPlayer(game, *game.GetHostName())
 	if err != nil {

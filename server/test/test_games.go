@@ -9,98 +9,84 @@ import (
 // GameInWaitingForPlayersState describes a newly created game waiting for players
 func GameInWaitingForPlayersState() *models.Game {
 	return &models.Game{
-		GroupName:    "somegame",
-		Players:      []*models.Player{{Name: "Player", Host: true}},
+		GroupName: "somegame",
+		Players: []*models.Player{
+			{Name: "player1", Host: true},
+			{Name: "player2"},
+			{Name: "player3"},
+		},
 		CurrentState: models.WaitingForPlayers,
 	}
 }
 
 // GameInInitialPromptCreationState describes a game where we're waiting for initial prompts
 func GameInInitialPromptCreationState() *models.Game {
-	return &models.Game{
-		GroupName: "addPromptRoute",
-		Players: []*models.Player{
-			{Name: "player1", Host: true},
-			{Name: "player2"},
-		},
-		CurrentState: models.InitialPromptCreation,
-	}
+	// Just take the game in waiting for players state and move it to the next state
+	game := GameInWaitingForPlayersState()
+	game.CurrentState = models.InitialPromptCreation
+	return game
 }
 
 // GameInDrawingsInProgressState describes a game where players are drawing
 func GameInDrawingsInProgressState() *models.Game {
-	player1Prompt := &models.Prompt{
-		Noun:       "chicken",
-		Adjectives: []string{"snazzy", "portly"}, Author: "player1",
-	}
-	player2Prompt := &models.Prompt{
-		Noun:       "tuna",
-		Adjectives: []string{"snazzy", "portly"}, Author: "player2",
-	}
-	return &models.Game{
-		GroupName: "submitDrawingRoute",
-		Players: []*models.Player{
-			{Name: "player1", Host: true, AssignedPrompt: player2Prompt},
-			{Name: "player2", AssignedPrompt: player1Prompt},
-		},
-		GeneratedPrompts: []*models.Prompt{player1Prompt, player2Prompt},
-		OriginalPrompts:  []*models.Prompt{player1Prompt, player2Prompt},
-		CurrentState:     models.DrawingsInProgress,
-	}
-}
-
-// GameInVotingState describes a game where players are voting
-func GameInVotingState() *models.Game {
-	prompts := []*models.Prompt{
+	game := GameInInitialPromptCreationState()
+	playerPrompts := []*models.Prompt{
 		models.BuildPrompt("chicken", []string{"snazzy", "portly"}, "player1"),
 		models.BuildPrompt("tuna", []string{"big", "majestic"}, "player2"),
 		models.BuildPrompt("boat", []string{"elegant", "sharp"}, "player3"),
 	}
+	for index, player := range game.Players {
+		player.AssignedPrompt = playerPrompts[(index+2)%len(game.Players)]
+	}
+	game.OriginalPrompts = playerPrompts
+	game.GeneratedPrompts = playerPrompts
+	game.CurrentState = models.DrawingsInProgress
+	return game
+}
+
+// DecoyPromptCreation describes a game where players are creating decoy prompts
+func GameInDecoyPromptCreationState() *models.Game {
+	game := GameInDrawingsInProgressState()
 	mockImageData := "data:image/bmp;base64,Qk0eAAAAAAAAABoAAAAMAAAAAQABAAEAGAAAAP8A"
 	drawings := []*models.Drawing{
 		{
-			ImageData: mockImageData,
-			Author:    "player2",
-			DecoyPrompts: map[string]*models.Prompt{
-				"player1": models.BuildPrompt("toucan", []string{"happy", "big"}, "player1"),
-				"player3": models.BuildPrompt("birb", []string{"jumpy", "edgy"}, "player1"),
-			},
-			OriginalPrompt: prompts[0],
+			ImageData:      mockImageData,
+			Author:         "player2",
+			DecoyPrompts:   map[string]*models.Prompt{},
+			OriginalPrompt: game.GeneratedPrompts[0],
 			Votes:          map[string]*models.Vote{},
 		},
 		{
-			ImageData: mockImageData,
-			Author:    "player3",
-			DecoyPrompts: map[string]*models.Prompt{
-				"player1": models.BuildPrompt("raft", []string{"happy", "big"}, "player1"),
-				"player2": models.BuildPrompt("kayak", []string{"jumpy", "edgy"}, "player1"),
-			},
-			OriginalPrompt: prompts[1],
+			ImageData:      mockImageData,
+			Author:         "player3",
+			DecoyPrompts:   map[string]*models.Prompt{},
+			OriginalPrompt: game.GeneratedPrompts[1],
 			Votes:          map[string]*models.Vote{},
 		},
 		{
-			ImageData: mockImageData,
-			Author:    "player1",
-			DecoyPrompts: map[string]*models.Prompt{
-				"player2": models.BuildPrompt("fish", []string{"happy", "big"}, "player1"),
-				"player3": models.BuildPrompt("sardine", []string{"jumpy", "edgy"}, "player1"),
-			},
-			OriginalPrompt: prompts[2],
+			ImageData:      mockImageData,
+			Author:         "player1",
+			DecoyPrompts:   map[string]*models.Prompt{},
+			OriginalPrompt: game.GeneratedPrompts[2],
 			Votes:          map[string]*models.Vote{},
 		},
 	}
-	return &models.Game{
-		GroupName: "castVoteRoute",
-		Players: []*models.Player{
-			{Name: "player1", Host: true, AssignedPrompt: prompts[2]},
-			{Name: "player2", AssignedPrompt: prompts[0]},
-			{Name: "player3", AssignedPrompt: prompts[1]},
-		},
-		GeneratedPrompts: prompts,
-		OriginalPrompts:  prompts,
-		CurrentState:     models.Voting,
-		Drawings:         drawings,
+	game.Drawings = drawings
+	game.CurrentState = models.DecoyPromptCreation
+	return game
+}
+
+// GameInVotingState describes a game where players are voting
+func GameInVotingState() *models.Game {
+	// Start from the decoy prompt creation state and just add decoy prompts to the active drawing
+	game := GameInDecoyPromptCreationState()
+	activeDrawing := game.GetActiveDrawing()
+	activeDrawing.DecoyPrompts = map[string]*models.Prompt{
+		"player1": models.BuildPrompt("toucan", []string{"happy", "big"}, "player1"),
+		"player3": models.BuildPrompt("birb", []string{"jumpy", "edgy"}, "player1"),
 	}
+	game.CurrentState = models.Voting
+	return game
 }
 
 // GameInScoringState describes a game where the round is being scored

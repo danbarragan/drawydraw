@@ -88,65 +88,52 @@ func TestAddPlayer_PlayerExistsInGroup_NoOps(t *testing.T) {
 
 func TestAddPlayer_AddSecondHost_Fails(t *testing.T) {
 	test.SetupTestGameProvider(t)
-	groupName := "group"
-	CreateGroup(groupName)
-	AddPlayer("old cat", groupName, true)
-	_, err := AddPlayer("dead cat", groupName, true)
+	game := test.GameInWaitingForPlayersState()
+	models.GetGameProvider().SaveGame(game)
+	gameStatus, err := AddPlayer("extra cat", game.GroupName, true)
 	assert.NotNil(t, err)
+	assert.Nil(t, gameStatus)
 }
 
 func TestStartGame_Host_Succeeds(t *testing.T) {
 	test.SetupTestGameProvider(t)
-	groupName := "group"
-	CreateGroup(groupName)
-	AddPlayer("host cat", groupName, true)
-	AddPlayer("angry cat", groupName, false)
-	statusAfterAddPlayer, err := AddPlayer("annoyed cat", groupName, false)
-	assert.EqualValues(t, statusAfterAddPlayer.CurrentState, models.WaitingForPlayers)
-
-	statusAfterStart, err := StartGame(groupName, "host cat")
+	game := test.GameInWaitingForPlayersState()
+	models.GetGameProvider().SaveGame(game)
+	gameStatus, err := StartGame(game.GroupName, game.Players[0].Name)
 	assert.Nil(t, err)
-	assert.NotNil(t, statusAfterStart)
-	assert.EqualValues(t, statusAfterStart.CurrentState, models.InitialPromptCreation)
+	assert.NotNil(t, gameStatus)
+	assert.EqualValues(t, gameStatus.CurrentState, models.InitialPromptCreation)
 }
 
 func TestStartGame_NonHost_Fails(t *testing.T) {
 	test.SetupTestGameProvider(t)
-	groupName := "group"
-	CreateGroup(groupName)
-	AddPlayer("host cat", groupName, true)
-	AddPlayer("angry cat", groupName, false)
-	AddPlayer("annoyed cat", groupName, false)
-	startResponse, err := StartGame(groupName, "angry cat")
+	game := test.GameInWaitingForPlayersState()
+	models.GetGameProvider().SaveGame(game)
+	gameStatus, err := StartGame(game.GroupName, game.Players[1].Name)
 	assert.NotNil(t, err)
-	assert.Nil(t, startResponse)
+	assert.Nil(t, gameStatus)
 }
 
 func TestAddPrompt_Succeeds(t *testing.T) {
 	test.SetupTestGameProvider(t)
-	//set up a group, add players, and start the game
-	groupName := "group"
-	CreateGroup(groupName)
-	AddPlayer("host cat", groupName, true)
-	AddPlayer("angry cat", groupName, false)
-	AddPlayer("annoyed cat", groupName, false)
-	startResponse, err := StartGame(groupName, "host cat")
-	assert.NotNil(t, startResponse)
-
-	//add prompt and check its in game state
-	addPromptResponse, err := AddPrompt("annoyed cat", groupName, "tuna", "stinky", "yummy")
+	game := test.GameInInitialPromptCreationState()
+	models.GetGameProvider().SaveGame(game)
+	// The game should only transition to the drawing state when all players submit their prompts
+	for _, player := range game.Players[:2] {
+		gameState, err := AddPrompt(player.Name, game.GroupName, "tuna", "stinky", "yummy")
+		assert.Nil(t, err)
+		assert.NotNil(t, gameState)
+		assert.EqualValues(t, gameState.CurrentState, models.InitialPromptCreation)
+	}
+	// The game should only transition to the drawing state when all players submit their prompts
+	gameState, err := AddPrompt(game.Players[2].Name, game.GroupName, "sardine", "small", "funny")
 	assert.Nil(t, err)
-	assert.NotNil(t, addPromptResponse)
-	assert.EqualValues(t, addPromptResponse.CurrentState, models.InitialPromptCreation)
+	assert.NotNil(t, gameState)
+	assert.EqualValues(t, gameState.CurrentState, models.DrawingsInProgress)
 }
 
 func TestGameStatusForPlayer_Fails_PlayerMissing(t *testing.T) {
-	test.SetupTestGameProvider(t)
-	//set up a group, add players, and start the game
-	groupName := "group"
-	CreateGroup(groupName)
-	AddPlayer("host cat", groupName, true)
-	game := models.GetGameProvider().LoadGame(groupName)
+	game := test.GameInInitialPromptCreationState()
 	gameStatus, err := gameStatusForPlayer(game, "missing cat")
 	assert.Nil(t, gameStatus)
 	assert.NotNil(t, err)
@@ -154,49 +141,44 @@ func TestGameStatusForPlayer_Fails_PlayerMissing(t *testing.T) {
 
 func TestSubmitDrawing(t *testing.T) {
 	test.SetupTestGameProvider(t)
-	//set up a group, add players, add a prompt
-	groupName := "group"
-	CreateGroup(groupName)
-	AddPlayer("host cat", groupName, true)
-	AddPlayer("annoyed cat", groupName, false)
-	StartGame(groupName, "host cat")
-	AddPrompt("annoyed cat", groupName, "tuna", "stinky", "yummy")
-	AddPrompt("host cat", groupName, "big", "handsome", "can")
-	gameStatus, err := SubmitDrawing("annoyed cat", groupName, "mock data")
+	game := test.GameInDrawingsInProgressState()
+	models.GetGameProvider().SaveGame(game)
+	// The game should only transition to the decoy prompt phase when all players submit their drawings
+	for _, player := range game.Players[:2] {
+		gameState, err := SubmitDrawing(player.Name, game.GroupName, "mock data")
+		assert.Nil(t, err)
+		assert.NotNil(t, gameState)
+		assert.EqualValues(t, gameState.CurrentState, models.DrawingsInProgress)
+	}
+	gameStatus, err := SubmitDrawing(game.Players[2].Name, game.GroupName, "mock data")
 	assert.Nil(t, err)
 	assert.NotNil(t, gameStatus)
+	assert.EqualValues(t, gameStatus.CurrentState, models.DecoyPromptCreation)
 }
 
 func TestSubmitDrawing_Fails_PlayerMissing(t *testing.T) {
 	test.SetupTestGameProvider(t)
-	//set up a group, add players, add a prompt
-	groupName := "group"
-	CreateGroup(groupName)
-	AddPlayer("host cat", groupName, true)
-	AddPlayer("annoyed cat", groupName, false)
-	StartGame(groupName, "host cat")
-	AddPrompt("annoyed cat", groupName, "tuna", "stinky", "yummy")
-	AddPrompt("host cat", groupName, "big", "handsome", "can")
-	gameStatus, err := SubmitDrawing("ninja cat", groupName, "mock data")
-	assert.Nil(t, gameStatus)
+	game := test.GameInDrawingsInProgressState()
+	models.GetGameProvider().SaveGame(game)
+	gameStatus, err := SubmitDrawing("Missing player", game.GroupName, "mock data")
 	assert.NotNil(t, err)
+	assert.Nil(t, gameStatus)
 }
 
 func TestAddDecoyPrompt_Success(t *testing.T) {
 	test.SetupTestGameProvider(t)
-	//set up a group, add players, add a prompt
-	groupName := "group"
-	CreateGroup(groupName)
-	AddPlayer("host cat", groupName, true)
-	AddPlayer("annoyed cat", groupName, false)
-	StartGame(groupName, "host cat")
-	AddPrompt("annoyed cat", groupName, "tuna", "stinky", "yummy")
-	AddPrompt("host cat", groupName, "big", "handsome", "can")
-	SubmitDrawing("annoyed cat", groupName, "someImage")
-	SubmitDrawing("host cat", groupName, "someImage")
-	gameStatus, err := AddPrompt("host cat", groupName, "fish", "tasty", "red")
-	assert.NotNil(t, gameStatus)
+	game := test.GameInDecoyPromptCreationState()
+	models.GetGameProvider().SaveGame(game)
+	// The game should only move to voting once all players submit decoy prompts
+	gameStatus, err := AddPrompt(game.Players[0].Name, game.GroupName, "fish", "tasty", "red")
 	assert.Nil(t, err)
+	assert.NotNil(t, gameStatus)
+	assert.EqualValues(t, gameStatus.CurrentState, models.DecoyPromptCreation)
+
+	gameStatus, err = AddPrompt(game.Players[2].Name, game.GroupName, "salmon", "strange", "big")
+	assert.Nil(t, err)
+	assert.NotNil(t, gameStatus)
+	assert.EqualValues(t, gameStatus.CurrentState, models.Voting)
 }
 
 func TestCastVote_Success(t *testing.T) {
@@ -217,18 +199,10 @@ func TestCastVote_Success(t *testing.T) {
 
 func TestAddDecoyPrompt_Error_duplicatePromptEntry(t *testing.T) {
 	test.SetupTestGameProvider(t)
-	//set up a group, add players, add a prompt
-	groupName := "group"
-	CreateGroup(groupName)
-	AddPlayer("host cat", groupName, true)
-	AddPlayer("annoyed cat", groupName, false)
-	StartGame(groupName, "host cat")
-	AddPrompt("annoyed cat", groupName, "tuna", "stinky", "yummy")
-	AddPrompt("host cat", groupName, "big", "handsome", "can")
-	SubmitDrawing("annoyed cat", groupName, "someImage")
-	SubmitDrawing("host cat", groupName, "someImage")
-	AddPrompt("host cat", groupName, "fish", "tasty", "red")
-	gameStatus, err := AddPrompt("host cat", groupName, "fish", "tasty", "red")
+	game := test.GameInDecoyPromptCreationState()
+	models.GetGameProvider().SaveGame(game)
+	AddPrompt(game.Players[0].Name, game.GroupName, "fish", "tasty", "red")
+	gameStatus, err := AddPrompt(game.Players[0].Name, game.GroupName, "fish", "tasty", "red")
 	assert.Nil(t, gameStatus)
 	assert.NotNil(t, err)
 }
