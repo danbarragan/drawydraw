@@ -206,3 +206,39 @@ func TestAddDecoyPrompt_Error_duplicatePromptEntry(t *testing.T) {
 	assert.Nil(t, gameStatus)
 	assert.NotNil(t, err)
 }
+
+func TestStartGame_InScoringState(t *testing.T) {
+	test.SetupTestGameProvider(t)
+	game := test.GameInScoringState()
+	models.GetGameProvider().SaveGame(game)
+	// After clicking on start game, the game should go to decoy prompt creation for the next drawing
+	gameStatus, err := StartGame(game.GroupName, *game.GetHostName())
+	assert.Nil(t, err)
+	assert.NotNil(t, gameStatus)
+	assert.EqualValues(t, models.DecoyPromptCreation, gameStatus.CurrentState)
+	// The next drawing should be the active drawing
+	currentDrawing := game.GetActiveDrawing()
+	assert.EqualValues(t, game.Drawings[1], currentDrawing)
+	// Round scores should be added to the players
+	assert.EqualValues(t, 4, game.Players[0].Points)
+	assert.EqualValues(t, 1, game.Players[1].Points)
+	assert.EqualValues(t, 0, game.Players[2].Points)
+}
+
+func TestStartGame_InScoringState_StartsNewRoundAfterScoringAllDrawings(t *testing.T) {
+	test.SetupTestGameProvider(t)
+	game := test.GameInScoringState()
+	activeDrawing := game.GetActiveDrawing()
+	// Mark all drawings that are not the active one as scored
+	for _, drawing := range game.Drawings {
+		if drawing != activeDrawing {
+			drawing.Scored = true
+		}
+	}
+	models.GetGameProvider().SaveGame(game)
+	// After clicking on start game, the game should go to initial prompt creation for another round of drawings
+	gameStatus, err := StartGame(game.GroupName, *game.GetHostName())
+	assert.Nil(t, err)
+	assert.NotNil(t, gameStatus)
+	assert.EqualValues(t, models.InitialPromptCreation, gameStatus.CurrentState)
+}
