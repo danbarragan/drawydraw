@@ -114,7 +114,7 @@ class ScoringScreen extends React.Component {
           : <h3>Waiting for the host to start the next round...</h3>}
         { pastDrawings.length > 0 ? (
           <div className="pastDrawings">
-            <h3>Past drawings</h3>
+            <h3>Past drawings from this round</h3>
             {pastDrawingItems}
           </div>
         ) : null}
