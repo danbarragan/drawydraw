@@ -92,6 +92,8 @@
 }
 
 .promptImage {
+    max-width: 400px;
+    border-style: solid;
     width:60%;
     display: block;
     margin: 0 auto;

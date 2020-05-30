@@ -48,7 +48,7 @@ class GroupSelectionScreen extends React.Component {
   }
 
   onGroupNameChange(event) {
-    this.setState({ groupName: event.target.value });
+    this.setState({ groupName: event.target.value.toLocaleLowerCase() });
   }
 
   render() {

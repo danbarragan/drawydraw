@@ -1,0 +1,13 @@
+.pastDrawingContainer {
+    width:60%;
+    margin: 0 auto;
+    display:block;
+    text-align: center;
+}
+
+.pastDrawing {
+    width:60%;
+    display: block;
+    margin: 0 auto;
+    border-style: solid;
+}

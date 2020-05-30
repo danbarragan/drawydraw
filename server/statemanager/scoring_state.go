@@ -67,13 +67,16 @@ func (state scoringState) addGameStatusPropertiesForPlayer(player *models.Player
 	if activeDrawing == nil {
 		return errors.New("Could not find active drawing for game")
 	}
-	gameStatus.CurrentDrawing = &Drawing{
-		ImageData: activeDrawing.ImageData,
-		OriginalPrompt: fmt.Sprintf(
-			"%s %s",
-			strings.Join(activeDrawing.OriginalPrompt.Adjectives, ","),
-			activeDrawing.OriginalPrompt.Noun,
-		),
+	gameStatus.CurrentDrawing = gameStatusDrawingFromDrawing(activeDrawing)
+	// Add drawings that have been scored to past drawings
+	gameStatus.PastDrawings = make([]*Drawing, 0, len(state.game.Drawings))
+	for _, drawing := range state.game.Drawings {
+		if drawing.Scored {
+			gameStatus.PastDrawings = append(
+				gameStatus.PastDrawings,
+				gameStatusDrawingFromDrawing(drawing),
+			)
+		}
 	}
 	gameStatus.RoundScores = state.calculateRoundScores(activeDrawing, state.game)
 	return nil
@@ -81,6 +84,18 @@ func (state scoringState) addGameStatusPropertiesForPlayer(player *models.Player
 
 func (state scoringState) castVote(player *models.Player, promptIdentifier string) error {
 	return errors.New("Casting votes is not allowed at this stage of the game")
+}
+
+func gameStatusDrawingFromDrawing(drawing *models.Drawing) *Drawing {
+	return &Drawing{
+		Author:    drawing.Author,
+		ImageData: drawing.ImageData,
+		OriginalPrompt: fmt.Sprintf(
+			"%s %s",
+			strings.Join(drawing.OriginalPrompt.Adjectives, ","),
+			drawing.OriginalPrompt.Noun,
+		),
+	}
 }
 
 func (state scoringState) calculateRoundScores(activeDrawing *models.Drawing, game *models.Game) *map[string][]*PointsBreakdown {
