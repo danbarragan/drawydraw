@@ -1,0 +1,12 @@
+{
+    "game.title": "Dibujín Dibujón",
+    "game.stateNotImplementedError": "Lo sentimos, no hemos implementado esto todavia :(",
+
+    "groupSelectionScreen.JoinOrCreateHeader": "Crea un grupo o únete a uno",
+    "groupSelectionScreen.NameLabel": "Nombre",
+    "groupSelectionScreen.GroupNameLabel": "Nombre del grupo",
+    "groupSelectionScreen.JoinGroupButton": "Unirse",
+    "groupSelectionScreen.CreateGroupButton": "Crear",
+
+    "waitingForPlayersScreen.GroupName": "Nombre del grupo: {groupName}"
+}

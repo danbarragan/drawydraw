@@ -1,0 +1,12 @@
+{
+    "game.title": "Drawy Draw",
+    "game.stateNotImplementedError": "We are sorry this is not implemented yet :(",
+
+    "groupSelectionScreen.JoinOrCreateHeader": "Join or create a group",
+    "groupSelectionScreen.NameLabel": "Name",
+    "groupSelectionScreen.GroupNameLabel": "Group name",
+    "groupSelectionScreen.JoinGroupButton": "Join",
+    "groupSelectionScreen.CreateGroupButton": "Create",
+
+    "waitingForPlayersScreen.GroupName": "Group name: {groupName}"
+}

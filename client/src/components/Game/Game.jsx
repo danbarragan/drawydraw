@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import { FormattedMessage } from 'react-intl';
 import DecoyPromptCreationScreen from '../DecoyPromptCreationScreen/DecoyPromptCreationScreen';
 import DrawingScreen from '../DrawingScreen/DrawingScreen';
 import GroupSelectionScreen from '../GroupSelectionScreen/GroupSelectionScreen';
@@ -71,7 +72,16 @@ class Game extends React.Component {
         );
       // Unknown group! Badness
       default:
-        return <div><h1>We are sorry this is not implemented yet :(</h1></div>;
+        return (
+          <div>
+            <h1>
+              <FormattedMessage
+                id="game.stateNotImplementedError"
+                defaultMessage="We are sorry this is not implemented yet :("
+              />
+            </h1>
+          </div>
+        );
     }
   }
 
@@ -113,7 +123,14 @@ class Game extends React.Component {
   render() {
     return (
       <div className="game">
-        <div className="gameTitle"><h2>Drawydraw</h2></div>
+        <div className="gameTitle">
+          <h2>
+            <FormattedMessage
+              id="game.title"
+              defaultMessage="Drawydraw"
+            />
+          </h2>
+        </div>
         {this.getCurrentComponent()}
         {this.debugConsole()}
       </div>

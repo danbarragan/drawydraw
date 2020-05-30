@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import { FormattedMessage } from 'react-intl';
 import './GroupSelectionScreen.css';
 import PropTypes from 'prop-types';
 import { formatServerError } from '../../utils/errorFormatting';
@@ -55,17 +56,38 @@ class GroupSelectionScreen extends React.Component {
     const { error, playerName, groupName } = this.state;
     return (
       <div className="screen groupSelectionScreen">
-        <h3>Join or create a group</h3>
+        <h3>
+          <FormattedMessage
+            id="groupSelectionScreen.JoinOrCreateHeader"
+            defaultMessage="Join or create a group"
+          />
+        </h3>
         <label htmlFor="playerName">
-          Your name
+          <FormattedMessage
+            id="groupSelectionScreen.NameLabel"
+            defaultMessage="Name"
+          />
           <input id="playerName" type="text" value={playerName} onChange={this.onPlayerNameChange} autoComplete="off" />
         </label>
         <label htmlFor="groupName">
-          Group name
+          <FormattedMessage
+            id="groupSelectionScreen.GroupNameLabel"
+            defaultMessage="Group name"
+          />
           <input id="groupName" type="text" value={groupName} onChange={this.onGroupNameChange} autoComplete="off" />
         </label>
-        <button className="buttonTypeA" type="button" onClick={this.onJoinGroupClick}>Join</button>
-        <button className="buttonTypeB" type="button" onClick={this.onCreateGroupClick}>Create</button>
+        <button className="buttonTypeA" type="button" onClick={this.onJoinGroupClick}>
+          <FormattedMessage
+            id="groupSelectionScreen.JoinGroupButton"
+            defaultMessage="Join"
+          />
+        </button>
+        <button className="buttonTypeB" type="button" onClick={this.onCreateGroupClick}>
+          <FormattedMessage
+            id="groupSelectionScreen.CreateGroupButton"
+            defaultMessage="Create"
+          />
+        </button>
         <h3 className="error">{error}</h3>
       </div>
     );
