@@ -41,6 +41,7 @@ type CurrentPlayer struct {
 
 // Drawing represents a drawing that players are either making prompts for or voting on prompts for it
 type Drawing struct {
+	Author         string    `json:"author"`
 	ImageData      string    `json:"imageData"`
 	Prompts        []*Prompt `json:"prompts"`
 	OriginalPrompt string    `json:"originalPrompt"`
@@ -60,6 +61,7 @@ type GameStatusResponse struct {
 	Players        []*Player                      `json:"players"`
 	CurrentDrawing *Drawing                       `json:"currentDrawing"`
 	RoundScores    *map[string][]*PointsBreakdown `json:"roundScores"`
+	PastDrawings   []*Drawing                     `json:"pastDrawings"`
 }
 
 // CreateGroup Handles creating a group other players can join

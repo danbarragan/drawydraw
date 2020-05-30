@@ -37,15 +37,15 @@ class DecoyPromptCreationScreen extends React.Component {
   }
 
   onNounChange(event) {
-    this.setState({ noun: event.target.value });
+    this.setState({ noun: event.target.value.toLocaleLowerCase() });
   }
 
   onAdjective1Change(event) {
-    this.setState({ adjective1: event.target.value });
+    this.setState({ adjective1: event.target.value.toLocaleLowerCase() });
   }
 
   onAdjective2Change(event) {
-    this.setState({ adjective2: event.target.value });
+    this.setState({ adjective2: event.target.value.toLocaleLowerCase() });
   }
 
   async onSubmitPromptButtonClicked() {

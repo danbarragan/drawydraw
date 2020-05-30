@@ -3,6 +3,7 @@ import axios from 'axios';
 import PropTypes from 'prop-types';
 import { formatServerError } from '../../utils/errorFormatting';
 import UpdateGameState from '../../utils/updateGameState';
+import './ScoringScreen.css';
 
 class ScoringScreen extends React.Component {
   constructor(props) {
@@ -56,7 +57,7 @@ class ScoringScreen extends React.Component {
     const { error } = this.state;
     const { gameState } = this.props;
     const {
-      players, currentPlayer, roundScores, currentDrawing,
+      players, currentPlayer, roundScores, currentDrawing, pastDrawings,
     } = gameState;
     const { name: currentPlayerName, isHost } = currentPlayer;
     const scoresBeforeRound = players.reduce(
@@ -93,22 +94,41 @@ class ScoringScreen extends React.Component {
         </li>,
       );
     });
+    const pastDrawingItems = pastDrawings.map((drawing) => (
+      <div className="pastDrawingContainer" key={drawing.originalPrompt}>
+        <img className="pastDrawing" src={drawing.imageData} alt="a drawing" />
+        <span>{`${drawing.originalPrompt} by ${drawing.author}`}</span>
+      </div>
+    ));
     return (
       <div className="screen votingScreen">
         <img className="promptImage" src={currentDrawing.imageData} alt="a drawing" />
         <span>
-          The correct prompt for this image was:
-          <b>{` ${currentDrawing.originalPrompt}`}</b>
+          {`The correct prompt for this image by ${currentDrawing.author} was:`}
+          <br />
+          <b>{currentDrawing.originalPrompt}</b>
         </span>
         <h3>Current Scores:</h3>
         <ul>{playerScores}</ul>
         { isHost ? <button type="button" className="buttonTypeA" onClick={this.onNextRoundButtonClicked}>Next</button>
           : <h3>Waiting for the host to start the next round...</h3>}
+        { pastDrawings.length > 0 ? (
+          <div className="pastDrawings">
+            <h3>Past drawings from this round</h3>
+            {pastDrawingItems}
+          </div>
+        ) : null}
         <h3 className="error">{error}</h3>
       </div>
     );
   }
 }
+
+const drawingProptype = PropTypes.shape({
+  imageData: PropTypes.string.isRequired,
+  originalPrompt: PropTypes.string.isRequired,
+  author: PropTypes.string.isRequired,
+});
 
 ScoringScreen.propTypes = {
   gameState: PropTypes.shape({
@@ -116,10 +136,8 @@ ScoringScreen.propTypes = {
       amount: PropTypes.number.isRequired,
       reason: PropTypes.string.isRequired,
     }))).isRequired,
-    currentDrawing: PropTypes.shape({
-      imageData: PropTypes.string.isRequired,
-      originalPrompt: PropTypes.string.isRequired,
-    }),
+    pastDrawings: PropTypes.arrayOf(drawingProptype).isRequired,
+    currentDrawing: drawingProptype.isRequired,
     currentPlayer: PropTypes.shape({
       name: PropTypes.string.isRequired,
       isHost: PropTypes.bool.isRequired,
