@@ -4,7 +4,6 @@ import (
 	"drawydraw/models"
 	"errors"
 	"fmt"
-	"strings"
 )
 
 type scoringState struct {
@@ -24,16 +23,14 @@ func (state scoringState) startGame(groupName string, playerName string) error {
 	if activeDrawing == nil {
 		return errors.New("Could not find active drawing for game")
 	}
-	// Add all the round scores
-	roundScores := state.calculateRoundScores(activeDrawing, state.game)
-	for name, score := range *roundScores {
+	// Calculate standings and update total points
+	standings := state.calculateStandings(activeDrawing, state.game)
+	for name, standing := range *standings {
 		player := state.game.GetPlayer(name)
 		if player == nil {
 			return fmt.Errorf("Could not find player %s in the game", name)
 		}
-		for _, points := range score {
-			player.Points += points.Amount
-		}
+		player.Points = standing.TotalScore
 	}
 	// Mark the active drawing as scored
 	activeDrawing.Scored = true
@@ -78,7 +75,7 @@ func (state scoringState) addGameStatusPropertiesForPlayer(player *models.Player
 			)
 		}
 	}
-	gameStatus.RoundScores = state.calculateRoundScores(activeDrawing, state.game)
+	gameStatus.PointStandings = state.calculateStandings(activeDrawing, state.game)
 	return nil
 }
 
@@ -88,41 +85,44 @@ func (state scoringState) castVote(player *models.Player, promptIdentifier strin
 
 func gameStatusDrawingFromDrawing(drawing *models.Drawing) *Drawing {
 	return &Drawing{
-		Author:    drawing.Author,
-		ImageData: drawing.ImageData,
-		OriginalPrompt: fmt.Sprintf(
-			"%s %s",
-			strings.Join(drawing.OriginalPrompt.Adjectives, ","),
-			drawing.OriginalPrompt.Noun,
-		),
+		Author:         drawing.Author,
+		ImageData:      drawing.ImageData,
+		OriginalPrompt: makeResponsePromptFromModelPrompt(drawing.OriginalPrompt),
 	}
 }
 
-func (state scoringState) calculateRoundScores(activeDrawing *models.Drawing, game *models.Game) *map[string][]*PointsBreakdown {
-	scoreMap := map[string][]*PointsBreakdown{}
-	// Initialize score map with empty score arrays
+func (state scoringState) calculateStandings(activeDrawing *models.Drawing, game *models.Game) *map[string]*PointStanding {
+	pointStandings := map[string]*PointStanding{}
+	// Initialize standings with the point totals before this round
 	for _, player := range game.Players {
-		scoreMap[player.Name] = []*PointsBreakdown{}
+		pointStandings[player.Name] = &PointStanding{
+			Player:               player.Name,
+			RoundPointsBreakdown: []*PointsBreakdown{},
+			TotalScore:           player.Points,
+		}
 	}
 	for playerName, vote := range activeDrawing.Votes {
 		if vote.SelectedPrompt == activeDrawing.OriginalPrompt {
 			// Voter earns 3 points for picking the right prompt
-			scoreMap[playerName] = append(
-				scoreMap[playerName],
-				&PointsBreakdown{Amount: 3, Reason: "you chose the correct prompt"},
+			pointStandings[playerName].TotalScore += 3
+			pointStandings[playerName].RoundPointsBreakdown = append(
+				pointStandings[playerName].RoundPointsBreakdown,
+				&PointsBreakdown{Amount: 3, Reason: ChoseCorrectPrompt, CausingPlayer: playerName},
 			)
 			// Author gets 1 point for someone picking the right prompt
-			scoreMap[activeDrawing.Author] = append(
-				scoreMap[activeDrawing.Author],
-				&PointsBreakdown{Amount: 1, Reason: fmt.Sprintf("%s chose your original prompt", playerName)},
+			pointStandings[activeDrawing.Author].TotalScore += 1
+			pointStandings[activeDrawing.Author].RoundPointsBreakdown = append(
+				pointStandings[activeDrawing.Author].RoundPointsBreakdown,
+				&PointsBreakdown{Amount: 1, Reason: OtherChosePromptDrawn, CausingPlayer: playerName},
 			)
 		} else {
 			// The person who fooled the voter earns 1 point
-			scoreMap[vote.SelectedPrompt.Author] = append(
-				scoreMap[vote.SelectedPrompt.Author],
-				&PointsBreakdown{Amount: 1, Reason: fmt.Sprintf("%s chose your decoy prompt", playerName)},
+			pointStandings[vote.SelectedPrompt.Author].TotalScore += 1
+			pointStandings[vote.SelectedPrompt.Author].RoundPointsBreakdown = append(
+				pointStandings[vote.SelectedPrompt.Author].RoundPointsBreakdown,
+				&PointsBreakdown{Amount: 1, Reason: FooledPlayer, CausingPlayer: playerName},
 			)
 		}
 	}
-	return &scoreMap
+	return &pointStandings
 }

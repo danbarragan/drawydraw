@@ -4,9 +4,11 @@
     "common.secondAdjectiveLabel": "Second adjective",
     "common.nounLabel": "Noun",
     "common.waitingForPlayersLabel": "Waiting for these players to finish submitting their prompts:",
+    "common.grammarNote": " ",
 
     "game.title": "Drawy Draw",
     "game.stateNotImplementedError": "We are sorry this is not implemented yet :(",
+    "game.languageHeader": "Language:",
 
     "groupSelectionScreen.joinOrCreateHeader": "Join or create a group",
     "groupSelectionScreen.nameLabel": "Name",
@@ -19,17 +21,19 @@
     "waitingForPlayersScreen.waitingForHostMessage": "Waiting for the host to start the game...",
 
     "initialPromptCreationScreen.providePromptHeader": "Provide a few words to generate drawing prompts:",
-    "initialPromptCreationScreen.grammarNote": " ",
 
     "drawingScreen.clearButton": "Clear",
     "drawingScreen.drawHeader" : "Draw: {adjective1} and {adjective2} {noun}",
     "drawingScreen.waitingForOthersDrawingsMessage" : "Waiting for these players to finish their drawings...",
+    "colorPicker.brushColor": "Color",
+    "colorPicker.brushSize": "Size",
 
     "decoyPromptCreationScreen.decoyPromptHeader": "Enter a decoy prompt for this drawing:",
 
     "votingScreen.originalPromptQuestionHeader" : "What was the original prompt for this drawing?",
     "votingScreen.prompt" : "{adjective1} and {adjective2} {noun}",
     "votingScreen.votingButton" : "Vote",
-    "votingScreen.availablePromptsHeader" : "The available prompts are..."
+    "votingScreen.availablePromptsHeader" : "The available prompts are...",
+    "votingScreen.waitingForPlayersHeader": "Waiting for the following players to vote..."
 
 }

@@ -58,16 +58,18 @@ class ScoringScreen extends React.Component {
     const { error } = this.state;
     const { gameState } = this.props;
     const {
-      players, currentPlayer, roundScores, currentDrawing, pastDrawings,
+      players, currentPlayer, pointStandings, currentDrawing, pastDrawings,
     } = gameState;
     const { name: currentPlayerName, isHost } = currentPlayer;
     const scoresBeforeRound = players.reduce(
       (dict, player) => ({ ...dict, [player.name]: player.points }), {},
     );
     const playerScores = [];
-    Object.entries(roundScores).forEach(([player, breakdown]) => {
+    // Sort standings by total score
+    const sortedStandings = pointStandings.sort((a, b) => a.totalScore - b.totalScore);
+    Object.entries(sortedStandings).forEach(([player, standing]) => {
       const scoreItems = [];
-      let totalRoundScore = 0;
+
       breakdown.sort(
         (itemA, itemB) => (
           // Sort breakdown items first by score (desc) and then by reason
@@ -77,7 +79,6 @@ class ScoringScreen extends React.Component {
         ),
       );
       breakdown.forEach((scoreItem) => {
-        totalRoundScore += scoreItem.amount;
         scoreItems.push(
           <li key={`${player}-${scoreItem.amount}-${scoreItem.reason}`}>
             {`+${scoreItem.amount} because ${scoreItem.reason}`}
@@ -104,27 +105,34 @@ class ScoringScreen extends React.Component {
     return (
       <div className="screen votingScreen">
         <img className="promptImage" src={currentDrawing.imageData} alt="a drawing" />
-        <span>
+        <p>
           <FormattedMessage
-            id="scoringScreen.nextRoundButton"
-            defaultMessage="Next round"
+            id="scoringScreen.promptAuthorFormat"
+            defaultMessage="The correct prompt for this image by {author} was:"
             values={{
               author: currentDrawing.author,
-              adjective1: currentDrawing.adjectives[0],
-              adjective2:  currentDrawing.adjectives[1],
-              noun:  currentDrawing.noun,
             }}
           />
-          {`The correct prompt for this image by ${currentDrawing.author} was:`}
           <br />
-          <b>{currentDrawing.originalPrompt}</b>
-        </span>
-        <h3>
+          <b>
+            <FormattedMessage
+              id="scoringScreen.promptFormat"
+              defaultMessage="{adjective1} and {adjective2} {noun}"
+              values={{
+                author: currentDrawing.author,
+                adjective1: currentDrawing.originalPrompt.adjectives[0],
+                adjective2: currentDrawing.originalPrompt.adjectives[1],
+                noun: currentDrawing.originalPrompt.noun,
+              }}
+            />
+          </b>
+        </p>
+        <h4>
           <FormattedMessage
             id="scoringScreen.currentScoreHeader"
             defaultMessage="Current Scores:"
           />
-        </h3>
+        </h4>
         <ul>{playerScores}</ul>
         { isHost ? (
           <button type="button" className="buttonTypeA" onClick={this.onNextRoundButtonClicked}>
@@ -170,10 +178,14 @@ const drawingProptype = PropTypes.shape({
 
 ScoringScreen.propTypes = {
   gameState: PropTypes.shape({
-    roundScores: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.shape({
-      amount: PropTypes.number.isRequired,
-      reason: PropTypes.string.isRequired,
-    }))).isRequired,
+    pointStandings: PropTypes.objectOf(PropTypes.shape({
+      totalScore: PropTypes.number.isRequired,
+      player: PropTypes.string.isRequired,
+      roundPointsBreakdown: PropTypes.arrayOf(PropTypes.shape({
+        amount: PropTypes.number.isRequired,
+        reason: PropTypes.string.isRequired,
+      })).isRequired,
+    })).isRequired,
     pastDrawings: PropTypes.arrayOf(drawingProptype).isRequired,
     currentDrawing: drawingProptype.isRequired,
     currentPlayer: PropTypes.shape({

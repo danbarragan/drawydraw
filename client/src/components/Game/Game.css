@@ -76,6 +76,17 @@
     font-size: medium;
 }
 
+.languageButton {
+    display: inline-block;
+    margin-top: 0.5rem;
+    margin-right: 0.5rem;
+    border: none;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: medium;
+}
+
 .buttonTypeA {
     background-color:rgb(132, 196, 134);
 }

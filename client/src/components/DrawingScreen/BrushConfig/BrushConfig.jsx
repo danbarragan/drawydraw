@@ -3,10 +3,13 @@
 import React from 'react';
 import './BrushConfig.css';
 import PropTypes from 'prop-types';
+import { FormattedMessage } from 'react-intl';
+
 
 const BrushColors = Object.freeze({
   // Map enum members to HTML colors
   Black: 'black',
+  Grey: 'grey',
   White: 'white',
   Greenery: '#88B04B',
   Coral: '#FF6F61',
@@ -30,7 +33,7 @@ const BrushConfig = (props) => {
   } = props;
   return (
     <div className="colorPicker">
-      <h3>Brush color</h3>
+      <h3><FormattedMessage id="colorPicker.brushColor" defaultMessage="Color:" /></h3>
       {
           Object.values(BrushColors).map((color) => {
             const highlightClass = color === currentColor ? 'highlightedBrushColor' : '';
@@ -46,7 +49,7 @@ const BrushConfig = (props) => {
             );
           })
       }
-      <h3>Brush size</h3>
+      <h3><FormattedMessage id="colorPicker.brushSize" defaultMessage="Size:" /></h3>
       {
       Object.values(BrushSizes).map((size) => {
         const highlightClass = size === currentSize ? 'highlightedBrushSize' : '';

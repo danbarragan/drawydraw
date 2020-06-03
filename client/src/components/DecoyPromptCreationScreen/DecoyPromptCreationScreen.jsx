@@ -97,21 +97,21 @@ class DecoyPromptCreationScreen extends React.Component {
         <div className="promptFieldContainer">
           <label htmlFor="adjective1">
             <FormattedMessage
-              id="common.firstAdjective"
+              id="common.firstAdjectiveLabel"
               defaultValue="First adjective"
             />
             <input id="adj1" type="text" value={adjective1} onChange={this.onAdjective1Change} autoComplete="off" />
           </label>
-          <label htmlFor="adjective2">
+          <label htmlFor="adjective2Label">
             <FormattedMessage
-              id="common.secondAdjective"
+              id="common.secondAdjectiveLabel"
               defaultValue="Second adjective"
             />
             <input id="adj2" type="text" value={adjective2} onChange={this.onAdjective2Change} autoComplete="off" />
           </label>
           <label htmlFor="noun">
             <FormattedMessage
-              id="common.noun"
+              id="common.nounLabel"
               defaultValue="Noun"
             />
             <input id="noun" type="text" value={noun} onChange={this.onNounChange} autoComplete="off" />
@@ -150,6 +150,9 @@ class DecoyPromptCreationScreen extends React.Component {
     return (
       <div className="screen voteSelection">
         {currentPlayer.hasCompletedAction ? waitingElements : promptEnteringElements}
+        <span className="grammarNote">
+          <FormattedMessage id="common.grammarNote" defaultMessage="&nbsp;" />
+        </span>
         <h3 className="error">{error}</h3>
       </div>
     );
