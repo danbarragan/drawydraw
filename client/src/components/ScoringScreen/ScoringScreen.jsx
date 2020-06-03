@@ -1,6 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import PropTypes from 'prop-types';
+import { FormattedMessage } from 'react-intl';
 import { formatServerError } from '../../utils/errorFormatting';
 import UpdateGameState from '../../utils/updateGameState';
 import './ScoringScreen.css';
@@ -104,17 +105,51 @@ class ScoringScreen extends React.Component {
       <div className="screen votingScreen">
         <img className="promptImage" src={currentDrawing.imageData} alt="a drawing" />
         <span>
+          <FormattedMessage
+            id="scoringScreen.nextRoundButton"
+            defaultMessage="Next round"
+            values={{
+              author: currentDrawing.author,
+              adjective1: currentDrawing.adjectives[0],
+              adjective2:  currentDrawing.adjectives[1],
+              noun:  currentDrawing.noun,
+            }}
+          />
           {`The correct prompt for this image by ${currentDrawing.author} was:`}
           <br />
           <b>{currentDrawing.originalPrompt}</b>
         </span>
-        <h3>Current Scores:</h3>
+        <h3>
+          <FormattedMessage
+            id="scoringScreen.currentScoreHeader"
+            defaultMessage="Current Scores:"
+          />
+        </h3>
         <ul>{playerScores}</ul>
-        { isHost ? <button type="button" className="buttonTypeA" onClick={this.onNextRoundButtonClicked}>Next</button>
-          : <h3>Waiting for the host to start the next round...</h3>}
+        { isHost ? (
+          <button type="button" className="buttonTypeA" onClick={this.onNextRoundButtonClicked}>
+            <FormattedMessage
+              id="scoringScreen.nextRoundButton"
+              defaultMessage="Next round"
+            />
+          </button>
+        )
+          : (
+            <h3>
+              <FormattedMessage
+                id="scoringScreen.waitingForNextRoundHeader"
+                defaultMessage="Waiting for the host to start the next round..."
+              />
+            </h3>
+          )}
         { pastDrawings.length > 0 ? (
           <div className="pastDrawings">
-            <h3>Past drawings from this round</h3>
+            <h3>
+              <FormattedMessage
+                id="scoringScreen.pastDrawingsLabel"
+                defaultMessage="Past drawings from this round:"
+              />
+            </h3>
             {pastDrawingItems}
           </div>
         ) : null}
@@ -126,7 +161,10 @@ class ScoringScreen extends React.Component {
 
 const drawingProptype = PropTypes.shape({
   imageData: PropTypes.string.isRequired,
-  originalPrompt: PropTypes.string.isRequired,
+  originalPrompt: PropTypes.shape({
+    noun: PropTypes.string.isRequired,
+    adjectives: PropTypes.arrayOf(PropTypes.string).isRequired,
+  }).isRequired,
   author: PropTypes.string.isRequired,
 });
 

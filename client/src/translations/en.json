@@ -1,12 +1,35 @@
 {
+    "common.submitButton": "Submit",
+    "common.firstAdjectiveLabel": "First adjective",
+    "common.secondAdjectiveLabel": "Second adjective",
+    "common.nounLabel": "Noun",
+    "common.waitingForPlayersLabel": "Waiting for these players to finish submitting their prompts:",
+
     "game.title": "Drawy Draw",
     "game.stateNotImplementedError": "We are sorry this is not implemented yet :(",
 
-    "groupSelectionScreen.JoinOrCreateHeader": "Join or create a group",
-    "groupSelectionScreen.NameLabel": "Name",
-    "groupSelectionScreen.GroupNameLabel": "Group name",
-    "groupSelectionScreen.JoinGroupButton": "Join",
-    "groupSelectionScreen.CreateGroupButton": "Create",
+    "groupSelectionScreen.joinOrCreateHeader": "Join or create a group",
+    "groupSelectionScreen.nameLabel": "Name",
+    "groupSelectionScreen.groupNameLabel": "Group name",
+    "groupSelectionScreen.joinGroupButton": "Join",
+    "groupSelectionScreen.createGroupButton": "Create",
 
-    "waitingForPlayersScreen.GroupName": "Group name: {groupName}"
+    "waitingForPlayersScreen.groupName": "Group name: {groupName}",
+    "waitingForPlayersScreen.startGameButton": "Start",
+    "waitingForPlayersScreen.waitingForHostMessage": "Waiting for the host to start the game...",
+
+    "initialPromptCreationScreen.providePromptHeader": "Provide a few words to generate drawing prompts:",
+    "initialPromptCreationScreen.grammarNote": " ",
+
+    "drawingScreen.clearButton": "Clear",
+    "drawingScreen.drawHeader" : "Draw: {adjective1} and {adjective2} {noun}",
+    "drawingScreen.waitingForOthersDrawingsMessage" : "Waiting for these players to finish their drawings...",
+
+    "decoyPromptCreationScreen.decoyPromptHeader": "Enter a decoy prompt for this drawing:",
+
+    "votingScreen.originalPromptQuestionHeader" : "What was the original prompt for this drawing?",
+    "votingScreen.prompt" : "{adjective1} and {adjective2} {noun}",
+    "votingScreen.votingButton" : "Vote",
+    "votingScreen.availablePromptsHeader" : "The available prompts are..."
+
 }

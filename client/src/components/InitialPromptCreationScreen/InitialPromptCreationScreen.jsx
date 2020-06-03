@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import { FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
 import './InitialPromptCreationScreen.css';
 import { formatServerError } from '../../utils/errorFormatting';
@@ -66,7 +67,6 @@ class InitialPromptCreationScreen extends React.Component {
     }
   }
 
-  // Todo: Probably move to a helper since it's going to be used in other screens
   async updateGameState() {
     const { gameState, onGameStateChanged } = this.props;
     const { groupName, currentPlayer } = gameState;
@@ -89,20 +89,39 @@ class InitialPromptCreationScreen extends React.Component {
 
     const promptCreatingElements = (
       <div>
-        <h3>Please provide a few words to generate drawing prompts</h3>
+        <h3>
+          <FormattedMessage
+            id="initialPromptCreationScreen.providePromptHeader"
+            defaultMessage="Please provide a few words to generate drawing prompts"
+          />
+        </h3>
         <label htmlFor="adjective1">
-          First Adjective
+          <FormattedMessage
+            id="common.firstAdjectiveLabel"
+            defaultMessage="First Adjective"
+          />
           <input id="adj1" type="text" value={adjective1} onChange={this.onAdjective1Change} autoComplete="off" />
         </label>
         <label htmlFor="adjective2">
-          Second Adjective
+          <FormattedMessage
+            id="common.secondAdjectiveLabel"
+            defaultMessage="Second Adjective"
+          />
           <input id="adj2" type="text" value={adjective2} onChange={this.onAdjective2Change} autoComplete="off" />
         </label>
         <label htmlFor="noun">
-          Noun
+          <FormattedMessage
+            id="common.nounLabel"
+            defaultMessage="Noun"
+          />
           <input id="noun" type="text" value={noun} onChange={this.onNounChange} autoComplete="off" />
         </label>
-        <button className="buttonTypeA" type="button" onClick={this.onSubmitPromptButtonClicked}>Submit</button>
+        <button className="buttonTypeA" type="button" onClick={this.onSubmitPromptButtonClicked}>
+          <FormattedMessage
+            id="common.submitButton"
+            defaultMessage="Submit"
+          />
+        </button>
       </div>
     );
 
@@ -115,7 +134,12 @@ class InitialPromptCreationScreen extends React.Component {
 
     const waitingElements = (
       <div>
-        <h3 className="initialPromptCreationScreen">Thanks, waiting for these players to finish submitting their prompts:</h3>
+        <h3 className="initialPromptCreationScreen">
+          <FormattedMessage
+            id="common.waitingForPlayersLabel"
+            defaultMessage="Waiting for these players to finish submitting their prompts:"
+          />
+        </h3>
         <ul>{playersPendingAction}</ul>
       </div>
     );
@@ -124,6 +148,9 @@ class InitialPromptCreationScreen extends React.Component {
     return (
       <div className="screen initialPromptCreationScreen">
         {currentPlayer.hasCompletedAction ? waitingElements : promptCreatingElements}
+        <span className="grammarNote">
+          <FormattedMessage id="initialPromptCreationScreen.grammarNote" defaultMessage="&nbsp;" />
+        </span>
         <h3 className="error">{error}</h3>
       </div>
     );

@@ -58,33 +58,33 @@ class GroupSelectionScreen extends React.Component {
       <div className="screen groupSelectionScreen">
         <h3>
           <FormattedMessage
-            id="groupSelectionScreen.JoinOrCreateHeader"
+            id="groupSelectionScreen.joinOrCreateHeader"
             defaultMessage="Join or create a group"
           />
         </h3>
         <label htmlFor="playerName">
           <FormattedMessage
-            id="groupSelectionScreen.NameLabel"
+            id="groupSelectionScreen.nameLabel"
             defaultMessage="Name"
           />
           <input id="playerName" type="text" value={playerName} onChange={this.onPlayerNameChange} autoComplete="off" />
         </label>
         <label htmlFor="groupName">
           <FormattedMessage
-            id="groupSelectionScreen.GroupNameLabel"
+            id="groupSelectionScreen.groupNameLabel"
             defaultMessage="Group name"
           />
           <input id="groupName" type="text" value={groupName} onChange={this.onGroupNameChange} autoComplete="off" />
         </label>
         <button className="buttonTypeA" type="button" onClick={this.onJoinGroupClick}>
           <FormattedMessage
-            id="groupSelectionScreen.JoinGroupButton"
+            id="groupSelectionScreen.joinGroupButton"
             defaultMessage="Join"
           />
         </button>
         <button className="buttonTypeB" type="button" onClick={this.onCreateGroupClick}>
           <FormattedMessage
-            id="groupSelectionScreen.CreateGroupButton"
+            id="groupSelectionScreen.createGroupButton"
             defaultMessage="Create"
           />
         </button>

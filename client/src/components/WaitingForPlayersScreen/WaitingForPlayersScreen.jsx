@@ -68,14 +68,28 @@ class WaitingForPlayersScreen extends React.Component {
       <div className="screen waitingForPlayersScreen">
         <h1>
           <FormattedMessage
-            id="waitingForPlayersScreen.GroupName"
+            id="waitingForPlayersScreen.groupName"
             defaultMessage="Group name: {groupName}"
             values={{ groupName }}
           />
         </h1>
         <ul>{playerList}</ul>
-        { isHost ? <button type="button" className="buttonTypeA" onClick={this.onStartGameButtonClicked}>Start</button>
-          : <h3>Waiting for the host to start the game...</h3>}
+        { isHost ? (
+          <button type="button" className="buttonTypeA" onClick={this.onStartGameButtonClicked}>
+            <FormattedMessage
+              id="waitingForPlayersScreen.startGameButton"
+              defaultMessage="Start"
+            />
+          </button>
+        )
+          : (
+            <h3>
+              <FormattedMessage
+                id="waitingForPlayersScreen.waitingForHostMessage"
+                defaultMessage="Waiting for the host to start the game..."
+              />
+            </h3>
+          )}
         <h3 className="error">{error}</h3>
       </div>
     );
