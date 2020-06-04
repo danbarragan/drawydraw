@@ -124,11 +124,12 @@ class Game extends React.Component {
     return (
       <div className="debug">
         <button className="debugButton buttonTypeA" type="button" onClick={this.toggleConsole}>debug</button>
-        {Object.values(GameStates).map((state) => (state !== GameStates.GroupSelection ? (
-          <button key={state} className="debugButton buttonTypeB" type="button" onClick={(() => this.debugSetGameState(state))}>{state}</button>
-        ) : null))}
         {consoleEnabled ? (
           <div className="console">
+            <span>States:</span>
+            {Object.values(GameStates).map((state) => (state !== GameStates.GroupSelection ? (
+              <button key={state} className="debugButton buttonTypeB" type="button" onClick={(() => this.debugSetGameState(state))}>{state}</button>
+            ) : null))}
             {error ? `Error:${error}` : null}
             <textarea className="debugGameState" value={JSON.stringify(gameState, null, 4)} disabled />
           </div>
@@ -154,12 +155,12 @@ class Game extends React.Component {
     });
     return (
       <div className="languagePicker">
-        <h4>
+        <span>
           <FormattedMessage
             id="game.languageHeader"
             defaultMessage="Language:"
           />
-        </h4>
+        </span>
         {languageButtons}
       </div>
     );

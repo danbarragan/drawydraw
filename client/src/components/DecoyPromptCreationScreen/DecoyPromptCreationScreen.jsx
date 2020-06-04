@@ -122,6 +122,9 @@ class DecoyPromptCreationScreen extends React.Component {
               defaultValue="Submit"
             />
           </button>
+          <span className="grammarNote">
+            <FormattedMessage id="common.grammarNote" defaultMessage="&nbsp;" />
+          </span>
         </div>
       </div>
     );
@@ -150,9 +153,6 @@ class DecoyPromptCreationScreen extends React.Component {
     return (
       <div className="screen voteSelection">
         {currentPlayer.hasCompletedAction ? waitingElements : promptEnteringElements}
-        <span className="grammarNote">
-          <FormattedMessage id="common.grammarNote" defaultMessage="&nbsp;" />
-        </span>
         <h3 className="error">{error}</h3>
       </div>
     );

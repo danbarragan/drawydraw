@@ -4,6 +4,7 @@
     "common.secondAdjectiveLabel": "Segundo adjetivo*",
     "common.nounLabel": "Sustantivo",
     "common.grammarNote": "*El juego será más divertido si, para los adjetivos que tienen distintas terminaciones para masculino/femenino/singular/plural, todos usan la misma forma (ejemplo: 'linda', 'contenta' - singular / femenino).",
+    "common.waitingForPlayersLabel": "Esperando a que los siguientes jugadores ingresen sus descripciones:",
 
     "game.title": "Dibujín Dibujón",
     "game.stateNotImplementedError": "Lo sentimos, no hemos implementado esto todavia :(",
@@ -19,7 +20,7 @@
     "waitingForPlayersScreen.startGameButton": "Comenzar",
     "waitingForPlayersScreen.waitingForHostMessage": "Esperando a que el juego comience...",
 
-    "initialPromptCreationScreen.providePromptHeader": "Ingrese las siguientes palabras para generar conceptos a dibujar:",
+    "initialPromptCreationScreen.providePromptHeader": "Ingresa una descripción para generar conceptos a dibujar:",
 
     "drawingScreen.clearButton": "Borrar",
     "drawingScreen.drawHeader" : "Dibuja: {adjective1} y {adjective2} {noun}",
@@ -33,6 +34,18 @@
     "votingScreen.prompt" : "{adjective1} y {adjective2} {noun}",
     "votingScreen.votingButton" : "Votar",
     "votingScreen.availablePromptsHeader" : "Las descripciones disponibles son...",
-    "votingScreen.waitingForPlayersHeader": "Esperando a que voten los siguientes jugadores..."
+    "votingScreen.waitingForPlayersHeader": "Esperando a que voten los siguientes jugadores...",
 
+    "scoringScreen.fooledPlayerExplanation": "{amount} puntos porque {causingPlayer} escogió tu descripción señuelo",
+    "scoringScreen.otherChosePromptDrawnExplanation": "{amount} puntos porque {causingPlayer} escogió la descripción que dibujaste",
+    "scoringScreen.choseCorrectPromptExplanation": "{amount} puntos porque seleccionaste la descripción original",
+    "scoringScreen.unknownReasonExplanation": "{amount} puntos porque ???",
+    "scoringScreen.pointSummary":"{player}: {totalScore} puntos ({totalRoundScore} puntos esta ronda)",
+    "scoringScreen.pastDrawingDescriptionFormat": "{adjective1} y {adjective2} {noun} hecho por {author}",
+    "scoringScreen.promptAuthorFormat": "La descripción original de esta imagen dibujada por {author} es:",
+    "scoringScreen.promptFormat": "{adjective1} y {adjective2} {noun}",
+    "scoringScreen.currentScoreHeader": "Puntajes actuales:",
+    "scoringScreen.nextRoundButton": "Siguiente ronda",
+    "scoringScreen.waitingForNextRoundHeader": "Esperando a que el anfitrión comience la siguiente ronda...",
+    "scoringScreen.pastDrawingsLabel": "Dibujos previos de esta ronda:"
 }

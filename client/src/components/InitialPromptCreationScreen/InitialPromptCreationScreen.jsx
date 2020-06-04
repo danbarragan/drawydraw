@@ -122,6 +122,9 @@ class InitialPromptCreationScreen extends React.Component {
             defaultMessage="Submit"
           />
         </button>
+        <span className="grammarNote">
+          <FormattedMessage id="common.grammarNote" defaultMessage="&nbsp;" />
+        </span>
       </div>
     );
 
@@ -148,9 +151,6 @@ class InitialPromptCreationScreen extends React.Component {
     return (
       <div className="screen initialPromptCreationScreen">
         {currentPlayer.hasCompletedAction ? waitingElements : promptCreatingElements}
-        <span className="grammarNote">
-          <FormattedMessage id="common.grammarNote" defaultMessage="&nbsp;" />
-        </span>
         <h3 className="error">{error}</h3>
       </div>
     );

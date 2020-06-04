@@ -34,6 +34,18 @@
     "votingScreen.prompt" : "{adjective1} and {adjective2} {noun}",
     "votingScreen.votingButton" : "Vote",
     "votingScreen.availablePromptsHeader" : "The available prompts are...",
-    "votingScreen.waitingForPlayersHeader": "Waiting for the following players to vote..."
+    "votingScreen.waitingForPlayersHeader": "Waiting for the following players to vote...",
 
+    "scoringScreen.fooledPlayerExplanation": "{amount} points because {causingPlayer} chose your decoy prompt",
+    "scoringScreen.otherChosePromptDrawnExplanation": "{amount} points because {causingPlayer} chose the prompt you drew",
+    "scoringScreen.choseCorrectPromptExplanation": "{amount} points because you chose the original prompt",
+    "scoringScreen.unknownReasonExplanation": "{amount} points because ???",
+    "scoringScreen.pointSummary":"{player}: {totalScore} points ({totalRoundScore} points this round)",
+    "scoringScreen.pastDrawingDescriptionFormat": "{adjective1} and {adjective2} {noun} by {author}",
+    "scoringScreen.promptAuthorFormat": "The correct prompt for this image by {author} was:",
+    "scoringScreen.promptFormat": "{adjective1} and {adjective2} {noun}",
+    "scoringScreen.currentScoreHeader": "Current Scores:",
+    "scoringScreen.nextRoundButton": "Next round",
+    "scoringScreen.waitingForNextRoundHeader": "Waiting for the host to start the next round...",
+    "scoringScreen.pastDrawingsLabel": "Past drawings from this round:"
 }
