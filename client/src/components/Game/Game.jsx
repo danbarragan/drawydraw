@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import { FormattedMessage, IntlProvider } from 'react-intl';
 import DecoyPromptCreationScreen from '../DecoyPromptCreationScreen/DecoyPromptCreationScreen';
 import DrawingScreen from '../DrawingScreen/DrawingScreen';
 import GroupSelectionScreen from '../GroupSelectionScreen/GroupSelectionScreen';
@@ -11,10 +12,22 @@ import './Game.css';
 import { GameStates } from '../../utils/constants';
 import { formatServerError } from '../../utils/errorFormatting';
 
+
+import EnglishMessages from '../../translations/en.json';
+import SpanishMessages from '../../translations/es.json';
+
+const messages = {
+  es: SpanishMessages,
+  en: EnglishMessages,
+};
+
 class Game extends React.Component {
   constructor(props) {
+    // Split the browser's locale string to get the language without the region
+    const currentLanguage = navigator.language.split(/[-_]/)[0];
     super(props);
     this.state = {
+      currentLanguage,
       consoleEnabled: false,
       gameState: {
         currentState: GameStates.GroupSelection, // Start in the group selection state
@@ -26,6 +39,11 @@ class Game extends React.Component {
     this.debugConsole = this.debugConsole.bind(this);
     this.toggleConsole = this.toggleConsole.bind(this);
     this.debugSetGameState = this.debugSetGameState.bind(this);
+    this.onLocaleChanged = this.onLanguageSelected.bind(this);
+  }
+
+  onLanguageSelected(currentLanguage) {
+    this.setState({ currentLanguage });
   }
 
   onGameEntered(gameState) {
@@ -71,7 +89,16 @@ class Game extends React.Component {
         );
       // Unknown group! Badness
       default:
-        return <div><h1>We are sorry this is not implemented yet :(</h1></div>;
+        return (
+          <div>
+            <h1>
+              <FormattedMessage
+                id="game.stateNotImplementedError"
+                defaultMessage="We are sorry this is not implemented yet :("
+              />
+            </h1>
+          </div>
+        );
     }
   }
 
@@ -97,11 +124,12 @@ class Game extends React.Component {
     return (
       <div className="debug">
         <button className="debugButton buttonTypeA" type="button" onClick={this.toggleConsole}>debug</button>
-        {Object.values(GameStates).map((state) => (state !== GameStates.GroupSelection ? (
-          <button key={state} className="debugButton buttonTypeB" type="button" onClick={(() => this.debugSetGameState(state))}>{state}</button>
-        ) : null))}
         {consoleEnabled ? (
           <div className="console">
+            <span>States:</span>
+            {Object.values(GameStates).map((state) => (state !== GameStates.GroupSelection ? (
+              <button key={state} className="debugButton buttonTypeB" type="button" onClick={(() => this.debugSetGameState(state))}>{state}</button>
+            ) : null))}
             {error ? `Error:${error}` : null}
             <textarea className="debugGameState" value={JSON.stringify(gameState, null, 4)} disabled />
           </div>
@@ -110,13 +138,52 @@ class Game extends React.Component {
     );
   }
 
-  render() {
+  languagePicker() {
+    const { currentLanguage } = this.state;
+    const languageButtons = Object.keys(messages).map((language) => {
+      const buttonStyle = language !== currentLanguage ? 'buttonTypeB' : 'buttonTypeA';
+      return (
+        <button
+          key={language}
+          className={`languageButton ${buttonStyle}`}
+          type="button"
+          onClick={(() => this.onLanguageSelected(language))}
+        >
+          {language}
+        </button>
+      );
+    });
     return (
-      <div className="game">
-        <div className="gameTitle"><h2>Drawydraw</h2></div>
-        {this.getCurrentComponent()}
-        {this.debugConsole()}
+      <div className="languagePicker">
+        <span>
+          <FormattedMessage
+            id="game.languageHeader"
+            defaultMessage="Language:"
+          />
+        </span>
+        {languageButtons}
       </div>
+    );
+  }
+
+  render() {
+    const { currentLanguage } = this.state;
+    return (
+      <IntlProvider locale={currentLanguage} messages={messages[currentLanguage]}>
+        <div className="game">
+          <div className="gameTitle">
+            <h2>
+              <FormattedMessage
+                id="game.title"
+                defaultMessage="Drawydraw"
+              />
+            </h2>
+          </div>
+          {this.getCurrentComponent()}
+          {this.languagePicker()}
+          {this.debugConsole()}
+        </div>
+      </IntlProvider>
     );
   }
 }

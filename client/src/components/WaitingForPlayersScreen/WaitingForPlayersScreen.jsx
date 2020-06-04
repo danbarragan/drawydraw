@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import { FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
 import { formatServerError } from '../../utils/errorFormatting';
 import UpdateGameState from '../../utils/updateGameState';
@@ -66,12 +67,29 @@ class WaitingForPlayersScreen extends React.Component {
     return (
       <div className="screen waitingForPlayersScreen">
         <h1>
-          Group name:
-          {groupName}
+          <FormattedMessage
+            id="waitingForPlayersScreen.groupName"
+            defaultMessage="Group name: {groupName}"
+            values={{ groupName }}
+          />
         </h1>
         <ul>{playerList}</ul>
-        { isHost ? <button type="button" className="buttonTypeA" onClick={this.onStartGameButtonClicked}>Start</button>
-          : <h3>Waiting for the host to start the game...</h3>}
+        { isHost ? (
+          <button type="button" className="buttonTypeA" onClick={this.onStartGameButtonClicked}>
+            <FormattedMessage
+              id="waitingForPlayersScreen.startGameButton"
+              defaultMessage="Start"
+            />
+          </button>
+        )
+          : (
+            <h3>
+              <FormattedMessage
+                id="waitingForPlayersScreen.waitingForHostMessage"
+                defaultMessage="Waiting for the host to start the game..."
+              />
+            </h3>
+          )}
         <h3 className="error">{error}</h3>
       </div>
     );

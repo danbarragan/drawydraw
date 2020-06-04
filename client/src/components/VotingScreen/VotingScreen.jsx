@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { FormattedMessage } from 'react-intl';
 import axios from 'axios';
 import { formatServerError } from '../../utils/errorFormatting';
 import './VotingScreen.css';
@@ -70,7 +71,12 @@ class VotingScreen extends React.Component {
     const { players, currentDrawing, currentPlayer } = gameState;
     const votingElements = (
       <form className="votingForm">
-        <h4 className="votingQuestion">What was the original prompt for this drawing?</h4>
+        <h4 className="votingQuestion">
+          <FormattedMessage
+            id="votingScreen.originalPromptQuestionHeader"
+            defaultMessage="What was the original prompt for this drawing?"
+          />
+        </h4>
         {currentDrawing.prompts.map((prompt) => (
           <div className="votingOption" key={prompt.identifier}>
             <label htmlFor={prompt.identifier}>
@@ -82,33 +88,61 @@ class VotingScreen extends React.Component {
                 checked={selectedPromptId === prompt.identifier}
                 onChange={this.handleOptionChange}
               />
-              {`${prompt.adjectives.join(', ')} ${prompt.noun}`}
+              <FormattedMessage
+                id="votingScreen.prompt"
+                defaultMessage="{adjective1} and {adjective2} {noun}"
+                values={{
+                  adjective1: prompt.adjectives[0],
+                  adjective2: prompt.adjectives[1],
+                  noun: prompt.noun,
+                }}
+              />
             </label>
           </div>
         ))}
-        <button className="buttonTypeA" type="button" onClick={this.onVoteClicked}>Vote</button>
+        <button className="buttonTypeA" type="button" onClick={this.onVoteClicked}>
+          <FormattedMessage
+            id="votingScreen.votingButton"
+            defaultMessage="Vote"
+          />
+        </button>
       </form>
     );
     const waitingElements = (
       <div>
-        <h3>The available prompts are...</h3>
+        <h3>
+          <FormattedMessage
+            id="votingScreen.availablePromptsHeader"
+            defaultMessage="The available prompts are..."
+          />
+        </h3>
         <ul>
           {currentDrawing.prompts.map((prompt) => (
             <li key={prompt.identifier}>
-              {`${prompt.adjectives.join(', ')} ${prompt.noun}`}
+              <FormattedMessage
+                id="votingScreen.prompt"
+                defaultMessage="{adjective1} and {adjective2} {noun}"
+                values={{
+                  adjective1: prompt.adjectives[0],
+                  adjective2: prompt.adjectives[1],
+                  noun: prompt.noun,
+                }}
+              />
             </li>
           ))}
         </ul>
-        <h3>Waiting for other players to vote on a prompt...</h3>
+        <h3>
+          <FormattedMessage
+            id="votingScreen.waitingForPlayersHeader"
+            defaultMessage="Waiting for the following players to vote..."
+          />
+        </h3>
         <ul>
           {
             players.map((player) => (
-              player.name === currentPlayer.name ? null : (
-                <li key={player.name}>
-                  {player.name}
-                  {player.hasPendingAction ? ' is still voting' : ' is done'}
-                </li>
-              )
+              player.hasPendingAction ? (
+                <li key={player.name}>{player.name}</li>
+              ) : null
             ))
           }
         </ul>

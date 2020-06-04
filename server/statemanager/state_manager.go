@@ -44,24 +44,40 @@ type Drawing struct {
 	Author         string    `json:"author"`
 	ImageData      string    `json:"imageData"`
 	Prompts        []*Prompt `json:"prompts"`
-	OriginalPrompt string    `json:"originalPrompt"`
+	OriginalPrompt *Prompt   `json:"originalPrompt"`
 }
+
+// ScoreReason is a reason a player earned points during a round
+type ScoreReason string
+
+const (
+	FooledPlayer          ScoreReason = "FooledPlayer"
+	OtherChosePromptDrawn ScoreReason = "OtherChosePromptDrawn"
+	ChoseCorrectPrompt    ScoreReason = "ChoseCorrectPrompt"
+)
 
 // PointsBreakdown describes a set of points awarded to a player
 type PointsBreakdown struct {
-	Amount uint64 `json:"amount"`
-	Reason string `json:"reason"`
+	Amount        uint64      `json:"amount"`
+	Reason        ScoreReason `json:"reason"`
+	CausingPlayer string      `json:"causingPlayer"`
+}
+
+type PointStanding struct {
+	TotalScore           uint64             `json:"totalScore"`
+	Player               string             `json:"player"`
+	RoundPointsBreakdown []*PointsBreakdown `json:"roundPointsBreakdown"`
 }
 
 // GameStatusResponse contains all the game status communicated to players
 type GameStatusResponse struct {
-	CurrentPlayer  *CurrentPlayer                 `json:"currentPlayer"`
-	CurrentState   string                         `json:"currentState"`
-	GroupName      string                         `json:"groupName"`
-	Players        []*Player                      `json:"players"`
-	CurrentDrawing *Drawing                       `json:"currentDrawing"`
-	RoundScores    *map[string][]*PointsBreakdown `json:"roundScores"`
-	PastDrawings   []*Drawing                     `json:"pastDrawings"`
+	CurrentPlayer  *CurrentPlayer             `json:"currentPlayer"`
+	CurrentState   string                     `json:"currentState"`
+	GroupName      string                     `json:"groupName"`
+	Players        []*Player                  `json:"players"`
+	CurrentDrawing *Drawing                   `json:"currentDrawing"`
+	PointStandings *map[string]*PointStanding `json:"pointStandings"`
+	PastDrawings   []*Drawing                 `json:"pastDrawings"`
 }
 
 // CreateGroup Handles creating a group other players can join

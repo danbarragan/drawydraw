@@ -1,4 +1,5 @@
 import React from 'react';
+import { FormattedMessage } from 'react-intl';
 import Sketch from 'react-p5';
 import './DrawingScreen.css';
 import axios from 'axios';
@@ -144,17 +145,30 @@ class DrawingScreen extends React.Component {
     strokes.forEach((currentStroke) => {
       p5.stroke(currentStroke.color);
       p5.strokeWeight(currentStroke.weight);
-      p5.beginShape();
-      // Draw an individual point if the stroke only has one point
-      if (currentStroke.points.length === 1) {
-        const point = currentStroke.points[0];
-        p5.point(point.x, point.y);
-      } else {
-        currentStroke.points.forEach((point) => {
-          p5.curveVertex(point.x, point.y);
-        });
+      // Render strokes differently based on how many points they have
+      switch (currentStroke.points.length) {
+        // 1 point - draw a point
+        case 1:
+          p5.point(currentStroke.points[0].x, currentStroke.points[0].y);
+          break;
+        // 2 or 3 points - draw a line that passes through the first two points
+        case 2:
+        case 3: {
+          const coordinates = currentStroke.points.reduce(
+            (coords, point) => ([...coords, point.x, point.y]),
+            [],
+          );
+          p5.line(...coordinates.slice(0, 4));
+          break;
+        }
+        // 4+ points - create a shape with one vertex per point
+        default:
+          p5.beginShape();
+          currentStroke.points.forEach((point) => {
+            p5.curveVertex(point.x, point.y);
+          });
+          p5.endShape();
       }
-      p5.endShape();
     });
   }
 
@@ -166,14 +180,11 @@ class DrawingScreen extends React.Component {
     const drawingElements = (
       <div>
         <h2>
-          Draw:
-          {' '}
-          {adjectives[0]}
-          ,
-          {' '}
-          {adjectives[1]}
-          {' '}
-          {noun}
+          <FormattedMessage
+            id="drawingScreen.drawHeader"
+            defaultMessage="Draw: {adjective1} and {adjective2} {noun}"
+            values={{ adjective1: adjectives[0], adjective2: adjectives[1], noun }}
+          />
         </h2>
         <BrushConfig
           onColorChange={this.onBrushColorChange}
@@ -188,22 +199,32 @@ class DrawingScreen extends React.Component {
           touchMoved={this.mouseDragged}
           touchStarted={this.mousePressed}
         />
-        <button type="button" className="buttonTypeA" onClick={this.onSubmitClick}>Submit</button>
-        <button type="button" className="buttonTypeB" onClick={this.onClearClick}>Clear</button>
+        <button type="button" className="buttonTypeA" onClick={this.onSubmitClick}>
+          <FormattedMessage
+            id="common.submitButton"
+            defaultMessage="Submit"
+          />
+        </button>
+        <button type="button" className="buttonTypeB" onClick={this.onClearClick}>
+          <FormattedMessage
+            id="drawingScreen.clearButton"
+            defaultMessage="Clear"
+          />
+        </button>
       </div>
     );
     const waitingElements = (
       <div>
-        <h3>Thank you for your drawing, waiting for other players...</h3>
+        <h3>
+          <FormattedMessage
+            id="drawingScreen.waitingForOthersDrawingsMessage"
+            defaultMessage="Waiting for these players to finish their drawings..."
+          />
+        </h3>
         <ul>
           {
             players.map((player) => (
-              player.name === currentPlayer.name ? null : (
-                <li key={player.name}>
-                  {player.name}
-                  {player.hasPendingAction ? ' is still drawing' : ' is done'}
-                </li>
-              )
+              player.hasPendingAction ? <li key={player.name}>{player.name}</li> : null
             ))
           }
         </ul>
