@@ -11,9 +11,8 @@ install:
     - nvm install stable
     - nvm use stable
     - npm install
-before_script:
+before_install:
     - "cd client"
-    - "npm install"
 script:
     # Lint client code
     - "npm run lint || travis_terminate 1"
