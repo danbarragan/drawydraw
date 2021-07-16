@@ -83,7 +83,7 @@ func GameInVotingState() *models.Game {
 	activeDrawing := game.GetActiveDrawing()
 	activeDrawing.DecoyPrompts = map[string]*models.Prompt{
 		"player1": models.BuildPrompt("toucan", []string{"happy", "big"}, "player1"),
-		"player3": models.BuildPrompt("birb", []string{"jumpy", "edgy"}, "player1"),
+		"player3": models.BuildPrompt("birb", []string{"jumpy", "edgy"}, "player3"),
 	}
 	game.CurrentState = models.Voting
 	return game
@@ -97,7 +97,7 @@ func GameInScoringState() *models.Game {
 	activeDrawing := game.GetActiveDrawing()
 	activeDrawing.Votes = map[string]*models.Vote{
 		"player1": {Player: game.GetPlayer("player1"), SelectedPrompt: activeDrawing.OriginalPrompt},
-		"player3": {Player: game.GetPlayer("player3"), SelectedPrompt: activeDrawing.DecoyPrompts["player1"]},
+		"player3": {Player: game.GetPlayer("player3"), SelectedPrompt: activeDrawing.DecoyPrompts["player3"]},
 	}
 	return game
 }

@@ -115,8 +115,8 @@ func (state scoringState) calculateStandings(activeDrawing *models.Drawing, game
 				pointStandings[activeDrawing.Author].RoundPointsBreakdown,
 				&PointsBreakdown{Amount: 1, Reason: OtherChosePromptDrawn, CausingPlayer: playerName},
 			)
-		} else {
-			// The person who fooled the voter earns 1 point
+		} else if vote.SelectedPrompt.Author != vote.Player.Name {
+			// The person who fooled the voter earns 1 point as long as they didn't fool themselves
 			pointStandings[vote.SelectedPrompt.Author].TotalScore += 1
 			pointStandings[vote.SelectedPrompt.Author].RoundPointsBreakdown = append(
 				pointStandings[vote.SelectedPrompt.Author].RoundPointsBreakdown,
