@@ -24,7 +24,3 @@ script:
     - "diff -u <(echo -n) <(gofmt -d -s .) || travis_terminate 1"
     # Run server tests
     - "go test -v ./..."
-# Just run on master branch since we run on PRs
-branches:
-    only:
-        - master
