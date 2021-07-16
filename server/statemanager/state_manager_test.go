@@ -186,15 +186,20 @@ func TestCastVote_Success(t *testing.T) {
 	game := test.GameInVotingState()
 	models.GetGameProvider().SaveGame(game)
 	activeDrawing := game.Drawings[0]
-	gameStatus, err := CastVote(game.Players[0].Name, game.GroupName, activeDrawing.DecoyPrompts[game.Players[2].Name].Identifier)
+	// Player 0 voted for their own decoy prompt
+	gameStatus, err := CastVote(game.Players[0].Name, game.GroupName, activeDrawing.DecoyPrompts[game.Players[0].Name].Identifier)
 	assert.Nil(t, err)
 	assert.NotNil(t, gameStatus)
 	assert.EqualValues(t, models.Voting, gameStatus.CurrentState)
-	// Once all players vote we should move to scoring
+	// Player 2 voted for the correct prompt
 	gameStatus, err = CastVote(game.Players[2].Name, game.GroupName, activeDrawing.OriginalPrompt.Identifier)
 	assert.Nil(t, err)
 	assert.NotNil(t, gameStatus)
+	// Once all players vote we should move to scoring
 	assert.EqualValues(t, models.Scoring, gameStatus.CurrentState)
+	assert.EqualValues(t, 0, (*gameStatus.PointStandings)[game.Players[0].Name].TotalScore) // 0 points for voting for your own prompt
+	assert.EqualValues(t, 3, (*gameStatus.PointStandings)[game.Players[2].Name].TotalScore) // 3 points for voting for the right prompt
+
 }
 
 func TestAddDecoyPrompt_Error_duplicatePromptEntry(t *testing.T) {
@@ -220,7 +225,7 @@ func TestStartGame_InScoringState(t *testing.T) {
 	currentDrawing := game.GetActiveDrawing()
 	assert.EqualValues(t, game.Drawings[1], currentDrawing)
 	// Round scores should be added to the players
-	assert.EqualValues(t, 4, game.Players[0].Points)
+	assert.EqualValues(t, 3, game.Players[0].Points)
 	assert.EqualValues(t, 1, game.Players[1].Points)
 	assert.EqualValues(t, 0, game.Players[2].Points)
 }
